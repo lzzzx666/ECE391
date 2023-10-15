@@ -36,7 +36,7 @@ int set_pte(PT_t *baseAddr, int idx, uint8_t us, uint32_t addr)
         printf("invalid page table index:%d", idx);
         return INV_PT_IDX;
     }
-    /*default value*/
+    /*default value, present and rw enabled*/
     (*baseAddr)[idx].p = 1;
     (*baseAddr)[idx].rw = 1;
     /*set value*/
@@ -68,7 +68,7 @@ int set_pde(PD_t *baseAddr, int idx, uint8_t us, uint8_t g, uint8_t ps, uint32_t
         printf("invalid page directory index:%d", idx);
         return INV_PD_IDX;
     }
-    /*default value*/
+    /*default value, present and rw enabled*/
     (*baseAddr)[idx].p = 1;
     (*baseAddr)[idx].rw = 1;
     /*set value*/
@@ -90,7 +90,8 @@ int set_pde(PD_t *baseAddr, int idx, uint8_t us, uint8_t g, uint8_t ps, uint32_t
  */
 int page_init()
 {
-    int i;
+    int i;// loop counter
+    /*initialize page table and page directory*/
     for (i = 0; i < PAGE_TABLE_ENTRY_NUM; i++)
     {
         pageTable[i].val = 0;
@@ -100,12 +101,18 @@ int page_init()
         pageDirectory[i].val = 0;
     }
 
+    /*set page table for page table. To avoid access to video memory
+    failed, set the map to its original address*/
     set_pte(&pageTable, VIDEO >> 12, 0, VIDEO >> 12);
     set_pte(&pageTable, (VIDEO >> 12) + 1, 0, (VIDEO >> 12) + 1);
     set_pte(&pageTable, (VIDEO >> 12) + 2, 0, (VIDEO >> 12) + 2);
     set_pte(&pageTable, (VIDEO >> 12) + 3, 0, (VIDEO >> 12) + 3);
-    set_pde(&pageDirectory, 0, 0, 0, 0, ((uint32_t)&pageTable) >> 12);
-    set_pde(&pageDirectory, 1, 0, 1, 1, KERNEL_START_ADDR >> 12);
+
+    /*set page directory entry 0 and 1. 0 for page table
+     occupied by video memory, 1 for kernel code    */
+    set_pde(&pageDirectory, 0, 0, 0, 0, ((uint32_t)&pageTable) >> 12);// 0 entry shold be user and 4kb
+    set_pde(&pageDirectory, 1, 0, 1, 1, KERNEL_START_ADDR >> 12);// 1st entry should be supervisior and 4mb
+    /*enable paging function*/
     (*set_cr)((uint32_t)(pageDirectory));
     return 0;
 }
