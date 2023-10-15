@@ -101,12 +101,11 @@ int page_init()
     }
 
     set_pte(&pageTable, VIDEO >> 12, 0, VIDEO >> 12);
+    set_pte(&pageTable, (VIDEO >> 12) + 1, 0, (VIDEO >> 12) + 1);
     set_pte(&pageTable, (VIDEO >> 12) + 2, 0, (VIDEO >> 12) + 2);
     set_pte(&pageTable, (VIDEO >> 12) + 3, 0, (VIDEO >> 12) + 3);
-    set_pte(&pageTable, (VIDEO >> 12) + 4, 0, (VIDEO >> 12) + 4);
     set_pde(&pageDirectory, 0, 0, 0, 0, ((uint32_t)&pageTable) >> 12);
     set_pde(&pageDirectory, 1, 0, 1, 1, KERNEL_START_ADDR >> 12);
-
     (*set_cr)((uint32_t)(pageDirectory));
     return 0;
 }
