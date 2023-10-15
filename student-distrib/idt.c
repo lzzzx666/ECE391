@@ -1,6 +1,7 @@
 #include "idt.h"
 #include "x86_desc.h"
 #include "keyboard.h"
+#include "rtc.h"
 
 void idt_init()
 {
@@ -136,7 +137,11 @@ void exe_handler(enum idt_type type)
         return;
         break;
     case REAL_TIME_CLOCK:
-        printf("real_time_clock!");
+        rtc_handler();
+        sti();
+        return;
+    case SYSTEM_CALL:
+        printf("system call!");
         break;
     default:
 

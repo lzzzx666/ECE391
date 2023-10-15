@@ -1,0 +1,4 @@
+*.o
+bootimg
+*.dep
+mp3.img
