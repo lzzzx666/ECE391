@@ -4,36 +4,26 @@
 
 #hanlders is a array that stores function address for each handler
 handlers:
-   .long divide_error
-   .long debug_exception
-   .long nmi_interrupt
-   .long breakpoint
-   .long overflow
-   .long bound_range_exceeded
-   .long invalid_opcode
-   .long device_not_available
-   .long double_fault
-   .long coprocessor_segment_overrun
-   .long invalid_tss
-   .long segment_not_present
-   .long stack_segment_fault
-   .long general_protection
-   .long page_fault
-   .long intel_reserved
-   .long floating_point_error
-   .long alignment_check
-   .long machine_check
-   .long simd_floating_point_exception
-   .long keyboard
-   .long real_time_clock
-   .long system_call
+   .long divide_error,debug_exception,nmi_interrupt,breakpoint,overflow,bound_range_exceeded
+   .long invalid_opcode,device_not_available,double_fault,coprocessor_segment_overrun,invalid_tss
+   .long segment_not_present,stack_segment_fault,general_protection,page_fault,intel_reserved
+   .long floating_point_error,alignment_check,machine_check,simd_floating_point_exception
+   .long keyboard,real_time_clock,system_call
 
 #the commom assembly linkage for all handlers
 common_linkage:
     
     #save all registers
-    pusha
-    pushf
+    pushl %fs
+    pushl %es
+    pushl %ds
+    pushl %eax
+    pushl %ebp
+    pushl %edi
+    pushl %esi
+    pushl %edx
+    pushl %ecx
+    pushl %ebx
 
     #execute the specific handler
     movl 40(%esp),%eax  #40 can be used to locate the vector number
@@ -42,8 +32,16 @@ common_linkage:
     popl %eax
     
     #restore all registers
-    popf
-    popa
+    popl %ebx
+    popl %ecx
+    popl %edx
+    popl %esi
+    popl %edi
+    popl %ebp
+    popl %eax
+    popl %ds
+    popl %es
+    popl %fs
 
     addl $4,%esp #pop the vector number
     jmp done
