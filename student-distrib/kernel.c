@@ -11,6 +11,7 @@
 #include "idt.h"
 #include "keyboard.h"
 #include "rtc.h"
+#include "page.c"
 #define RUN_TESTS
 
 /* Macros. */
