@@ -1,6 +1,7 @@
 #include "tests.h"
 #include "x86_desc.h"
 #include "lib.h"
+#include "../syscalls/ece391support.h"
 
 #define PASS 1
 #define FAIL 0
@@ -38,18 +39,23 @@ int idt_test(){
 			printf("%d",idt[0].offset_15_00);
 			printf("haha");
 				printf("%d",idt[0].offset_31_16);
-				
+//   asm volatile("int $0x21");
     // int *a=NULL;
 	// int b=*a;
+	    // asm volatile("int $13");
 	// int c=1/0;
-
+	while (1)
+	{ 
+		
+	}
+	
     // char c=18345/0;
 // 	printf("\n");
 
 // 	printf("%d",idt[0].offset_15_00);
 // printf("hah");
 // printf("%d",idt[1].offset_15_00);
-   asm volatile("int $0x80");
+
 	for (i = 0; i < 10; ++i){
 		if ((idt[i].offset_15_00 == NULL) && 
 			(idt[i].offset_31_16 == NULL)){
