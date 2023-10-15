@@ -35,11 +35,10 @@ void init_keyboard()
     enable_irq(KEYBOARD_IRQ);
 }
 
-
 void keyboard_handler()
 {
     cli();
-    char scan_code = inb(KEYBOARD_DATA_PORT);
+    unsigned char scan_code = inb(KEYBOARD_DATA_PORT);
     char ascii;
     if(scan_code >= NUM_SCANCODES)
     {
@@ -70,5 +69,6 @@ void keyboard_handler()
             break;
     }
     send_eoi(KEYBOARD_IRQ);
+    
     sti();
 }
