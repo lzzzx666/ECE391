@@ -9,8 +9,9 @@
 #include "debug.h"
 #include "tests.h"
 #include "idt.h"
-#include "page.h"
-
+#include "keyboard.h"
+#include "rtc.h"
+#include "page.c"
 #define RUN_TESTS
 
 /* Macros. */
@@ -139,22 +140,27 @@ void entry(unsigned long magic, unsigned long addr) {
     }
 
 
+    
     /* init the idt*/
     idt_init();
 
+    page_init();
     /* Init the PIC */
     i8259_init();
-    page_init();
+
+    /* Initialize RTC periodic interrupt */
+    rtc_init();
+
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */
-
+    init_keyboard();
     /* Enable interrupts */
 
     /* Do not enable the following until after you have set up your
      * IDT correctly otherwise QEMU will triple fault and simple close
      * without showing you any output */
-    /*printf("Enabling Interrupts\n");
-    sti();*/
+    printf("Enabling Interrupts\n");
+    sti();
 
 // #ifdef RUN_TESTS
     /* Run tests */

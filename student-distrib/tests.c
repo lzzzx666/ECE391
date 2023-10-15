@@ -1,6 +1,7 @@
 #include "tests.h"
 #include "x86_desc.h"
 #include "lib.h"
+#include "../syscalls/ece391support.h"
 
 #define PASS 1
 #define FAIL 0
@@ -15,7 +16,7 @@ static inline void assertion_failure()
 {
 	/* Use exception #15 for assertions, otherwise
 	   reserved by Intel */
-	asm volatile("int $15");
+	asm volatile("int $0x80");
 }
 
 /* Checkpoint 1 tests */
@@ -30,30 +31,44 @@ static inline void assertion_failure()
  * Files: x86_desc.h/S
  */
 
-int idt_test()
-{
+int idt_test(){
+
 	TEST_HEADER;
 	int i;
 	int result = PASS;
+	printf("hah");
+	printf("%d", idt[0].offset_15_00);
+	printf("haha");
+	printf("%d", idt[0].offset_31_16);
+	//   asm volatile("int $0x21");
+	// int *a=NULL;
+	// int b=*a;
+	// asm volatile("int $13");
+	// int c=1/0;
+	asm volatile(
+        "movl $9, %%eax\n\t"
+        "int $0x80"
+        : 
+        : 
+    );
+ while (1)
+	{
+		// printf("ha");
+	}
+
+	// char c=18345/0;
+	// 	printf("\n");
+
+	// 	printf("%d",idt[0].offset_15_00);
 	// printf("hah");
-	// printf("%d", idt[0].offset_15_00);
-	// printf("haha");
-	// printf("%d", idt[0].offset_31_16);
+	// printf("%d",idt[1].offset_15_00);
 
-	// int a = 1;
-	// int b = 0;
-	// int c = a / b;
-
-	// printf("\n");
-
-	// printf("%d", idt[0].offset_15_00);
-	// printf("hah");
-	// printf("%d", idt[1].offset_15_00);
 	for (i = 0; i < 10; ++i)
 	{
 		if ((idt[i].offset_15_00 == NULL) &&
 			(idt[i].offset_31_16 == NULL))
 		{
+			printf("111");
 			assertion_failure();
 			result = FAIL;
 		}
@@ -68,7 +83,10 @@ int idt_test()
 	// 	printf("5678");
 	// }
 	return result;
+
 }
+
+
 
 // add more tests here
 

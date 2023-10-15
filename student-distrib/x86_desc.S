@@ -29,6 +29,8 @@ ldt_desc:
     .align 4
 
 #the gdt desc
+    .word 0   #padding
+    
 gdt_desc:
     .word gdt_bottom - gdt - 1 #the limit of gdt
     .long gdt # the base address of gdt

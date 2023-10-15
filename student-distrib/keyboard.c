@@ -29,15 +29,25 @@ char scan_code_set_capsandshift[NUM_SCANCODES] =
 	'b', 'n', 'm', '<', '>', '?', '\0', '*', '\0', ' ', '\0'
 };
 
+// Description: Initializes the keyboard by enabling its corresponding interrupt request line (IRQ).
+// Parameters:None.
+// Return Value:None.
+// Side Effects: The interrupt request (IRQ) for the keyboard is enabled, allowing the system to handle keyboard interrupts
 
 void init_keyboard()
 {
     enable_irq(KEYBOARD_IRQ);
 }
 
+// Description: Handles keyboard interrupts by reading a scan code from the keyboard data port and then, based on the scan code
+// Parameters:None.
+// Return Value:None.
+// Side Effects: Reads a byte from the KEYBOARD_DATA_PORT. 
+// If the scan code corresponds to an alphanumeric character (a-z, 0-9), the character will be printed to the screen.
 void keyboard_handler()
 {
     cli();
+
     unsigned char scan_code = inb(KEYBOARD_DATA_PORT);
     char ascii;
     if(scan_code >= NUM_SCANCODES)

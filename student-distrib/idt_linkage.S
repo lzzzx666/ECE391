@@ -1,12 +1,21 @@
 #define ASM
 .text
 .global	handlers
-.globl divide_error
+
+#hanlders is a array that stores function address for each handler
 handlers:
-   .long divide_error,debug_exception,nmi_interrupt,breakpoint,overflow,bound_range_exceeded,invalid_opcode,device_not_available,double_fault,coprocessor_segment_overrun,invalid_tss,segment_not_present,stack_segment_fault,general_protection,page_fault,intel_reserved,floating_point_error,alignment_check,machine_check,simd_floating_point_exception
-   
+   .long divide_error,debug_exception,nmi_interrupt,breakpoint,overflow,bound_range_exceeded
+   .long invalid_opcode,device_not_available,double_fault,coprocessor_segment_overrun,invalid_tss
+   .long segment_not_present,stack_segment_fault,general_protection,page_fault,intel_reserved
+   .long floating_point_error,alignment_check,machine_check,simd_floating_point_exception
+   .long keyboard,real_time_clock,system_call
+syscall:
+    .long sys_halt,sys_execute,sys_read,sys_write,sys_open
+    .long sys_close,sys_getargs,sys_vidmap,sys_set_handler,sys_sigreturn
+#the commom assembly linkage for all handlers
 common_linkage:
     
+    #save all registers
     pushl %fs
     pushl %es
     pushl %ds
@@ -17,12 +26,30 @@ common_linkage:
     pushl %edx
     pushl %ecx
     pushl %ebx
+    pushfl
 
-    movl 40(%esp),%eax
-    pushl %eax
-    call exe_exception
-    addl $4,%esp
-    
+    #execute the specific handler
+    movl 44(%esp),%esi  #44 can be used to locate the vector number
+    cmpl $0x80,%esi
+    je syscall_linkage
+
+    pushl %esi #the vector number
+    call exe_handler
+    popl %esi
+    jmp tear_down
+
+syscall_linkage:
+    pushl %edx
+    pushl %ecx
+    pushl %ebx
+    call *syscall(,%eax,4)
+    popl %ebx
+    popl %ecx
+    popl %edx
+
+tear_down:
+    #restore all registers
+    popfl
     popl %ebx
     popl %ecx
     popl %edx
@@ -34,17 +61,14 @@ common_linkage:
     popl %es
     popl %fs
 
-    addl $4,%esp
-
+    addl $4,%esp #pop the vector number
     jmp done
 
+
+#all handlers are defined below
 divide_error:
-# start:
-#     addl $1,%eax
-#     jmp start
     pushl $0
     jmp common_linkage
-
 debug_exception:
     pushl $1
     jmp common_linkage
@@ -102,8 +126,14 @@ machine_check:
 simd_floating_point_exception:
     pushl $19
     jmp common_linkage
-
+keyboard:
+    pushl $0x21
+    jmp	common_linkage
+real_time_clock:
+    pushl $0x28
+    jmp common_linkage
+system_call:
+    pushl $0x80
+    jmp common_linkage
 done:
-
     iret
-    

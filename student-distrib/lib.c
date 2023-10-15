@@ -3,6 +3,7 @@
 
 #include "lib.h"
 
+
 static int screen_x;
 static int screen_y;
 static char* video_mem = (char *)VIDEO;
