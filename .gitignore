@@ -1,2 +1,4 @@
 *.o
-*img
+bootimg
+*.dep
+mp3.img
