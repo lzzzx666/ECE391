@@ -1,0 +1,7 @@
+MP3.1
+    BUG1
+        description: when typing, there is no reaction on the screen 
+        find takes: 20 min 
+        fix takes: 15 min
+        how to fix: we examine the value of master_mask, found that the value of master_mask and inb(data_port of master)
+            are not the same, eventually we fixed it at the init_pic() that outb(master_mask) before enable_irq(2);

@@ -2,6 +2,7 @@
 #define IDT_H
 #include "x86_desc.h"
 #include "lib.h"
+#include "systemcall.h"
 
 /*the whole interrupt descriptor table*/
 extern idt_desc_t idt[NUM_VEC];
