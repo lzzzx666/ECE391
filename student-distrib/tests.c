@@ -73,7 +73,15 @@ int idt_test(){
 			result = FAIL;
 		}
 	}
-
+	// printf("ll");
+	// if (result)
+	// {
+	// 	printf("1234");
+	// }
+	// else
+	// {
+	// 	printf("5678");
+	// }
 	return result;
 
 }
