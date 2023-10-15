@@ -31,23 +31,10 @@ static inline void assertion_failure(){
  */
 
 int idt_test(){
+
 	TEST_HEADER;
 	int i;
 	int result = PASS;
-		printf("hah");
-			printf("%d",idt[0].offset_15_00);
-			printf("haha");
-				printf("%d",idt[0].offset_31_16);
-				
-    	int a = 1;
-	int b = 0;
-	int c = a / b;
-
-	printf("\n");
-
-	printf("%d",idt[0].offset_15_00);
-printf("hah");
-printf("%d",idt[1].offset_15_00);
 	for (i = 0; i < 10; ++i){
 		if ((idt[i].offset_15_00 == NULL) && 
 			(idt[i].offset_31_16 == NULL)){
@@ -55,14 +42,12 @@ printf("%d",idt[1].offset_15_00);
 			result = FAIL;
 		}
 	}
-	printf("ll");
-	if(result){
-		printf("1234");
-	}else{
-		printf("5678");
-	}
+
 	return result;
+
 }
+
+
 
 // add more tests here
 
