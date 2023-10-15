@@ -8,6 +8,7 @@
 #include "i8259.h"
 #include "debug.h"
 #include "tests.h"
+#include "idt.h"
 
 #define RUN_TESTS
 
@@ -136,6 +137,10 @@ void entry(unsigned long magic, unsigned long addr) {
         ltr(KERNEL_TSS);
     }
 
+
+    /* init the idt*/
+    idt_init();
+
     /* Init the PIC */
     i8259_init();
 
@@ -143,18 +148,19 @@ void entry(unsigned long magic, unsigned long addr) {
      * PIC, any other initialization stuff... */
 
     /* Enable interrupts */
+
     /* Do not enable the following until after you have set up your
      * IDT correctly otherwise QEMU will triple fault and simple close
      * without showing you any output */
     /*printf("Enabling Interrupts\n");
     sti();*/
 
-#ifdef RUN_TESTS
+// #ifdef RUN_TESTS
     /* Run tests */
     launch_tests();
-#endif
-    /* Execute the first program ("shell") ... */
+// #endif
+//     /* Execute the first program ("shell") ... */
 
-    /* Spin (nicely, so we don't chew up cycles) */
-    asm volatile (".1: hlt; jmp .1;");
+//     /* Spin (nicely, so we don't chew up cycles) */
+//     asm volatile (".1: hlt; jmp .1;");
 }

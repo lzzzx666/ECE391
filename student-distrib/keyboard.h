@@ -1,0 +1,31 @@
+#ifndef KEYBOARD_H
+#define KEYBOARD_H
+
+#include "types.h"
+#include "i8259.h"
+#include "lib.h"
+
+#define KEYBOARD_DATA_PORT 0x60
+#define REGISTER_PORT 0x64
+#define KEYBOARD_IRQ 1
+#define NUM_SCANCODES 60
+#define BACKSPACE   0x0E
+#define TAB 0x0F
+#define ENTER 0x1C
+#define CAPS_LOCK  0x3A
+#define LSHIFT_MAKE  0x2A
+#define LSHIFT_BREAK 0xAA
+#define RSHIFT_MAKE	 0x36
+#define RSHIFT_BREAK 0xB6
+#define CTRL_MAKE 0x1D
+#define CTRL_BREAK 0x9D
+#define ALT_MAKE 0x38
+#define ALT_BREAK  0xB8
+#define F1  0x3B
+#define F2  0x3C
+#define F3  0x3D
+
+void init_keyboard();
+void keyboard_handler();
+
+#endif

@@ -1,24 +1,48 @@
-#ifndef IDT_H   
-
+#ifndef IDT_H
+#define IDT_H
 #include "x86_desc.h"
 #include "lib.h"
 
-/* dpl: 0 - interrupt  3 - system interrupt */
-#define SET_IDT_INTR_ENTRY(str, handler, _seg_selector, _dpl) \
-do { \
-    SET_IDT_ENTRY(str, handler); \
-    (str).seg_selector = _seg_selector; \
-    (str).reserved4 = 0; \
-    (str).reserved3 = 0; \
-    (str).reserved2 = 1; \
-    (str).reserved1 = 1; \
-    (str).size = 1; \
-    (str).reserved0 = 0; \
-    (str).dpl = _dpl; \
-    (str).present = 1; \
-} while(0);
+/*the whole interrupt descriptor table*/
+extern idt_desc_t idt[NUM_VEC];
 
-void uni();
-void set_IDT();
+/*the handler function address of different exception/interrupt/system call*/
+extern long handlers[];
 
-#endif  /* IDH_H */
+/*the vector number of different exception/interrup/system call*/
+enum idt_type{
+    DIVIDE_ERROR,
+    DEBUG_EXCEPTION,
+    NMI_INTERRUPT,
+    BREAKPOINT,
+    OVERFLOW,
+    BOUND_RANGE_EXCEEDED,
+    INVALID_OPCODE,
+    DEVICE_NOT_AVAILABLE,
+    DOUBLE_FAULT,
+    COPROCESSOR_SEGMENT_OVERRUN,
+    INVALID_TSS,
+    SEGMENT_NOT_PRESENT,
+    STACK_SEGMENT_FAULT,
+    GENERAL_PROTECTION,
+    PAGE_FAULT,
+    INTEL_RESERVED,
+    FLOATING_POINT_ERROR,
+    ALIGNMENT_CHECK,
+    MACHINE_CHECK,
+    SIMD_FLOATING_POINT_EXCEPTION,
+    KEYBOARD=0x20,
+    REAL_TIME_CLOCK=0x28,
+    SYSTEM_CALL=0x80
+    };
+
+/*it will initialize the IDT*/
+extern void idt_init();
+
+/*the helper function to set every entry in the IDT*/
+extern void set_idt_entry(idt_desc_t idt[], int index);
+
+/*the main part of the handler function*/
+void exe_exception(enum idt_type type);
+
+#endif

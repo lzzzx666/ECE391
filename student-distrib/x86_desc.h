@@ -16,6 +16,7 @@
 #define KERNEL_TSS  0x0030
 #define KERNEL_LDT  0x0038
 
+
 /* Size of the task state segment (TSS) */
 #define TSS_SIZE    104
 

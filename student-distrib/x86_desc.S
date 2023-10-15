@@ -27,6 +27,15 @@ ldt_desc:
     .long ldt
 
     .align 4
+
+#the gdt desc
+    .word 0 # Padding
+gdt_desc:
+    .word gdt_bottom - gdt - 1 #the limit of gdt
+    .long gdt # the base address of gdt
+
+    .align 4  #the data is aligned by 4 bytes
+
 tss:
 _tss:
     .rept 104
@@ -106,3 +115,4 @@ _idt:
     .endr
 
 idt_bottom:
+
