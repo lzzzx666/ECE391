@@ -146,6 +146,7 @@ void entry(unsigned long magic, unsigned long addr) {
     /* Init the PIC */
     i8259_init();
 
+    /* Initialize RTC periodic interrupt */
     rtc_init();
 
     /* Initialize devices, memory, filesystem, enable device interrupts on the

@@ -134,7 +134,6 @@ void exe_handler(enum idt_type type)
         rtc_handler();
         sti();
         return;
-        break;
     case SYSTEM_CALL:
         printf("system call!");
         break;
@@ -143,7 +142,7 @@ void exe_handler(enum idt_type type)
         break;
     }
     /*hold on the screen(blue screen)*/
-  //  while (1)
-    //    ;
-     //   sti();
+    while (1)
+        ;
+        sti();
 }
