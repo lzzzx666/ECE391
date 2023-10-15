@@ -10,6 +10,9 @@ uint8_t master_mask; /* IRQs 0-7  */
 uint8_t slave_mask;  /* IRQs 8-15 */
 
 /* Initialize the 8259 PIC */
+// Parameters: None.
+// Return Value: None.
+// Side Effects: Configures both master and slave PICs.
 void i8259_init(void) {
 
     outb(0xFF, MASTER_8259_PORT_DATA); // set all mask to 1
@@ -30,6 +33,10 @@ void i8259_init(void) {
 }
 
 /* Enable (unmask) the specified IRQ */
+// Parameters: The IRQ number to be enabled.
+// Return Value: None.
+// Side effects: Modifies the interrupt mask register of either the master or 
+// slave PIC depending on the IRQ number.
 void enable_irq(uint32_t irq_num) {
     if(irq_num > 15) return;
     uint16_t port;
@@ -53,6 +60,10 @@ void enable_irq(uint32_t irq_num) {
 }
 
 /* Disable (mask) the specified IRQ */
+// Parameters: The IRQ number to be disabled.
+// Return Value: None.
+// Side effects: Modifies the interrupt mask register of either 
+// the master or slave PIC depending on the IRQ number.
 void disable_irq(uint32_t irq_num) {
     if(irq_num > 15) return;
     uint16_t port;
@@ -76,6 +87,9 @@ void disable_irq(uint32_t irq_num) {
 }
 
 /* Send end-of-interrupt signal for the specified IRQ */
+// Parameters: The IRQ number to be sent with EOI.
+// Return Value: None.
+// Side effects: Sends EOI to either the master or slave PIC (or both for slave IRQs) based on the IRQ number.
 void send_eoi(uint32_t irq_num) {
     if(irq_num > 15) return;
     if(irq_num < 8)    
@@ -84,8 +98,8 @@ void send_eoi(uint32_t irq_num) {
     }
     else
     {
-        outb(EOI | irq_num - 8, SLAVE_8259_PORT_CMD);
-        outb(EOI | 2, MASTER_8259_PORT_CMD);
+        outb(EOI | (irq_num - 8), SLAVE_8259_PORT_CMD);
+        outb(EOI | 2, MASTER_8259_PORT_CMD); // send EOI to irq(2) as well
     }
     return;
 }

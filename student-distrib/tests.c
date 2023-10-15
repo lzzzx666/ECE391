@@ -31,8 +31,8 @@ static inline void assertion_failure()
  * Files: x86_desc.h/S
  */
 
-int idt_test()
-{
+int idt_test(){
+
 	TEST_HEADER;
 	int i;
 	int result = PASS;
@@ -73,17 +73,12 @@ int idt_test()
 			result = FAIL;
 		}
 	}
-	printf("ll");
-	if (result)
-	{
-		printf("1234");
-	}
-	else
-	{
-		printf("5678");
-	}
+
 	return result;
+
 }
+
+
 
 // add more tests here
 
