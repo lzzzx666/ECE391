@@ -9,12 +9,13 @@
 #include "types.h"
 
 /* Segment selector values */
-#define KERNEL_CS   0x0010 //0000 0000 0001 0000, segment index = 2, GDT, DPL = 0
-#define KERNEL_DS   0x0018 //0000 0000 0001 1000, segment index = 3, GDT, DPL = 0
-#define USER_CS     0x0023 //0000 0000 0010 0011, segment index = 4, GDT, DPL = 3
-#define USER_DS     0x002B //0000 0000 0010 1011, segment index = 5, GDT, DPL = 3
-#define KERNEL_TSS  0x0030 //0000 0000 0011 0000, segment index = 6, GDT, DPL = 0
-#define KERNEL_LDT  0x0038 //0000 0000 0011 1000, segment index = 7, GDT, DPL = 0
+#define KERNEL_CS   0x0010
+#define KERNEL_DS   0x0018
+#define USER_CS     0x0023
+#define USER_DS     0x002B
+#define KERNEL_TSS  0x0030
+#define KERNEL_LDT  0x0038
+
 
 /* Size of the task state segment (TSS) */
 #define TSS_SIZE    104
