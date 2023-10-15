@@ -24,6 +24,7 @@ void i8259_init(void) {
     outb(ICW4, SLAVE_8259_PORT_DATA);
     master_mask = 0xFB; //bit 2 set to zero to open the PIC2 for slave
     slave_mask = 0xFF; 
+    outb(master_mask, MASTER_8259_PORT_DATA);
     enable_irq(2); //open the PIC2 for slave
 
 }
