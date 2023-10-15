@@ -28,7 +28,7 @@ common_linkage:
     #execute the specific handler
     movl 40(%esp),%eax  #40 can be used to locate the vector number
     pushl %eax
-    call exe_exception
+    call exe_handler
     popl %eax
     
     #restore all registers
@@ -109,7 +109,7 @@ simd_floating_point_exception:
     pushl $19
     jmp common_linkage
 keyboard:
-    pushl $0x20
+    pushl $0x21
     jmp	common_linkage
 real_time_clock:
     pushl $0x28
