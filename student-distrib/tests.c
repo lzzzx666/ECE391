@@ -14,7 +14,7 @@
 static inline void assertion_failure(){
 	/* Use exception #15 for assertions, otherwise
 	   reserved by Intel */
-	asm volatile("int $15");
+	asm volatile("int $0x80");
 }
 
 
@@ -39,18 +39,21 @@ int idt_test(){
 			printf("haha");
 				printf("%d",idt[0].offset_31_16);
 				
-    	int a = 1;
-	int b = 0;
-	int c = a / b;
+    // int *a=NULL;
+	// int b=*a;
+	// int c=1/0;
 
-	printf("\n");
+    // char c=18345/0;
+// 	printf("\n");
 
-	printf("%d",idt[0].offset_15_00);
-printf("hah");
-printf("%d",idt[1].offset_15_00);
+// 	printf("%d",idt[0].offset_15_00);
+// printf("hah");
+// printf("%d",idt[1].offset_15_00);
+   asm volatile("int $0x80");
 	for (i = 0; i < 10; ++i){
 		if ((idt[i].offset_15_00 == NULL) && 
 			(idt[i].offset_31_16 == NULL)){
+				printf("111");
 			assertion_failure();
 			result = FAIL;
 		}
