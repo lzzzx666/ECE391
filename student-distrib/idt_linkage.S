@@ -9,7 +9,9 @@ handlers:
    .long segment_not_present,stack_segment_fault,general_protection,page_fault,intel_reserved
    .long floating_point_error,alignment_check,machine_check,simd_floating_point_exception
    .long keyboard,real_time_clock,system_call
-
+syscall:
+    .long sys_halt,sys_execute,sys_read,sys_write,sys_open
+    .long sys_close,sys_getargs,sys_vidmap,sys_set_handler,sys_sigreturn
 #the commom assembly linkage for all handlers
 common_linkage:
     
@@ -24,14 +26,30 @@ common_linkage:
     pushl %edx
     pushl %ecx
     pushl %ebx
+    pushfl
 
     #execute the specific handler
-    movl 40(%esp),%eax  #40 can be used to locate the vector number
-    pushl %eax
+    movl 44(%esp),%esi  #44 can be used to locate the vector number
+    cmpl $0x80,%esi
+    je syscall_linkage
+
+    pushl %esi #the vector number
     call exe_handler
-    popl %eax
-    
+    popl %esi
+    jmp tear_down
+
+syscall_linkage:
+    pushl %edx
+    pushl %ecx
+    pushl %ebx
+    call *syscall(,%eax,4)
+    popl %ebx
+    popl %ecx
+    popl %edx
+
+tear_down:
     #restore all registers
+    popfl
     popl %ebx
     popl %ecx
     popl %edx
