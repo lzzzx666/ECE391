@@ -143,6 +143,7 @@ void entry(unsigned long magic, unsigned long addr) {
     /* init the idt*/
     idt_init();
 
+    page_init();
     /* Init the PIC */
     i8259_init();
 
