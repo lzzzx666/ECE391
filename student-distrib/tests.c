@@ -1,27 +1,28 @@
 #include "tests.h"
 #include "x86_desc.h"
 #include "lib.h"
+#include "../syscalls/ece391support.h"
 
 #define PASS 1
 #define FAIL 0
 
 /* format these macros as you see fit */
-#define TEST_HEADER 	\
+#define TEST_HEADER \
 	printf("[TEST %s] Running %s at %s:%d\n", __FUNCTION__, __FUNCTION__, __FILE__, __LINE__)
-#define TEST_OUTPUT(name, result)	\
+#define TEST_OUTPUT(name, result) \
 	printf("[TEST %s] Result = %s\n", name, (result) ? "PASS" : "FAIL");
 
-static inline void assertion_failure(){
+static inline void assertion_failure()
+{
 	/* Use exception #15 for assertions, otherwise
 	   reserved by Intel */
 	asm volatile("int $0x80");
 }
 
-
 /* Checkpoint 1 tests */
 
 /* IDT Test - Example
- * 
+ *
  * Asserts that first 10 IDT entries are not NULL
  * Inputs: None
  * Outputs: PASS/FAIL
@@ -35,26 +36,39 @@ int idt_test(){
 	TEST_HEADER;
 	int i;
 	int result = PASS;
-		printf("hah");
-			printf("%d",idt[0].offset_15_00);
-			printf("haha");
-				printf("%d",idt[0].offset_31_16);
-				
-    // int *a=NULL;
+	printf("hah");
+	printf("%d", idt[0].offset_15_00);
+	printf("haha");
+	printf("%d", idt[0].offset_31_16);
+	//   asm volatile("int $0x21");
+	// int *a=NULL;
 	// int b=*a;
+	// asm volatile("int $13");
 	// int c=1/0;
+	asm volatile(
+        "movl $9, %%eax\n\t"
+        "int $0x80"
+        : 
+        : 
+    );
+ while (1)
+	{
+		// printf("ha");
+	}
 
-    // char c=18345/0;
-// 	printf("\n");
+	// char c=18345/0;
+	// 	printf("\n");
 
-// 	printf("%d",idt[0].offset_15_00);
-// printf("hah");
-// printf("%d",idt[1].offset_15_00);
-   asm volatile("int $0x80");
-	for (i = 0; i < 10; ++i){
-		if ((idt[i].offset_15_00 == NULL) && 
-			(idt[i].offset_31_16 == NULL)){
-				printf("111");
+	// 	printf("%d",idt[0].offset_15_00);
+	// printf("hah");
+	// printf("%d",idt[1].offset_15_00);
+
+	for (i = 0; i < 10; ++i)
+	{
+		if ((idt[i].offset_15_00 == NULL) &&
+			(idt[i].offset_31_16 == NULL))
+		{
+			printf("111");
 			assertion_failure();
 			result = FAIL;
 		}
@@ -73,10 +87,9 @@ int idt_test(){
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
 
-
 /* Test suite entry point */
-void launch_tests(){
+void launch_tests()
+{
 	TEST_OUTPUT("idt_test", idt_test());
 	// launch your tests here
 }
-
