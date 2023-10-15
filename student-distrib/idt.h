@@ -31,7 +31,7 @@ enum idt_type{
     ALIGNMENT_CHECK,
     MACHINE_CHECK,
     SIMD_FLOATING_POINT_EXCEPTION,
-    KEYBOARD=0x20,
+    KEYBOARD=0x21,
     REAL_TIME_CLOCK=0x28,
     SYSTEM_CALL=0x80
     };
@@ -43,6 +43,6 @@ extern void idt_init();
 extern void set_idt_entry(idt_desc_t idt[], int index);
 
 /*the main part of the handler function*/
-void exe_exception(enum idt_type type);
+void exe_handler(enum idt_type type);
 
 #endif
