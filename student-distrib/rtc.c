@@ -3,7 +3,12 @@
 #include "i8259.h"
 #include "lib.h"
 
-/* Init I/O ports */
+/**
+ * enalbe_inter
+ * Enalbe periodic interrupt of RTC
+ * INPUT: none
+ * OUTPUT: set register B of RTC
+ */
 void enalbe_inter() {
     cli();
     unsigned char prev_status_b;
@@ -15,7 +20,12 @@ void enalbe_inter() {
     sti();
 }
 
-/* Set interrupt freq. */
+/**
+ * set_interrupt_rate
+ * Set interrupt freq.
+ * INPUT: none
+ * OUTPUT: set register A of RTC
+ */
 void set_interrupt_rate() {
     cli();
     unsigned char prev_status_a;
@@ -26,16 +36,28 @@ void set_interrupt_rate() {
     sti();  
 }
 
+
+/**
+ * rtc_init
+ * initialize RTC
+ * INPUT: none
+ * OUTPUT: set register A, B of RTC
+ */
 void rtc_init() {
     enalbe_inter(); /* enalbe periodic interrupt */ 
     set_interrupt_rate(); /* set interrupt freq. */
 }
 
+/**
+ * handler of RTC periodic interrupt
+ * INPUT: none
+ * OUTPUT: set register C of RTC
+ */
 void rtc_handler() {
     cli();
     static char cnt = 'A';
     putc(cnt++);    /* output a char */
-    if(cnt == 'Z') cnt = 'A';
+    if(cnt > 'Z') cnt = 'A';
     outb(MC146818_REGISTER_STATUS_C, MC146818_ADDRESS_REG); /* select register C */
     (void)inb(MC146818_DATA_REG); /* read registers C, this cleares (IRQ) signal */
     send_eoi(RTC_IRQ);  /* end-of-interrupt */

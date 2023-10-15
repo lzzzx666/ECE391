@@ -16,6 +16,9 @@
 #define RTC_IRQ 8
 
 /* initialize rtc */
-extern void rtc_init(); 
+extern void rtc_init();
+
+/* rtc interrupt handler */
+extern void rtc_handler();
 
 #endif
