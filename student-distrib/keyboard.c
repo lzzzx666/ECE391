@@ -38,6 +38,7 @@ void init_keyboard()
 void keyboard_handler()
 {
     cli();
+
     unsigned char scan_code = inb(KEYBOARD_DATA_PORT);
     char ascii;
     if(scan_code >= NUM_SCANCODES)
