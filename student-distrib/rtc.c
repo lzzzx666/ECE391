@@ -3,6 +3,9 @@
 #include "i8259.h"
 #include "lib.h"
 
+volatile unsigned char TEST_RTC = 0;
+char TEST_RTC_CNT = 0;
+
 /**
  * enalbe_inter
  * Enalbe periodic interrupt of RTC
@@ -40,7 +43,7 @@ void set_interrupt_rate() {
 /**
  * rtc_init
  * initialize RTC
- * INPUT: none
+ * INPUT: none1
  * OUTPUT: set register A, B of RTC
  */
 void rtc_init() {
@@ -55,11 +58,36 @@ void rtc_init() {
  */
 void rtc_handler() {
     cli();
+    if(TEST_RTC) {
+        test_interrupts();
+        TEST_RTC_CNT++;
+    }
+    /* output a char */
+#ifdef TEST_PRINT_PERIODIC
     static char cnt = 'A';
-    putc(cnt++);    /* output a char */
+    putc(cnt++);    
     if(cnt > 'Z') cnt = 'A';
+#endif
     outb(MC146818_REGISTER_STATUS_C, MC146818_ADDRESS_REG); /* select register C */
     (void)inb(MC146818_DATA_REG); /* read registers C, this cleares (IRQ) signal */
     send_eoi(RTC_IRQ);  /* end-of-interrupt */
+    sti();
+}
+
+/**
+ * rtc_test_event
+ * Switch whether rtc test (increment video memory) is on
+ * INPUT: none
+ * OUTPUT: restore video memory of test if disabled
+ */
+void rtc_test_event() {
+    cli();
+    TEST_RTC ^= 1;
+    if(!TEST_RTC) {
+        while(TEST_RTC_CNT){
+            test_interrupts();
+            TEST_RTC_CNT++;
+        }
+    }
     sti();
 }

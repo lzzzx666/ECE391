@@ -1,6 +1,8 @@
 #ifndef RTC_H
 #define RTC_H
 
+#include "keyboard.h"
+
 /* MC146818 RTC registers */
 #define MC146818_ADDRESS_REG   0x70
 #define MC146818_DATA_REG      0x71
@@ -14,11 +16,18 @@
 #define INTERRUPT_FREQ (32768 >> (INTERRUPT_RATE - 1))
 
 #define RTC_IRQ 8
+// #define TEST_PRINT_PERIODIC
+
+/* Hotkey to toggle RTC test */
+#define TEST_RTC_HOTKEY TAB
 
 /* initialize rtc */
 extern void rtc_init();
 
 /* rtc interrupt handler */
 extern void rtc_handler();
+
+/* event of rtc test hotkey */
+extern void rtc_test_event();
 
 #endif
