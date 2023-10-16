@@ -10,6 +10,7 @@
 #define PASS 1
 #define FAIL 0
 
+
 /* format these macros as you see fit */
 #define TEST_HEADER \
 	printf("[TEST %s] Running %s at %s:%d\n", __FUNCTION__, __FUNCTION__, __FILE__, __LINE__)
@@ -35,18 +36,53 @@ static inline void assertion_failure()
  * Files: x86_desc.h/S
  */
 
-int idt_test(){
-	
+int idt_test()
+{
+
 	TEST_HEADER;
 	int i;
 	int result = PASS;
-	for (i = 0; i < 10; ++i){
-		if ((idt[i].offset_15_00 == NULL) && 
-			(idt[i].offset_31_16 == NULL)){
+	printf("hah");
+	printf("%d", idt[0].offset_15_00);
+	printf("haha");
+	printf("%d", idt[0].offset_31_16);
+	//   asm volatile("int $0x21");
+	int *a = NULL;
+	int b = *a;
+	// asm volatile("int $13");
+	// int c=1/0;
+	asm volatile(
+		"movl $9, %%eax\n\t"
+		"int $0x80"
+		:
+		:);
+
+	// char c=18345/0;
+	// 	printf("\n");
+
+	// 	printf("%d",idt[0].offset_15_00);
+	// printf("hah");
+	// printf("%d",idt[1].offset_15_00);
+
+	for (i = 0; i < 10; ++i)
+	{
+		if ((idt[i].offset_15_00 == NULL) &&
+			(idt[i].offset_31_16 == NULL))
+		{
+			printf("111");
 			assertion_failure();
 			result = FAIL;
 		}
 	}
+	// printf("ll");
+	// if (result)
+	// {
+	// 	printf("1234");
+	// }
+	// else
+	// {
+	// 	printf("5678");
+	// }
 	return result;
 }
 /* exc_test
@@ -54,38 +90,64 @@ int idt_test(){
  * Outputs: it will print the exception type and then freeze
  * Side Effects: None
  */
-void exc_test(int vector){
-	int test1=0; //some variable used to test
-	int test2=1;
+void exc_test(int vector)
+{
+	TEST_HEADER;
+	int test1 = 0; // some variable used to test
+	int test2 = 1;
 	int test3;
-	int *test4=NULL;
-	if(vector>0x13) return; //we will not use exception greater than 0x13
-	else if(vector==0){     //the divide_error exception
-		test3=test2/test1;
-	}else if(vector==14){   //the page_fault exception
-		test3=*test4;
-	}else{
-		switch(vector){		//other exception, use int to trigger
-			case 1:asm volatile("int $1");
-			case 2:asm volatile("int $2");
-			case 3:asm volatile("int $3");
-			case 4:asm volatile("int $4");
-			case 5:asm volatile("int $5");
-			case 6:asm volatile("int $6");
-			case 7:asm volatile("int $7");
-			case 8:asm volatile("int $8");
-			case 9:asm volatile("int $9");
-			case 10:asm volatile("int $10");
-			case 11:asm volatile("int $11");
-			case 12:asm volatile("int $12");
-			case 13:asm volatile("int $13");
-			case 15:asm volatile("int $15");
-			case 16:asm volatile("int $16");
-			case 17:asm volatile("int $17");
-			case 18:asm volatile("int $18");
-			case 19:asm volatile("int $19");
+	int *test4 = NULL;
+	if (vector > 0x13)
+		return; // we will not use exception greater than 0x13
+	else if (vector == 0)
+	{ // the divide_error exception
+		test3 = test2 / test1;
+	}
+	else if (vector == 14)
+	{ // the page_fault exception
+		test3 = *test4;
+	}
+	else
+	{
+		switch (vector)
+		{ // other exception, use int to trigger
+		case 1:
+			asm volatile("int $1");
+		case 2:
+			asm volatile("int $2");
+		case 3:
+			asm volatile("int $3");
+		case 4:
+			asm volatile("int $4");
+		case 5:
+			asm volatile("int $5");
+		case 6:
+			asm volatile("int $6");
+		case 7:
+			asm volatile("int $7");
+		case 8:
+			asm volatile("int $8");
+		case 9:
+			asm volatile("int $9");
+		case 10:
+			asm volatile("int $10");
+		case 11:
+			asm volatile("int $11");
+		case 12:
+			asm volatile("int $12");
+		case 13:
+			asm volatile("int $13");
+		case 15:
+			asm volatile("int $15");
+		case 16:
+			asm volatile("int $16");
+		case 17:
+			asm volatile("int $17");
+		case 18:
+			asm volatile("int $18");
+		case 19:
+			asm volatile("int $19");
 		};
-
 	}
 }
 
@@ -109,6 +171,7 @@ void exc_test(int vector){
  */
 int page_test(int vec)
 {
+	TEST_HEADER;
 	char test;
 	int result = PASS;
 	int i;
@@ -163,7 +226,6 @@ int page_test(int vec)
 /* Test suite entry point */
 void launch_tests()
 {
-
 	TEST_OUTPUT("idt_test", idt_test());
 	TEST_OUTPUT("page_test", page_test(0));
 	// exc_test(1);
