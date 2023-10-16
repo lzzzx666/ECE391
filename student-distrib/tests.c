@@ -63,8 +63,9 @@ void exc_test(int vector)
 	int test2 = 1;
 	int test3;
 	int *test4 = NULL;
-	if (vector > 0x13)
-		return; // we will not use exception greater than 0x13
+	if (vector > 0x13 && vector!=0 && vector!=0x80  && vector!=0x21 && vector!=0x28){ //those are valid idt number
+		printf("idt entry does not exist!");
+		return;} // we will not use exception greater than 0x13
 	else if (vector == 0)
 	{ // the divide_error exception
 		test3 = test2 / test1;
@@ -79,40 +80,63 @@ void exc_test(int vector)
 		{ // other exception, use int to trigger
 		case 1:
 			asm volatile("int $1");
+			break;
 		case 2:
 			asm volatile("int $2");
+			break;
 		case 3:
 			asm volatile("int $3");
+			break;
 		case 4:
 			asm volatile("int $4");
+			break;
 		case 5:
 			asm volatile("int $5");
+			break;
 		case 6:
 			asm volatile("int $6");
+			break;
 		case 7:
 			asm volatile("int $7");
+			break;
 		case 8:
 			asm volatile("int $8");
+			break;
 		case 9:
 			asm volatile("int $9");
+			break;
 		case 10:
 			asm volatile("int $10");
+			break;
 		case 11:
 			asm volatile("int $11");
+			break;
 		case 12:
 			asm volatile("int $12");
+			break;
 		case 13:
 			asm volatile("int $13");
+			break;
 		case 15:
 			asm volatile("int $15");
+			break;
 		case 16:
 			asm volatile("int $16");
+			break;
 		case 17:
 			asm volatile("int $17");
+			break;
 		case 18:
 			asm volatile("int $18");
+			break;
 		case 19:
 			asm volatile("int $19");
+			break;
+		case 0x80:
+			asm volatile(
+			"movl $0,%%eax\n\t" //0 is the system call parameter
+			"int $0x80"
+			::);
 		};
 	}
 }
@@ -192,7 +216,8 @@ int page_test(int vec)
 /* Test suite entry point */
 void launch_tests()
 {
+
 	TEST_OUTPUT("idt_test", idt_test());
 	// TEST_OUTPUT("page_test", page_test(0));
-	// exc_test(1);
+	// exc_test(0);
 }
