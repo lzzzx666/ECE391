@@ -1,10 +1,8 @@
-#include "tests.h"
 #include "x86_desc.h"
 #include "lib.h"
 #include "../syscalls/ece391support.h"
 #include "i8259.h"
 #include "idt.h"
-#include "idt_linkage.h"
 #include "page.h"
 #include "rtc.h"
 #define PASS 1
