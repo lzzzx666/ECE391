@@ -104,9 +104,6 @@ int page_init()
     /*set page table for page table. To avoid access to video memory
     failed, set the map to its original address*/
     set_pte(&pageTable, VIDEO >> 12, 0, VIDEO >> 12);
-    set_pte(&pageTable, (VIDEO >> 12) + 1, 0, (VIDEO >> 12) + 1);
-    set_pte(&pageTable, (VIDEO >> 12) + 2, 0, (VIDEO >> 12) + 2);
-    set_pte(&pageTable, (VIDEO >> 12) + 3, 0, (VIDEO >> 12) + 3);
 
     /*set page directory entry 0 and 1. 0 for page table
      occupied by video memory, 1 for kernel code    */
