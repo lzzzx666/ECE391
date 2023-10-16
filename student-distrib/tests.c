@@ -89,7 +89,71 @@ void exc_test(int vector){
 	}
 }
 
-// add more tests here
+/**
+ * Perform memory access tests based on the specified test vector.
+ *
+ * This function performs memory access tests to verify the accessibility of
+ * different memory regions based on the provided test vector. It checks for
+ * read access and returns a result code.
+ *
+ * @param vec - Test vector specifying the memory region to test:
+ *   - 0: Valid video memory test.
+ *   - 1: Valid kernel memory test.
+ *   - 2: Invalid memory access (NULL pointer).
+ *   - 3: Invalid memory access (before video memory).
+ *   - 4: Invalid memory access (beyond video memory).
+ *   - 5: Invalid memory access (beyond kernel memory).
+ *   - 6: Invalid memory access (before kernel memory).
+ *
+ * @return PASS if memory access is successful for the specified test, FAIL otherwise.
+ */
+int page_test(int vec)
+{
+	char test;
+	int result = PASS;
+	int i;
+	switch (vec)
+	{
+	case 0:
+		for (i = 0; i < 0x0FFF; i++) // vmem has 2^12 entries
+		{
+			test = *((char *)VIDEO + i);
+		}
+		TEST_OUTPUT("valid video memory test", result);
+		break;
+	case 1:
+		for (i = 0; i < 4 * 1024 * 1024; i++) // kernel mem is 4mb = 4*1024*1024 bytes
+		{
+			test = *((char *)KERNEL_START_ADDR + i);
+		}
+		TEST_OUTPUT("valid kernel memory test", result);
+		break;
+	case 2:
+		test = *((char *)NULL); // dereference NULL pointer
+		result = FAIL;
+		break;
+	case 3:
+		test = *((char *)VIDEO - 1); // 1 byte before vmem
+		result = FAIL;
+		break;
+	case 4:
+		test = *((char *)VIDEO + 0x1000); // 1 byte beyond vmem. 0x1000=0x0fff+1
+		result = FAIL;
+		break;
+	case 5:
+		test = *((char *)KERNEL_START_ADDR - 1); // 1 byte before kmem 4mb-1
+		result = FAIL;
+		break;
+	case 6:
+		test = *((char *)(8 * 1024 * 1024)); // 1 byte beyond kmem 8mb = 8*1024*1024
+		result = FAIL;
+		break;
+	default:
+		break;
+	}
+
+	return result;
+}
 
 /* Checkpoint 2 tests */
 /* Checkpoint 3 tests */
@@ -99,7 +163,8 @@ void exc_test(int vector){
 /* Test suite entry point */
 void launch_tests()
 {
-	exc_test(1);
+
 	TEST_OUTPUT("idt_test", idt_test());
-	// launch your tests here
+	TEST_OUTPUT("page_test", page_test(0));
+	// exc_test(1);
 }
