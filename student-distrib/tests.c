@@ -36,58 +36,18 @@ static inline void assertion_failure()
  */
 
 int idt_test(){
-
+	
 	TEST_HEADER;
 	int i;
 	int result = PASS;
-	printf("hah");
-	printf("%d", idt[0].offset_15_00);
-	printf("haha");
-	printf("%d", idt[0].offset_31_16);
-	//   asm volatile("int $0x21");
-	int *a=NULL;
-	int b=*a;
-	// asm volatile("int $13");
-	// int c=1/0;
-	asm volatile(
-        "movl $9, %%eax\n\t"
-        "int $0x80"
-        : 
-        : 
-    );
- while (1)
-	{
-		// printf("ha");
-	}
-
-	// char c=18345/0;
-	// 	printf("\n");
-
-	// 	printf("%d",idt[0].offset_15_00);
-	// printf("hah");
-	// printf("%d",idt[1].offset_15_00);
-
-	for (i = 0; i < 10; ++i)
-	{
-		if ((idt[i].offset_15_00 == NULL) &&
-			(idt[i].offset_31_16 == NULL))
-		{
-			printf("111");
+	for (i = 0; i < 10; ++i){
+		if ((idt[i].offset_15_00 == NULL) && 
+			(idt[i].offset_31_16 == NULL)){
 			assertion_failure();
 			result = FAIL;
 		}
 	}
-	// printf("ll");
-	// if (result)
-	// {
-	// 	printf("1234");
-	// }
-	// else
-	// {
-	// 	printf("5678");
-	// }
 	return result;
-
 }
 /* exc_test
  * Inputs: vector: the exception vector number
