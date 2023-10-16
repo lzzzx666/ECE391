@@ -12,3 +12,16 @@ MP3.1
         fix takes: 10 min
         how to fix: Referring to datasheet of RTC chip, IRQ pin of RTC should be cleared by reading register C when a RTC
                     interrupt is handled so that the next interrupt can be invoked.
+
+    BUG3
+        description: paging can be enabled but the page directory is not correct.
+        find takes: 2 hrs
+        fix takes: 20 min
+        how to fix: align the page table and page directory to 4*1024 to make the first 
+                    entries in them are aligned.
+                    
+    BUG4
+	    description:multiple definition of xxxxxx function
+	    find takes:30min
+	    how to fix:I have two files named idt.c and idt.S, they will both generate the idt.o file, so 
+		            confliction happans. I rename idt.S to idt_linkage.S
