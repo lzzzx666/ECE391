@@ -1,7 +1,6 @@
 #include "rtc.h"
 #include "lib.h"
 #include "i8259.h"
-#include "lib.h"
 
 volatile unsigned char TEST_RTC = 0;
 char TEST_RTC_CNT = 0;
