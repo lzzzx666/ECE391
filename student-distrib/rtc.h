@@ -11,6 +11,28 @@
 #define MC146818_REGISTER_STATUS_B      0x0B
 #define MC146818_REGISTER_STATUS_C      0x0C
 
+/**
+ * REGISTER B
+ *   MSB                                         LSB
+ * +-----+-----+-----+-----+------+----+-------+-----+
+ * |  b7 |  b6 |  b5 |  b4 |  b3  | b2 |  bl   | bO  |  R/W Register
+ * +-----+-----+-----+-----+------+----+-------+-----+
+ * | SET | PIE | AIE | UIE | SQWE | DM | 24/12 | DSE |
+ * +-----+-----+-----+-----+------+----+-------+-----+ 
+ * 
+ * 
+ * REGISTER A
+ *   MSB                                         LSB
+ * +-----+-----+-----+-----+-----+-----+-----+-----+ 
+ * | b7  | b6  | b5  | b4  | b3  | b2  | b1  | bO  |  R/W Register except UIP
+ * +-----+-----+-----+-----+-----+-----+-----+-----+ 
+ * | UIP | DV2 | DV1 | DV0 | RS3 | RS2 | RS1 | RS0 |
+ * +-----+-----+-----+-----+-----+-----+-----+-----+ 
+ * 
+ */
+
+#define CMOS_NMI_DISABLE 0x80
+
 /* Interrupt freq. */
 #define INTERRUPT_RATE 0xF
 #define INTERRUPT_FREQ (32768 >> (INTERRUPT_RATE - 1))

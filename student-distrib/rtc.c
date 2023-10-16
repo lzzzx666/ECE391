@@ -14,10 +14,11 @@ char TEST_RTC_CNT = 0;
 void enalbe_inter() {
     cli();
     unsigned char prev_status_b;
-    outb(MC146818_REGISTER_STATUS_B, MC146818_ADDRESS_REG); /* select register B */
+    outb(MC146818_REGISTER_STATUS_B | CMOS_NMI_DISABLE, MC146818_ADDRESS_REG); /* select register B, disalbe NMI */
     prev_status_b = inb(MC146818_DATA_REG); /* get previous value of B */
-    outb(MC146818_REGISTER_STATUS_B, MC146818_ADDRESS_REG); /* select register B */
-    outb(prev_status_b | 0x40 , MC146818_DATA_REG); /* set PIE to enale periodic interrupt */
+    outb(MC146818_REGISTER_STATUS_B | CMOS_NMI_DISABLE, MC146818_ADDRESS_REG); /* select register B, disalbe NMI  */
+    outb((prev_status_b & 0x70) | 0x40 , MC146818_DATA_REG); /* set PIE to enale periodic interrupt, and clear AIE, UIE */
+    outb(MC146818_REGISTER_STATUS_B, MC146818_ADDRESS_REG); /* enable NMI  */
     enable_irq(RTC_IRQ);    /* enable IRQ8 */
     sti();
 }
@@ -31,10 +32,11 @@ void enalbe_inter() {
 void set_interrupt_rate() {
     cli();
     unsigned char prev_status_a;
-    outb(MC146818_REGISTER_STATUS_A, MC146818_ADDRESS_REG); /* select register A */
+    outb(MC146818_REGISTER_STATUS_A | CMOS_NMI_DISABLE, MC146818_ADDRESS_REG); /* select register A, disalbe NMI  */
     prev_status_a = inb(MC146818_DATA_REG); /* previous value of registers A */
-    outb(MC146818_REGISTER_STATUS_A, MC146818_ADDRESS_REG); /* select register A */
+    outb(MC146818_REGISTER_STATUS_A | CMOS_NMI_DISABLE, MC146818_ADDRESS_REG); /* select register A, disalbe NMI  */
     outb((prev_status_a & 0xF0) | INTERRUPT_RATE, MC146818_DATA_REG); /* write new interrupt rate : 2 Hz */
+    outb(MC146818_REGISTER_STATUS_A, MC146818_ADDRESS_REG); /* enable NMI  */
     sti();  
 }
 
