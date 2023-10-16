@@ -39,6 +39,8 @@ common_linkage:
     jmp tear_down
 
 syscall_linkage:
+    cmpl $10,%eax
+    ja tear_down
     pushl %edx
     pushl %ecx
     pushl %ebx
