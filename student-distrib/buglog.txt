@@ -5,3 +5,10 @@ MP3.1
         fix takes: 15 min
         how to fix: we examine the value of master_mask, found that the value of master_mask and inb(data_port of master)
             are not the same, eventually we fixed it at the init_pic() that outb(master_mask) before enable_irq(2);
+
+    BUG2
+        description: RTC interrupt only be invoked one time.
+        find takes: 20 min
+        fix takes: 10 min
+        how to fix: Referring to datasheet of RTC chip, IRQ pin of RTC should be cleared by reading register C when a RTC
+                    interrupt is handled so that the next interrupt can be invoked.
