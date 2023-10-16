@@ -15,45 +15,46 @@ set_cr:
 	movl %eax,%cr0
 	ret
 
-set_cr0:
-	pushl %ecx
-	movl %cr0,%ecx
-	orl %eax,%ecx
-    movl %ecx,%cr0
-	popl %ecx
-    ret
 
-set_cr2:
-    movl %eax,%cr2
-    ret
+# set_cr0:
+# 	pushl %ecx
+# 	movl %cr0,%ecx
+# 	orl %eax,%ecx
+#     movl %ecx,%cr0
+# 	popl %ecx
+#     ret
 
-set_cr3:  
-    movl %eax,%cr3
-    ret
+# set_cr2:
+#     movl %eax,%cr2
+#     ret
 
-set_cr4:
-	pushl %ecx
-	movl %cr4,%ecx
-	orl %eax,%ecx
-    movl %ecx,%cr4
-	popl %ecx
-    ret
+# set_cr3:  
+#     movl %eax,%cr3
+#     ret
 
-get_cr0:
-	movl %cr0,%eax
-	ret
+# set_cr4:
+# 	pushl %ecx
+# 	movl %cr4,%ecx
+# 	orl %eax,%ecx
+#     movl %ecx,%cr4
+# 	popl %ecx
+#     ret
 
-get_cr2:
-	movl %cr2,%eax
-	ret
+# get_cr0:
+# 	movl %cr0,%eax
+# 	ret
 
-get_cr3:
-	movl %cr3,%eax
-	ret
+# get_cr2:
+# 	movl %cr2,%eax
+# 	ret
 
-get_cr4:
-	movl %cr4,%eax
-	ret
+# get_cr3:
+# 	movl %cr3,%eax
+# 	ret
+
+# get_cr4:
+# 	movl %cr4,%eax
+# 	ret
 
 
 
