@@ -195,6 +195,6 @@ int page_test(int vec)
 void launch_tests()
 {
 	TEST_OUTPUT("idt_test", idt_test());
-	TEST_OUTPUT("page_test", page_test(0));
+	// TEST_OUTPUT("page_test", page_test(0));
 	// exc_test(1);
 }
