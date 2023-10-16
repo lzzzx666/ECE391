@@ -3,6 +3,21 @@
 #include "x86_desc.h"
 #include "lib.h"
 #include "systemcall.h"
+#include "types.h"
+
+/*the macros for useful value*/
+#define SYS_CALL_VEC 0x80 //0x80 is the vector number for system call
+#define INT_START 0x20    //0x20 is the beginning number for interrupt
+#define INT_END   0x2F  //0x2F is the end number for interrupt
+#define MAX_EXCEPTION 0x13 //0x13 is the maximum exception vector that is used
+#define IDT_NUMBER   256   //256 is the number of idt entries
+#define DPL_0        0     //0 is the 0 dpl
+#define DPL_3        3     //0 is the 0 dpl
+#define INT_KEYBOARD     0x21  //0x21 is the vector number for the keyboard
+#define INT_RTC     0x28  //0x21 is the vector number for the RTC
+#define PRESENT  1     //1 to indicate the handler is present
+// #define INT_GATE  0xE  //0xE is the interrupt gate
+// #define TRAP_GATE  0xF  //0xE is the interrupt gate
 
 /*the whole interrupt descriptor table*/
 extern idt_desc_t idt[NUM_VEC];
@@ -32,9 +47,9 @@ enum idt_type{
     ALIGNMENT_CHECK,
     MACHINE_CHECK,
     SIMD_FLOATING_POINT_EXCEPTION,
-    KEYBOARD=0x21,
-    REAL_TIME_CLOCK=0x28,
-    SYSTEM_CALL=0x80
+    KEYBOARD=0x21,  //0x21 is the vector number of keyboard
+    REAL_TIME_CLOCK=0x28, //0x28 is the vector number of RTC
+    SYSTEM_CALL=0x80 //0x80 is the system call entry
     };
 
 /*it will initialize the IDT*/
