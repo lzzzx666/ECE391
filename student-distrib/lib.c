@@ -2,12 +2,10 @@
  * vim:ts=4 noexpandtab */
 
 #include "lib.h"
+#include "terminal.h"
 
-
-static int screen_x;
-static int screen_y;
 static char* video_mem = (char *)VIDEO;
-
+extern terminal_t main_terminal;
 /* void clear(void);
  * Inputs: void
  * Return Value: none
@@ -18,6 +16,8 @@ void clear(void) {
         *(uint8_t *)(video_mem + (i << 1)) = ' ';
         *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB;
     }
+    main_terminal.cursor_x = main_terminal.cursor_y = 0;
+    update_cursor(0,0);
 }
 
 /* Standard printf().
@@ -159,23 +159,103 @@ int32_t puts(int8_t* s) {
     return index;
 }
 
+void scroll_up()
+{
+    int x, y;
+    for (y = 0; y < NUM_ROWS - 1; y++) // fill up the screen except the last row
+    {
+        for (x = 0; x < NUM_COLS; x++) 
+        {
+            *(uint8_t *)(video_mem + ((y * NUM_COLS + x) << 1)) = *(uint8_t *)(video_mem + ((y * NUM_COLS + x) << 1));
+            *(uint8_t *)(video_mem + (((y * NUM_COLS + x) << 1) + 1)) = ATTRIB;
+        }
+    }
+    main_terminal.cursor_y--;
+    for(x = 0; x < NUM_COLS; x++) // fill up the last row of screen
+    {
+        *(uint8_t *)(video_mem + ((NUM_COLS * (NUM_ROWS - 1) + x) << 1)) = ' ';
+        *(uint8_t *)(video_mem + (((NUM_COLS * (NUM_ROWS - 1) + x) << 1) + 1)) = ATTRIB;
+    }
+}
 /* void putc(uint8_t c);
  * Inputs: uint_8* c = character to print
  * Return Value: void
  *  Function: Output a character to the console */
 void putc(uint8_t c) {
     if(c == '\n' || c == '\r') {
-        screen_y++;
-        screen_x = 0;
-    } else {
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
-        screen_x++;
-        screen_x %= NUM_COLS;
-        screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
+        main_terminal.cursor_y++;
+        main_terminal.cursor_x = 0;
+        if (main_terminal.cursor_y >= NUM_ROWS)
+        {
+            scroll_up();
+        }
+        update_cursor(main_terminal.cursor_x, main_terminal.cursor_y);
+    } 
+    else 
+    {
+        *(uint8_t *)(video_mem + ((NUM_COLS * main_terminal.cursor_y + main_terminal.cursor_x) << 1)) = c;
+        *(uint8_t *)(video_mem + ((NUM_COLS * main_terminal.cursor_y + main_terminal.cursor_x) << 1) + 1) = ATTRIB;
+        main_terminal.cursor_x++;
+        if(main_terminal.cursor_x == NUM_COLS)// user input more than 80 characters
+        {
+            main_terminal.cursor_y++;
+            main_terminal.cursor_x = 0;
+            if (main_terminal.cursor_y >= NUM_ROWS)
+            {
+                scroll_up();// now we can implement scrolling in putc
+            }
+            update_cursor(main_terminal.cursor_x, main_terminal.cursor_y);
+        }
+       update_cursor(main_terminal.cursor_x, main_terminal.cursor_y);
+
     }
 }
+void backspace(void)
+{
+    if (main_terminal.cursor_x == 0) // when backspace to last line
+    {
+        main_terminal.cursor_y--;
+        main_terminal.cursor_x = NUM_COLS - 1;
+    }
+	else   main_terminal.cursor_x--;
+    *(uint8_t *)(video_mem + ((NUM_COLS * main_terminal.cursor_y + main_terminal.cursor_x) << 1)) = ' ';
+    *(uint8_t *)(video_mem + ((NUM_COLS * main_terminal.cursor_y + main_terminal.cursor_x) << 1) + 1) = ATTRIB;
+    update_cursor(main_terminal.cursor_x, main_terminal.cursor_y);
+}
 
+void enable_cursor(uint8_t cursor_start, uint8_t cursor_end)
+{
+	outb(0x0A, 0x3D4);
+	outb((inb(0x3D5) & 0xC0) | cursor_start, 0x3D5);
+	outb(0x0B, 0x3D4);
+	outb((inb(0x3D5) & 0xE0) | cursor_end, 0x3D5 );
+}
+void disable_cursor(void)
+{
+	outb(0x0A, 0x3D4);	
+	outb(0x20, 0x3D5);	
+}
+void update_cursor(int x, int y)
+{
+    if(x == NUM_COLS)   
+    {
+        x = 0, y++;
+    }
+	uint16_t pos = y * NUM_COLS + x;
+	outb(0x0F, 0x3D4);
+	outb((uint8_t) (pos & 0xFF), 0x3D5);
+	outb(0x0E, 0x3D4);
+	outb((uint8_t) ((pos >> 8) & 0xFF), 0x3D5);
+}
+uint16_t get_cursor_position(void)
+{
+    uint16_t pos = 0;
+    outb(0x0F, 0x3D4);
+    pos |= inb(0x3D5);
+    outb(0x0E, 0x3D4);
+    pos |= ((uint16_t)inb(0x3D5)) << 8;
+    return pos;
+}
 /* int8_t* itoa(uint32_t value, int8_t* buf, int32_t radix);
  * Inputs: uint32_t value = number to convert
  *            int8_t* buf = allocated buffer to place string in
