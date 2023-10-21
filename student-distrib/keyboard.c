@@ -72,13 +72,17 @@ void keyboard_handler()
     {
         case TAB: break;
         case BACKSPACE:
-            main_terminal.terminal_buf[--main_terminal.count] = '\0'; // overwrite the original content with '\0'
-            backspace(); // change screen x and y
-            break;
+            if(main_terminal.count > 0)
+            {
+                main_terminal.terminal_buf[--main_terminal.count] = '\0'; // overwrite the original content with '\0'
+                backspace(); // change screen x and y   
+            }
+            break;    
         case ENTER: 
             main_terminal.terminal_buf[main_terminal.count++] = '\n'; //add a \n at the end
             main_terminal.enter_pressed = 1;
             putc('\n');
+            terminal_read(0, keyboard_buffer, main_terminal.count);
             break;
         case CAPS_LOCK: 
             capslock_pressed = 1 - capslock_pressed; break;

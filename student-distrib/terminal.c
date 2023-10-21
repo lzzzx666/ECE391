@@ -56,5 +56,7 @@ int32_t terminal_write(int32_t fd, void *buf, int32_t nbytes)
 void terminal_clear()
 {
     clear();
+    main_terminal.count = main_terminal.enter_pressed = 0;
+    memset((void*)main_terminal.terminal_buf, '\0', MAX_TERMINAL_SIZE);
 }
 

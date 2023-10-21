@@ -166,7 +166,7 @@ void scroll_up()
     {
         for (x = 0; x < NUM_COLS; x++) 
         {
-            *(uint8_t *)(video_mem + ((y * NUM_COLS + x) << 1)) = *(uint8_t *)(video_mem + ((y * NUM_COLS + x) << 1));
+            *(uint8_t *)(video_mem + ((y * NUM_COLS + x) << 1)) = *(uint8_t *)(video_mem + (((y + 1) * NUM_COLS + x) << 1));
             *(uint8_t *)(video_mem + (((y * NUM_COLS + x) << 1) + 1)) = ATTRIB;
         }
     }

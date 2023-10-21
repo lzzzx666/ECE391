@@ -21,7 +21,5 @@ int32_t terminal_write(int32_t fd, void *buf, int32_t nbytes);
 int32_t terminal_open(const char *filename);
 int32_t terminal_close(int32_t fd);
 void terminal_clear();
-
-
 #endif
 
