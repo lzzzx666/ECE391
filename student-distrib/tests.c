@@ -24,6 +24,27 @@ static inline void assertion_failure()
 
 /* Checkpoint 1 tests */
 
+
+
+
+
+void rtc_test() {
+	puts("==RTC==");
+	uint32_t fd = rtc_open();
+	uint32_t freq, j;
+	for (freq = 2; freq <= 0xF0; freq <<= 1) {
+		rtc_write(fd, &freq, sizeof(freq));
+		printf(" f=%d;", freq);
+		for(j = 0; j < 12; j++) {
+			rtc_read(fd, NULL, 0);
+			putc('A' + j);
+		}
+	}
+	rtc_close(fd);
+}
+
+
+
 /* IDT Test - Example
  *
  * Asserts that first 10 IDT entries are not NULL
@@ -49,6 +70,7 @@ int idt_test()
 			result = FAIL;
 		}
 	}
+	rtc_test();
 	return result;
 }
 /* exc_test

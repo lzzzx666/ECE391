@@ -34,8 +34,11 @@
 #define CMOS_NMI_DISABLE 0x80
 
 /* Interrupt freq. */
-#define INTERRUPT_RATE 0xF
-#define INTERRUPT_FREQ (32768 >> (INTERRUPT_RATE - 1))
+#define INTERRUPT_RATE_2Hz 0xF
+#define INTERRUPT_FREQ (0xF0 >> (INTERRUPT_RATE - 1))
+
+#define RTC_VALID_FREQ(x) ((x) >= 2 && (x) <= 0xF0 && (!((x) & ((x)-1))))
+#define RTC_FREQ2RATE(freq) (16 - (_log2(freq)))
 
 #define RTC_IRQ 8
 // #define TEST_PRINT_PERIODIC
@@ -51,5 +54,13 @@ extern void rtc_handler();
 
 /* event of rtc test hotkey */
 extern void rtc_test_event();
+
+extern int rtc_open();
+
+extern int rtc_close(int32_t fd);
+
+extern int rtc_write(int32_t fd, const void* buf, int32_t nbytes);
+
+extern int rtc_read(int32_t fd, const void* buf, int32_t nbytes);
 
 #endif
