@@ -5,6 +5,10 @@
 volatile unsigned char test_rtc = 0;
 char test_rtc_cnt = 0;
 
+#ifdef RTC_VIRTUALIZE
+uint32_t current_freq = 2;
+uint32_t time_tick = 0; /* every 1 tick : 1sec / (INTERRUPT_FREQ_HI * current_freq) */
+#endif /* RTC_VIRTUALIZE */
 volatile unsigned char interrtupt_occured = 0;
 
 /**
@@ -74,7 +78,20 @@ void rtc_handler() {
     outb(MC146818_REGISTER_STATUS_C, MC146818_ADDRESS_REG); /* select register C */
     (void)inb(MC146818_DATA_REG); /* read registers C, this cleares (IRQ) signal */
     send_eoi(RTC_IRQ);  /* end-of-interrupt */
+#ifdef RTC_VIRTUALIZE
+    time_tick += current_freq;
+    /* if (inter_count / INTERRUPT_FREQ_HI >= 1 / current_freq) */
+    /* if(inter_count * current_freq >= INTERRUPT_FREQ_HI) {
+        inter_count = 0;
+        interrtupt_occured = 1;
+    } */
+    if(time_tick >= INTERRUPT_FREQ_HI) {
+        time_tick -= INTERRUPT_FREQ_HI;
+        interrtupt_occured = 1;
+    }
+#else
     interrtupt_occured = 1;
+#endif /* RTC_VIRTUALIZE */
     sti();
 }
 
@@ -103,7 +120,11 @@ int _log2(int n) {
 }
 
 int rtc_open() {
+#ifdef RTC_VIRTUALIZE
+    set_interrupt_rate(INTERRUPT_RATE_HI);
+#else
     set_interrupt_rate(INTERRUPT_RATE_2Hz);
+#endif /* RTC_VIRTUALIZE */
     return 0;
 }
 
@@ -114,8 +135,14 @@ int rtc_close(int32_t fd) {
 int rtc_write(int32_t fd, const void* buf, int32_t nbytes) {
     if(nbytes != sizeof(uint32_t)) return -1;
     uint32_t freq = *((uint32_t*)buf);
+#ifdef RTC_VIRTUALIZE
+    set_interrupt_rate(INTERRUPT_RATE_HI);
+    time_tick = 0;
+    current_freq = freq;
+#else
     if(!RTC_VALID_FREQ(freq)) return -1;
     set_interrupt_rate(RTC_FREQ2RATE(freq));
+#endif
     return 0;
 }
 

@@ -34,11 +34,18 @@
 #define CMOS_NMI_DISABLE 0x80
 
 /* Interrupt freq. */
-#define INTERRUPT_RATE_2Hz 0xF
+#define INTERRUPT_RATE_2Hz 15
+#define INTERRUPT_RATE_HI 6
+#define INTERRUPT_FREQ_HI (32768 >> (INTERRUPT_RATE_HI - 1))
 /* interrupt frequency is (32768 >> (INTERRUPT_RATE - 1)) */
 
-#define RTC_VALID_FREQ(x) ((x) >= 2 && (x) <= 0xF0 && (!((x) & ((x)-1))))
-#define RTC_FREQ2RATE(freq) (16 - (_log2(freq)))
+#define RTC_VIRTUALIZE
+
+#ifndef RTC_VIRTUALIZE
+#define RTC_VALID_FREQ(x) ((x) >= 2 && (x) <= INTERRUPT_FREQ_HI && (!((x) & ((x)-1))))
+#define RTC_FREQ2RATE(freq) (INTERRUPT_RATE_2Hz - (_log2(freq)) + 1)
+#endif /* RTC_VIRTUALIZE */
+
 
 #define RTC_IRQ 8
 // #define TEST_PRINT_PERIODIC
