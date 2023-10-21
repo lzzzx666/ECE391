@@ -5,6 +5,7 @@
 #include "i8259.h"
 #include "lib.h"
 
+#define READ_MAX_SIZE 127
 #define KEYBOARD_DATA_PORT 0x60
 #define REGISTER_PORT 0x64
 #define KEYBOARD_IRQ 1
