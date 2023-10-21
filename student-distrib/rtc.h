@@ -35,7 +35,7 @@
 
 /* Interrupt freq. */
 #define INTERRUPT_RATE_2Hz 0xF
-#define INTERRUPT_FREQ (0xF0 >> (INTERRUPT_RATE - 1))
+/* interrupt frequency is (32768 >> (INTERRUPT_RATE - 1)) */
 
 #define RTC_VALID_FREQ(x) ((x) >= 2 && (x) <= 0xF0 && (!((x) & ((x)-1))))
 #define RTC_FREQ2RATE(freq) (16 - (_log2(freq)))

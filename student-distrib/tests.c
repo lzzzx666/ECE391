@@ -27,15 +27,15 @@ static inline void assertion_failure()
 
 
 
-
+/* test : change rtc freq */
 void rtc_test() {
 	puts("==RTC==");
 	uint32_t fd = rtc_open();
 	uint32_t freq, j;
-	for (freq = 2; freq <= 0xF0; freq <<= 1) {
+	for (freq = 2; freq <= 0xF000; freq <<= 1) {
 		rtc_write(fd, &freq, sizeof(freq));
-		printf(" f=%d;", freq);
-		for(j = 0; j < 12; j++) {
+		printf("\nfrequency: %d;\n", freq);
+		for(j = 0; j < 26; j++) {
 			rtc_read(fd, NULL, 0);
 			putc('A' + j);
 		}
