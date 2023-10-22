@@ -272,5 +272,7 @@ int test_terminal(){
 /* Test suite entry point */
 void launch_tests()
 {
-	test_terminal();
+
+	TEST_OUTPUT("idt_test", idt_test());
+	// exc_test(0);
 }
