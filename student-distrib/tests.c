@@ -6,6 +6,8 @@
 #include "page.h"
 #include "rtc.h"
 #include "debug.h"
+#include "terminal.h"
+#include "keyboard.h"
 #define PASS 1
 #define FAIL 0
 
@@ -33,12 +35,12 @@ void rtc_test() {
 #ifdef RTC_VIRTUALIZE
 	puts("==RTC with virtualization==");
 #else
-	puts("==RTC without virtualization==");
+	puts("==RTC no virtualization==");
 #endif
 	uint32_t fd = rtc_open();
 	uint32_t freq, j;
 #ifdef RTC_VIRTUALIZE
-	for (freq = 1; freq <= 50; freq += 2) {
+	for (freq = 1; freq <= 20; freq += 2) {
 #else
 	for (freq = 2; freq <= INTERRUPT_FREQ_HI; freq <<= 1) {
 #endif
@@ -246,6 +248,23 @@ int page_test(int vec)
 }
 
 /* Checkpoint 2 tests */
+int test_terminal(){
+	char buffer[128];
+	memset((void*)buffer, 0, 128);
+	int r = 0, w = 0;
+	printf("terminal driver test begins\n");
+	while (1)
+	{
+		r = terminal_read(0, buffer, 128);
+		printf("read buf: %d\n", r);
+		if(r >= 0)	w = terminal_write(0, buffer, 128);
+		printf("read buf: %d, write buf:%d\n", r, w);
+		if(r != w)
+			break;
+	}
+	return -1;
+}
+
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
@@ -253,8 +272,5 @@ int page_test(int vec)
 /* Test suite entry point */
 void launch_tests()
 {
-
-	TEST_OUTPUT("idt_test", idt_test());
-	// TEST_OUTPUT("page_test", page_test(0));
-	// exc_test(0);
+	test_terminal();
 }

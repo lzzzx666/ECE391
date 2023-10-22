@@ -46,8 +46,6 @@ char scan_code_set_capsandshift[NUM_SCANCODES] =
 
 void init_keyboard()
 {
-    // while(inb(0x64) & 1);
-    // outb(0xFA, 0x64);
     enable_irq(KEYBOARD_IRQ);
 }
 
@@ -62,15 +60,6 @@ void keyboard_handler()
     cli();
     unsigned char scan_code = inb(KEYBOARD_DATA_PORT);
     char ascii;
-   /* if(scan_code >= NUM_SCANCODES)
-    {
-        send_eoi(KEYBOARD_IRQ);
-        sti();
-        return;
-    } */
-    // if (scan_code == TEST_RTC_HOTKEY)
-    //     rtc_test_event(); 
-        // printf("(%x)", scan_code);
     switch (scan_code)
     {
         case TAB: break;
@@ -85,7 +74,7 @@ void keyboard_handler()
             main_terminal.terminal_buf[main_terminal.count++] = '\n'; //add a \n at the end
             main_terminal.enter_pressed = 1;
             putc('\n');
-            terminal_read(0, keyboard_buffer, main_terminal.count);
+            //terminal_read(0, keyboard_buffer, main_terminal.count);
             break;
         case CAPS_LOCK: 
             capslock_pressed = 1 - capslock_pressed; break;
