@@ -1,7 +1,7 @@
 #include "terminal.h"
 #include "lib.h"
 
-terminal_t main_terminal;
+terminal_t main_terminal, prev_terminal;
 
 void initialize_terminal()
 {
@@ -27,16 +27,18 @@ int32_t terminal_read(int32_t fd, void *buf, int32_t nbytes)
 {
     if((!buf) || (nbytes <= 0)) return -1;
     int i = 0, ret_count = 0;
+    main_terminal.enter_pressed = 0;
     while(!main_terminal.enter_pressed) {}
-    for (i = 0; i < nbytes && i < READ_MAX_SIZE && main_terminal.terminal_buf[i] != '\0'; i++)
+    for (i = 0; i < nbytes && i < READ_MAX_SIZE && prev_terminal.terminal_buf[i] != '\0'; i++)
     {
-        ((char *)buf)[i] = main_terminal.terminal_buf[i];
+        ((char *)buf)[i] = prev_terminal.terminal_buf[i];
         ret_count++;
-        if(main_terminal.terminal_buf[i] == '\n')   break;
+        if(prev_terminal.terminal_buf[i] == '\n')   break;
     }
+    ((char *)buf)[ret_count] = '\0';
     //clear the terminal buffer for next use
-    main_terminal.count = main_terminal.enter_pressed = 0;
-    memset((void*)main_terminal.terminal_buf, '\0', MAX_TERMINAL_SIZE);
+   // main_terminal.count = main_terminal.enter_pressed = 0;
+  //  memset((void*)main_terminal.terminal_buf, '\0', MAX_TERMINAL_SIZE);
     return ret_count;
 }
 
