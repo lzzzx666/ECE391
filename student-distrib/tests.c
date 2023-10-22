@@ -5,6 +5,7 @@
 #include "idt.h"
 #include "page.h"
 #include "rtc.h"
+#include "debug.h"
 #define PASS 1
 #define FAIL 0
 
@@ -23,6 +24,41 @@ static inline void assertion_failure()
 }
 
 /* Checkpoint 1 tests */
+
+
+
+
+/* test : change rtc freq */
+void rtc_test() {
+#ifdef RTC_VIRTUALIZE
+	puts("==RTC with virtualization==");
+#else
+	puts("==RTC no virtualization==");
+#endif
+	uint32_t fd = rtc_open();
+	uint32_t freq, j;
+#ifdef RTC_VIRTUALIZE
+	for (freq = 1; freq <= 20; freq += 2) {
+#else
+	for (freq = 2; freq <= INTERRUPT_FREQ_HI; freq <<= 1) {
+#endif
+		rtc_write(fd, &freq, sizeof(freq));
+		printf("\nfrequency: %d; ... ", freq);
+		/*
+		for(j = 0; j < 5 * freq; j++) {
+			!rtc_read(fd, NULL, 0);
+		}
+		puts(" 5 sec"); 
+		*/
+		for(j = 0; j < 26; j++) {
+			rtc_read(fd, NULL, 0);
+			putc('A' + j);
+		}
+	}
+	rtc_close(fd);
+}
+
+
 
 /* IDT Test - Example
  *
@@ -49,6 +85,7 @@ int idt_test()
 			result = FAIL;
 		}
 	}
+	rtc_test();
 	return result;
 }
 /* exc_test
