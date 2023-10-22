@@ -248,7 +248,7 @@ int page_test(int vec)
 }
 
 /* Checkpoint 2 tests */
-int test_terminal(){
+void test_terminal(){
 	char buffer[128];
 	memset((void*)buffer, 0, 128);
 	int r = 0, w = 0;
@@ -262,7 +262,7 @@ int test_terminal(){
 		if(r != w)
 			break;
 	}
-	return -1;
+	//return -1;
 }
 
 /* Checkpoint 3 tests */

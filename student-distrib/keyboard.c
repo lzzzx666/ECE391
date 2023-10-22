@@ -71,9 +71,9 @@ void keyboard_handler()
             break;    
         case ENTER: 
             main_terminal.terminal_buf[main_terminal.count++] = '\n'; //add a \n at the end
-            main_terminal.enter_pressed = 1;
-            prev_terminal = main_terminal;
-            main_terminal.terminal_buf[main_terminal.count = 0] = '\0';
+            main_terminal.enter_pressed = 1; //notify the main_terminal
+            prev_terminal = main_terminal; //store the previous terminal
+            main_terminal.terminal_buf[main_terminal.count = 0] = '\0'; //restore count
             memset((void*)main_terminal.terminal_buf, '\0', MAX_TERMINAL_SIZE);
             putc('\n');
             //terminal_read(0, keyboard_buffer, main_terminal.count);
