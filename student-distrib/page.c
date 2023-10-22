@@ -118,6 +118,8 @@ int page_init()
 
     return 0;
 }
+
+
 void update_cr3()
 {
     get_cr();
