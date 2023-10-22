@@ -13,8 +13,8 @@ void initialize_terminal()
     main_terminal.count = main_terminal.enter_pressed = 0;
     main_terminal.cursor_x = main_terminal.cursor_y = 0;
     memset((void*)main_terminal.terminal_buf, '\0', MAX_TERMINAL_SIZE);
-    enable_cursor(14,15);
-    update_cursor(0, 0);
+    enable_cursor(14,15); // set cursor shape
+    update_cursor(0, 0); // set cursor position
 }
 //int32_t terminal_close(int32_t fd)
 //.Closes the terminal.

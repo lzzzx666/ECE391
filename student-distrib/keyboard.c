@@ -101,7 +101,7 @@ void keyboard_handler()
         case F3: break; 
         default:
             if(scan_code >= NUM_SCANCODES) break;
-            if(shift_pressed && capslock_pressed)
+            if(shift_pressed && capslock_pressed)// four different scan_code set
                 ascii = scan_code_set_capsandshift[scan_code];
             else if(shift_pressed)
                 ascii = scan_code_set_shift[scan_code];
@@ -111,7 +111,7 @@ void keyboard_handler()
                 ascii = scan_code_set[scan_code];
 
             if(ascii == '\0')   break;
-            else if(ctrl_pressed && (ascii == 'L' || ascii == 'l'))
+            else if(ctrl_pressed && (ascii == 'L' || ascii == 'l')) // clear the screen
             {
                 terminal_clear();
                 break;
@@ -120,7 +120,7 @@ void keyboard_handler()
             {
                 if(main_terminal.count < READ_MAX_SIZE)
                 {
-                    main_terminal.terminal_buf[main_terminal.count++] = ascii;
+                    main_terminal.terminal_buf[main_terminal.count++] = ascii; //default condition
                     putc(ascii);
                 }
             }
