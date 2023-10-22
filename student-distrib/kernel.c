@@ -176,7 +176,7 @@ void entry(unsigned long magic, unsigned long addr)
     if (RUN_TESTS)
         /* Run tests */
         launch_tests();
-    test_fs();
+
     //     /* Execute the first program ("shell") ... */
 
     //     /* Spin (nicely, so we don't chew up cycles) */
