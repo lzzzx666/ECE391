@@ -1,62 +1,56 @@
-.global set_cr0,set_cr2,set_cr3,set_cr4,set_cr
-.global	get_cr0,get_cr2,get_cr3,get_cr4
+.global	get_cr, set_cr
 .global	callee_push, callee_pop, caller_push, caller_pop
+.global cr0,cr2,cr3,cr4
 
+/** define the global variable to store thr control registers*/
+cr0:
+	.long 0x0
+cr2:
+	.long 0x0
+cr3:
+	.long 0x0
+cr4:
+	.long 0x0
+	
 
-/** all of the set_cr and get_cr should not set up stack frame
-*	since calling from c code would pass the param by eax*/
+/**	void set_cr()
+*  	set the control registers to the values given in the corresponding cr0, cr2, cr3, cr4
+*   input: none
+*	output: none
+*	side effects: none
+*	note: must set cr0 after finishing setting other control registers
+*/
 set_cr:
+	call callee_push	#set up stack frame
+	movl cr2,%eax		#set cr2
+	movl %eax,%cr2
+	movl cr3,%eax		#set cr3
 	movl %eax,%cr3
-	movl %cr4,%eax
-	orl $0x00000010,%eax
+	movl cr4,%eax		#set cr4
 	movl %eax,%cr4
-	movl %cr0,%eax
-	orl $0x80000000,%eax
+	movl cr0,%eax		#set cr0
 	movl %eax,%cr0
+	call callee_pop  	#tear down stack frame
 	ret
 
-
-# set_cr0:
-# 	pushl %ecx
-# 	movl %cr0,%ecx
-# 	orl %eax,%ecx
-#     movl %ecx,%cr0
-# 	popl %ecx
-#     ret
-
-# set_cr2:
-#     movl %eax,%cr2
-#     ret
-
-# set_cr3:  
-#     movl %eax,%cr3
-#     ret
-
-# set_cr4:
-# 	pushl %ecx
-# 	movl %cr4,%ecx
-# 	orl %eax,%ecx
-#     movl %ecx,%cr4
-# 	popl %ecx
-#     ret
-
-# get_cr0:
-# 	movl %cr0,%eax
-# 	ret
-
-# get_cr2:
-# 	movl %cr2,%eax
-# 	ret
-
-# get_cr3:
-# 	movl %cr3,%eax
-# 	ret
-
-# get_cr4:
-# 	movl %cr4,%eax
-# 	ret
-
-
+/**	get set_cr()
+*  	store the control registers values to the the corresponding global variables cr0, cr2, cr3, cr4
+*   input: none
+*	output: none
+*	side effects: none
+*/
+get_cr:
+	call callee_push	#set up stack frame
+	movl %cr0,%eax		#get cr0
+	movl %eax,cr0
+	movl %cr2,%eax		#get cr2
+	movl %eax,cr2
+	movl %cr3,%eax		#get cr3
+	movl %eax,cr3
+	movl %cr4,%eax		#get cr4
+	movl %eax,cr4
+	call callee_pop		#tear down stack frame
+	ret
 
 /*helper functions for set up the stack frame*/
 # void caller_push(void)
