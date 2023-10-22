@@ -157,9 +157,6 @@ void exe_handler(enum idt_type type)
         rtc_handler();
         sti();
         return;
-    case SYSTEM_CALL:
-        printf("system call!");
-        break;
     default:
 
         break;

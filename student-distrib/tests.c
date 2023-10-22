@@ -216,8 +216,9 @@ int page_test(int vec)
 /* Test suite entry point */
 void launch_tests()
 {
+	// printf("qqq");
 
-	TEST_OUTPUT("idt_test", idt_test());
+	// TEST_OUTPUT("idt_test", idt_test());
 	// TEST_OUTPUT("page_test", page_test(0));
-	// exc_test(0);
+	exc_test(0x80);
 }

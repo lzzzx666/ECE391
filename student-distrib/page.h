@@ -1,6 +1,7 @@
 #ifndef PAGE_H
 #define PAGE_H
 #include "types.h"
+#include "systemcall.h"
 
 /*the starting address of kernel code, which is 4MB*/
 #define KERNEL_START_ADDR (4 * 1024 * 1024) // 4MB = 4 * 2^10 * 2^10 = 4*1024*1024
@@ -8,6 +9,8 @@
 #define PAGE_TABLE_ENTRY_NUM 1024
 #define INV_PD_IDX -1
 #define INV_PT_IDX -1
+#define ONE_PROGRAM_SIZE KERNEL_START_ADDR
+#define PROGRAM_START_ADDRESS 2*ONE_PROGRAM_SIZE
 
 /**
  * Page Directory Entry (PDE) structure.
@@ -156,6 +159,7 @@ typedef PTE_t PT_t[PAGE_TABLE_ENTRY_NUM];
 
 extern int set_pte(PT_t *baseAddr, int idx, uint8_t us, uint32_t addr);
 extern int set_pde(PD_t *baseAddr, int idx, uint8_t us, uint8_t g, uint8_t ps, uint32_t addr);
+extern int32_t set_paging(int32_t fd);
 // extern void set_cr0(uint32_t regVal);
 // extern void set_cr2(uint32_t regVal);
 // extern void set_cr3(uint32_t regVal);

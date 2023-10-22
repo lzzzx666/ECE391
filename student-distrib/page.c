@@ -113,3 +113,15 @@ int page_init()
     (*set_cr)((uint32_t)(pageDirectory));
     return 0;
 }
+
+/**/
+int32_t set_paging(int32_t fd){
+    int32_t program_address=fd*ONE_PROGRAM_SIZE+PROGRAM_START_ADDRESS;
+    set_pde(&pageDirectory,PROGRAM_IMAGE>>22,0,0,1,program_address>>12);
+    asm volatile(
+        "movl %%cr3,%%eax\n\t"
+        "movl %%eax,%%cr3"
+        :::"%eax","cr3"
+    );
+    return 0;
+}
