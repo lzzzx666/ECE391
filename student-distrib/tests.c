@@ -102,8 +102,8 @@ int idt_test()
 			result = FAIL;
 		}
 	}
-	// rtc_test();
-	// test_terminal();
+	rtc_test();
+	test_terminal();
 	return result;
 }
 /* exc_test
