@@ -190,6 +190,7 @@ extern void set_cr();
 extern void get_cr();
 
 extern int page_init();
+extern void update_cr3();
 
 // #define SET_PDE()
 #endif

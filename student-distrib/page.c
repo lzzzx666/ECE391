@@ -110,11 +110,16 @@ int page_init()
     set_pde(&pageDirectory, 1, 0, 1, 1, KERNEL_START_ADDR >> 12);      // 1st entry should be supervisior and 4mb
 
     /*enable paging function*/
-    get_cr();   // get the control registers values into corresponding global variables
-    ((cr4_t *)&cr4)->pse = 1;   //turn on pse feature (allow 4MB page)
-    ((cr3_t *)&cr3)->val = (uint32_t)(pageDirectory);   //set cr3 to the pageDirectory address
-    ((cr0_t *)&cr0)->pg = 1;    //turn on the paging feature
-    set_cr();   //set the control registers to the corresponding value
+    get_cr();                                         // get the control registers values into corresponding global variables
+    ((cr4_t *)&cr4)->pse = 1;                         // turn on pse feature (allow 4MB page)
+    ((cr3_t *)&cr3)->val = (uint32_t)(pageDirectory); // set cr3 to the pageDirectory address
+    ((cr0_t *)&cr0)->pg = 1;                          // turn on the paging feature
+    set_cr();                                         // set the control registers to the corresponding value
 
     return 0;
+}
+void update_cr3()
+{
+    get_cr();
+    set_cr();
 }

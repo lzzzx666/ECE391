@@ -1,4 +1,5 @@
 #include "fs.h"
+#include "page.h"
 
 bootBlock_t *bootBlock;
 dentry_t *dentry;
@@ -45,28 +46,33 @@ int32_t read_dentry_by_index(uint32_t index, dentry_t *dentry)
 
 int32_t read_data(uint32_t inodeIdx, uint32_t offset, uint8_t *buf, uint32_t length)
 {
-    printf("inode size: %d\n", inodes[inodeIdx].size);
+    // printf("inode size: %d\n", inodes[inodeIdx].size);
     if (inodeIdx >= bootBlock->inodeNum)
     {
         printf("fail to read inode with invalid index!\n");
         printf("max index: %d, request index: %d \n", bootBlock->inodeNum, inodeIdx);
         return READ_FAIL;
     }
-    if (length > inodes[inodeIdx].size)
+    if (length > inodes[inodeIdx].size - offset)
     {
         printf("fail to read data with invalid length! \n");
-        printf("file size: %d, request length: %d \n", inodes[inodeIdx].size, length);
+        printf("file size: %d, request length: %d, offset: %d \n", inodes[inodeIdx].size, length, offset);
         return READ_FAIL;
     }
     if (length == 0)
         return READ_SUCCESS;
     uint8_t cache[length];
-    uint32_t startBlock = offset / BLOCK_SIZE;
-    uint32_t startOffset = offset % BLOCK_SIZE;
+    uint32_t startBlock = offset >> 12;
+    uint32_t startOffset = (offset & 0x0FFF);
     uint32_t endPos = offset + length;
-    uint32_t endOffset = endPos / BLOCK_SIZE;
-    uint32_t endBlock = endPos % BLOCK_SIZE;
-
+    uint32_t endBlock = endPos >> 12;
+    uint32_t endOffset = (endPos & 0x0FFF);
+    // printf("length: %d, max: %d \n", length, (BLOCK_SIZE - startOffset));
+    // printf("start offset:%d\n", startOffset);
+    // printf("start block:%d\n", startBlock);
+    // printf("end offset:%d\n", endOffset);
+    // printf("end block:%d\n", endBlock);
+    // printf("end pos:%d\n", endPos);
     uint32_t cacheOffset = 0;
     uint32_t curBlock = startBlock;
     uint32_t size;
@@ -75,7 +81,7 @@ int32_t read_data(uint32_t inodeIdx, uint32_t offset, uint8_t *buf, uint32_t len
     while (curBlock <= endBlock)
     {
         curBlockIdx = dataBlockIdxArr[curBlock];
-        printf("%d\n",curBlockIdx);
+        // printf("curBlockIdx: %d\n", curBlockIdx);
         if (curBlock == startBlock)
         {
             size = length < (BLOCK_SIZE - startOffset) ? length : (BLOCK_SIZE - startOffset);
@@ -86,7 +92,7 @@ int32_t read_data(uint32_t inodeIdx, uint32_t offset, uint8_t *buf, uint32_t len
         {
             if (endOffset == 0)
                 break;
-            size = endOffset - 1;
+            size = endOffset;
             memcpy(&(cache[cacheOffset]), &(dataBlock[curBlockIdx].data[0]), size);
         }
         else
@@ -112,15 +118,15 @@ void test_fs()
     }
     dentry_t dentry;
 
-    if (read_dentry_by_name((const uint8_t *)"frame1.txt", &dentry) == READ_SUCCESS)
+    if (read_dentry_by_name((const uint8_t *)"verylargetextwithverylongname.txt", &dentry) == READ_SUCCESS)
         printf("%s\n", dentry.fileName);
 
-    uint8_t buf[inodes[dentry.inodeIdx].size];
+    uint8_t buf[inodes[dentry.inodeIdx].size + 1];
+    buf[inodes[dentry.inodeIdx].size] = '\0';
     // printf("file name: %s \n", dentry.fileName);
     // printf("file type: %d \n", dentry.fileType);
     // printf("inode index: %d \n", dentry.inodeIdx);
 
-    read_data(dentry.inodeIdx, 0, buf, 160);
-
+    read_data(dentry.inodeIdx, 0, buf, inodes[dentry.inodeIdx].size);
     printf("%s", buf);
 }
