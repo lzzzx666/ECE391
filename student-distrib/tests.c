@@ -28,22 +28,6 @@ static inline void assertion_failure()
 /* Checkpoint 1 tests */
 
 
-int test_terminal(){
-    char buffer[128];
-    memset((void*)buffer, 0, 128);
-    int r = 0, w = 0;
-    printf("terminal driver test begins\n");
-    while (1)
-    {
-        r = terminal_read(0, buffer, 128);
-        printf("read buf: %d\n", r);
-        if(r >= 0)  w = terminal_write(0, buffer, 128);
-        printf("read buf: %d, write buf:%d\n", r, w);
-        if(r != w)
-            break;
-    }
-    return -1;
-}
 
 /* test : change rtc freq */
 void rtc_test() {
@@ -103,7 +87,7 @@ int idt_test()
 		}
 	}
 	rtc_test();
-	test_terminal();
+	//test_terminal();
 	return result;
 }
 /* exc_test
@@ -289,6 +273,7 @@ int test_terminal(){
 void launch_tests()
 {
 
-	TEST_OUTPUT("idt_test", idt_test());
+	//TEST_OUTPUT("idt_test", idt_test());
 	// exc_test(0);
+	test_terminal();
 }
