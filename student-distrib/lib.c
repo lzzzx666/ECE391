@@ -247,15 +247,6 @@ void update_cursor(int x, int y)
 	outb(0x0E, 0x3D4);
 	outb((uint8_t) ((pos >> 8) & 0xFF), 0x3D5);
 }
-uint16_t get_cursor_position(void)
-{
-    uint16_t pos = 0;
-    outb(0x0F, 0x3D4);
-    pos |= inb(0x3D5);
-    outb(0x0E, 0x3D4);
-    pos |= ((uint16_t)inb(0x3D5)) << 8;
-    return pos;
-}
 /* int8_t* itoa(uint32_t value, int8_t* buf, int32_t radix);
  * Inputs: uint32_t value = number to convert
  *            int8_t* buf = allocated buffer to place string in
