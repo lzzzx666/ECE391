@@ -1,3 +1,5 @@
+#ifndef FS_H
+#define FS_H
 #include "types.h"
 #include "lib.h"
 #define BLOCK_SIZE 4 * 1024 // block size in byte
@@ -46,3 +48,4 @@ extern int32_t read_data(uint32_t inode, uint32_t offset, uint8_t *buf, uint32_t
 extern int32_t filesys_init(uint32_t filesys_img);
 
 extern void test_fs();
+#endif
