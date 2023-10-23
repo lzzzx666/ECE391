@@ -19,10 +19,10 @@ dataBlock_t *dataBlock;
  */
 int32_t filesys_init(uint32_t filesys_img)
 {
-    bootBlock = (bootBlock_t *)filesys_img;     //get boot block pointer
-    inodes = (inode_t *)(bootBlock + 1);        //get inodes pointer
-    dataBlock = (dataBlock_t *)(inodes + bootBlock->inodeNum);      //get data block pointer
-    // get file system information
+    bootBlock = (bootBlock_t *)filesys_img;                    // get boot block pointer
+    inodes = (inode_t *)(bootBlock + 1);                       // get inodes pointer
+    dataBlock = (dataBlock_t *)(inodes + bootBlock->inodeNum); // get data block pointer
+    /*get file system information*/
     dentryNum = bootBlock->dentryNum;
     inodeNum = bootBlock->inodeNum;
     dataBlockNum = bootBlock->inodeNum;
@@ -44,12 +44,12 @@ int32_t read_dentry_by_name(const uint8_t *fname, dentry_t *dentry)
 {
     int i;
     uint32_t result;
-    for (i = 0; i < bootBlock->dentryNum; i++)      //loop through all dentries to find target
+    for (i = 0; i < bootBlock->dentryNum; i++) // loop through all dentries to find target
     {
         dentry_t *curDentry = &(bootBlock->dentries[i]);
-        if (strncmp((int8_t *)fname, (int8_t *)curDentry->fileName, FILE_NAME_MAX) == 0)    //compare file name
+        if (strncmp((int8_t *)fname, (int8_t *)curDentry->fileName, FILE_NAME_MAX) == 0) // compare file name
         {
-            result = read_dentry_by_index(i, dentry);   //if names match, then get the dentry
+            result = read_dentry_by_index(i, dentry); // if names match, then get the dentry
             return result;
         }
     }
@@ -69,15 +69,16 @@ int32_t read_dentry_by_name(const uint8_t *fname, dentry_t *dentry)
  */
 int32_t read_dentry_by_index(uint32_t index, dentry_t *dentry)
 {
-    if (index >= (bootBlock->dentryNum))        //sanity check
+    if (index >= (bootBlock->dentryNum)) // sanity check
     {
         printf("fail to read dentry with invalid index! \n");
         return FS_FAIL;
     }
+    // populate dentry
     dentry_t *curDentry = &(bootBlock->dentries[index]);
     dentry->fileType = curDentry->fileType;
     dentry->inodeIdx = curDentry->inodeIdx;
-    strncpy((int8_t *)dentry->fileName, (int8_t *)curDentry->fileName, FILE_NAME_MAX);
+    strncpy((int8_t *)dentry->fileName, (int8_t *)curDentry->fileName, FILE_NAME_MAX); // copy file name
     return FS_SUCCEED;
 }
 
@@ -96,31 +97,31 @@ int32_t read_dentry_by_index(uint32_t index, dentry_t *dentry)
 int32_t read_data(uint32_t inodeIdx, uint32_t offset, uint8_t *buf, uint32_t length)
 {
 
-    if (inodeIdx >= bootBlock->inodeNum)    //sanity check
+    if (inodeIdx >= bootBlock->inodeNum) // sanity check
     {
         printf("fail to read inode with invalid index!\n");
         printf("max index: %d, request index: %d \n", bootBlock->inodeNum, inodeIdx);
         return FS_FAIL;
     }
 
-    if (length > inodes[inodeIdx].size - offset)    //sanity check
+    if (length > inodes[inodeIdx].size - offset) // sanity check
     {
         printf("fail to read data with invalid length! \n");
         printf("file size: %d, request length: %d, offset: %d \n", inodes[inodeIdx].size, length, offset);
         return FS_FAIL;
     }
 
-    if (length == 0)    //sanity check
+    if (length == 0) // sanity check
         return FS_SUCCEED;
 
-    uint8_t cache[length];
-    uint32_t startBlock = offset >> 12;
-    uint32_t startOffset = (offset & 0x0FFF);
-    uint32_t endPos = offset + length;
-    uint32_t endBlock = endPos >> 12;
-    uint32_t endOffset = (endPos & 0x0FFF);
+    uint8_t cache[length];                    // cache buffer to store the data
+    uint32_t startBlock = offset >> 12;       // equivalent ot offset / 4096
+    uint32_t startOffset = (offset & 0x0FFF); // equivalent ot offset % 4096
+    uint32_t endPos = offset + length;        // relative end position
+    uint32_t endBlock = endPos >> 12;         // equivalent ot endPos / 4096
+    uint32_t endOffset = (endPos & 0x0FFF);   // equivalent ot endPos % 4096
 
-#if DEBUG
+#if DEBUG // all of the information that may be help to debug
     printf("inode size: %d\n", inodes[inodeIdx].size);
     printf("length: %d, max: %d \n", length, (BLOCK_SIZE - startOffset));
     printf("start offset:%d\n", startOffset);
@@ -135,10 +136,12 @@ int32_t read_data(uint32_t inodeIdx, uint32_t offset, uint8_t *buf, uint32_t len
     uint32_t size;
     uint32_t *dataBlockIdxArr = (uint32_t *)&(inodes[inodeIdx].dataBlocks);
     uint32_t curBlockIdx;
+
+    // get the data and store into cache
     while (curBlock <= endBlock)
     {
         curBlockIdx = dataBlockIdxArr[curBlock];
-        if (curBlockIdx >= dataBlockNum)    //sanity check
+        if (curBlockIdx >= dataBlockNum) // sanity check
         {
             printf("fail to access datablock with invalid index!");
             return FS_FAIL;
@@ -166,7 +169,7 @@ int32_t read_data(uint32_t inodeIdx, uint32_t offset, uint8_t *buf, uint32_t len
         }
         curBlock++;
     }
-    memcpy(buf, &cache, length);
+    memcpy(buf, &cache, length); // copy data from cache into buffer
     return FS_SUCCEED;
 }
 
@@ -184,7 +187,7 @@ int32_t fopen(const uint8_t *fname)
 {
     dentry_t dentry;
     int32_t result;
-    result = read_dentry_by_name(fname, &dentry);
+    result = read_dentry_by_name(fname, &dentry); // check whether file could be open
     return result;
 }
 
@@ -212,16 +215,16 @@ int32_t fclose(int32_t fd)
  * @param nbytes - The number of bytes to read.
  * @return The number of bytes read from the file and copied into the buffer, or FS_FAIL if an error occurs.
  */
-int32_t fread(const uint8_t* fname, void *buf, uint32_t nbytes)
+int32_t fread(const uint8_t *fname, void *buf, uint32_t nbytes)
 {
     dentry_t dentry;
     uint32_t fileSize;
     uint32_t readBytes;
-    if (read_dentry_by_name(fname, &dentry) == FS_FAIL)     //sanity check
+    if (read_dentry_by_name(fname, &dentry) == FS_FAIL) // sanity check
         return FS_FAIL;
     fileSize = inodes[dentry.inodeIdx].size;
-    readBytes = fileSize < nbytes ? fileSize : nbytes;
-    if (read_data(dentry.inodeIdx, 0, buf, readBytes) == FS_FAIL)     //sanity check
+    readBytes = fileSize < nbytes ? fileSize : nbytes;            // get the max bytes could be read or need to be read
+    if (read_data(dentry.inodeIdx, 0, buf, readBytes) == FS_FAIL) // sanity check and read data
         return FS_FAIL;
     return readBytes;
 }
@@ -257,6 +260,16 @@ int32_t directory_open(const uint8_t *fname)
 }
 
 /*** USELESS FOR CKPT2 ***/
+/**
+ * int32_t directory_close(int32_t fd)
+ *
+ * This function is called to close a directory that was previously opened.
+ * It performs any necessary cleanup related to the directory file descriptor (fd).
+ *
+ * @param fd The file descriptor associated with the directory.
+ * @return An integer indicating the status of the operation. FS_SUCCEED typically
+ *         means the directory was successfully closed.
+ */
 int32_t directory_close(int32_t fd)
 {
     return FS_SUCCEED;
@@ -276,7 +289,7 @@ int32_t directory_read(uint32_t idx, uint8_t *buf)
     uint32_t size = 0;
     uint32_t nameLen;
     dentry_t dentry;
-    if (read_dentry_by_index(idx, &dentry) == FS_FAIL)     //sanity check
+    if (read_dentry_by_index(idx, &dentry) == FS_FAIL) // sanity check
         return FS_FAIL;
     nameLen = strlen((int8_t *)dentry.fileName);
     size = nameLen < FILE_NAME_MAX ? nameLen : FILE_NAME_MAX;
@@ -331,7 +344,7 @@ int32_t directory_read_test()
         {
             printf(" ");
         }
-        printc(fileName, fileNameLen);
+        putc_rep(fileName, fileNameLen);
         printf(", file_type: ");
         printf("%d", dentry.fileType);
         printf(", file_size: ");
@@ -361,15 +374,14 @@ int32_t file_read_test(const int8_t *fname)
 
     dentry_t dentry;
     uint32_t fileSize;
-    if (read_dentry_by_name((const uint8_t *)fname, &dentry) == FS_FAIL)     //sanity check
+    if (read_dentry_by_name((const uint8_t *)fname, &dentry) == FS_FAIL) // sanity check
         return FS_FAIL;
     fileSize = inodes[dentry.inodeIdx].size;
     uint8_t buf[fileSize];
-    if (fread((const uint8_t *)fname, buf, fileSize) == FS_FAIL)     //sanity check
+    if (fread((const uint8_t *)fname, buf, fileSize) == FS_FAIL) // sanity check
         return FS_FAIL;
     clear();
-    printc(buf, fileSize);
+    putc_rep(buf, fileSize);
     printf("\n");
     return FS_SUCCEED;
 }
-
