@@ -63,6 +63,18 @@ typedef struct inode {
     uint32_t dataBlocks[DATA_BLOCK_MAX]; // Array of data block indices.
 } inode_t;
 
+/**
+ * Data Block structure (dataBlock_t).
+ *
+ * A Data Block structure represents a block of data within a file system. It contains
+ * an array of bytes to store the actual data, and the size of this array is determined
+ * by the BLOCK_SIZE constant.
+ */
+typedef struct dataBlock {
+    uint8_t data[BLOCK_SIZE]; // Array of bytes to store data, typically with a size of BLOCK_SIZE.
+} dataBlock_t;
+
+
 // file system base function
 extern int32_t filesys_init(uint32_t filesys_img);
 extern int32_t read_dentry_by_name(const uint8_t *fname, dentry_t *dentry);
