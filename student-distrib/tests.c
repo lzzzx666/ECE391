@@ -330,6 +330,6 @@ void launch_tests()
 
 	// TEST_OUTPUT("idt_test", idt_test());
 	// exc_test(0);
-	TEST_OUTPUT("filesys_test", filesys_test(7));
+	TEST_OUTPUT("filesys_test", filesys_test(0));
 	// test_terminal();
 }
