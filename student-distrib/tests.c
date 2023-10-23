@@ -87,6 +87,7 @@ int idt_test()
 		}
 	}
 	rtc_test();
+	//test_terminal();
 	return result;
 }
 /* exc_test

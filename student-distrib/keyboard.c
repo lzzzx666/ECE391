@@ -8,7 +8,7 @@ static int capslock_pressed = 0;
 static int alt_pressed = 0;
 static int ctrl_pressed = 0;
 char keyboard_buffer[128];
-extern terminal_t main_terminal;
+extern terminal_t main_terminal, prev_terminal;
 
 
 char scan_code_set[NUM_SCANCODES] = {
@@ -64,15 +64,17 @@ void keyboard_handler()
     {
         case TAB: break;
         case BACKSPACE:
-            if(main_terminal.count > 0)
-            {
+            if(main_terminal.count > 0) {
                 main_terminal.terminal_buf[--main_terminal.count] = '\0'; // overwrite the original content with '\0'
                 backspace(); // change screen x and y   
             }
             break;    
         case ENTER: 
             main_terminal.terminal_buf[main_terminal.count++] = '\n'; //add a \n at the end
-            main_terminal.enter_pressed = 1;
+            main_terminal.enter_pressed = 1; //notify the main_terminal
+            prev_terminal = main_terminal; //store the previous terminal
+            main_terminal.terminal_buf[main_terminal.count = 0] = '\0'; //restore count
+            memset((void*)main_terminal.terminal_buf, '\0', MAX_TERMINAL_SIZE);
             putc('\n');
             //terminal_read(0, keyboard_buffer, main_terminal.count);
             break;
@@ -99,7 +101,7 @@ void keyboard_handler()
         case F3: break; 
         default:
             if(scan_code >= NUM_SCANCODES) break;
-            if(shift_pressed && capslock_pressed)
+            if(shift_pressed && capslock_pressed)// four different scan_code set
                 ascii = scan_code_set_capsandshift[scan_code];
             else if(shift_pressed)
                 ascii = scan_code_set_shift[scan_code];
@@ -109,7 +111,7 @@ void keyboard_handler()
                 ascii = scan_code_set[scan_code];
 
             if(ascii == '\0')   break;
-            else if(ctrl_pressed && (ascii == 'L' || ascii == 'l'))
+            else if(ctrl_pressed && (ascii == 'L' || ascii == 'l')) // clear the screen
             {
                 terminal_clear();
                 break;
@@ -118,7 +120,7 @@ void keyboard_handler()
             {
                 if(main_terminal.count < READ_MAX_SIZE)
                 {
-                    main_terminal.terminal_buf[main_terminal.count++] = ascii;
+                    main_terminal.terminal_buf[main_terminal.count++] = ascii; //default condition
                     putc(ascii);
                 }
             }

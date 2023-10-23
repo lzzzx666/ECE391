@@ -119,6 +119,10 @@ int _log2(int n) {
     return ret;
 }
 
+/**
+ * rtc_open
+ * set RTC interrupt frequency
+ */
 int rtc_open() {
 #ifdef RTC_VIRTUALIZE
     set_interrupt_rate(INTERRUPT_RATE_HI);
@@ -128,10 +132,18 @@ int rtc_open() {
     return 0;
 }
 
+/**
+ * rtc_close
+ * close RTC
+ */
 int rtc_close(int32_t fd) {
     return 0;
 }
 
+/**
+ * rtc_write
+ * set interrupt value
+ */
 int rtc_write(int32_t fd, const void* buf, int32_t nbytes) {
     if(nbytes != sizeof(uint32_t)) return -1;
     uint32_t freq = *((uint32_t*)buf);
@@ -146,6 +158,10 @@ int rtc_write(int32_t fd, const void* buf, int32_t nbytes) {
     return 0;
 }
 
+/**
+ * rtc_write
+ * return after an interrupt occured
+ */
 int rtc_read(int32_t fd, const void* buf, int32_t nbytes) {
     interrtupt_occured = 0;
     while(!interrtupt_occured);
