@@ -268,31 +268,43 @@ int test_terminal()
 	return -1;
 }
 
+/**
+ * int filesys_test(int vec)
+ *
+ * This function performs various file system tests based on the provided vector.
+ * It returns PASS if the vector value is out of range or no specific test is selected.
+ *
+ * @param vec: An integer vector indicating which file system test to perform.
+ * @return: PASS if succeed or FAIL otherwise
+ */
 int filesys_test(int vec)
 {
 	TEST_HEADER;
 	int result = PASS;
 	switch (vec)
 	{
-	case 0:
+	case 0:		//read directory and list all of th files in it
 		result = directory_read_test() == FS_SUCCEED;
 		break;
-	case 1:
+	// small files read tests
+	case 1:		//read frame0.txt
 		result = file_read_test("frame0.txt") == FS_SUCCEED;
 		break;
-	case 2:
+	case 2:		//read frame1.txt
 		result = file_read_test("frame1.txt") == FS_SUCCEED;
 		break;
-	case 3:
+	//executables read test
+	case 3:		//read grep
 		result = file_read_test("grep") == FS_SUCCEED;
 		break;
-	case 4:
+	case 4:		//read ls
 		result = file_read_test("ls") == FS_SUCCEED;
 		break;
-	case 5:
+	//large files read test
+	case 5:		//read fish
 		result = file_read_test("fish") == FS_SUCCEED;
 		break;
-	case 6:
+	case 6:		//read verylargetextwithverylongname.tx
 		result = file_read_test("verylargetextwithverylongname.tx") == FS_SUCCEED;
 		break;
 	default:
