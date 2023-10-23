@@ -51,17 +51,6 @@ typedef struct bootBlock {
     dentry_t dentries[DENTRY_MAX];      // Array of directory entries.
 } bootBlock_t;
 
-/**
- * Inode structure (inode_t).
- *
- * An Inode structure represents a file's metadata in a file system. It includes
- * information about the file's size in bytes and an array to store data block indices.
- */
-typedef struct inode {
-    uint32_t size;               // Length of the file in bytes.
-    uint32_t dataBlocks[DATA_BLOCK_MAX]; // Array of data block indices.
-} inode_t;
-
 
 /**
  * Inode structure (inode_t).
