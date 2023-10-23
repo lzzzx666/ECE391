@@ -119,7 +119,11 @@ int page_init()
     return 0;
 }
 
-
+/**
+ * Update the Control Register 3 (CR3) to flush TLB
+ * input: none
+ * output: none
+ */
 void update_cr3()
 {
     get_cr();

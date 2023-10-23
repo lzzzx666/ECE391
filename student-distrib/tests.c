@@ -8,9 +8,9 @@
 #include "debug.h"
 #include "terminal.h"
 #include "keyboard.h"
+#include "fs.h"
 #define PASS 1
 #define FAIL 0
-
 
 /* format these macros as you see fit */
 #define TEST_HEADER \
@@ -27,6 +27,39 @@ static inline void assertion_failure()
 
 /* Checkpoint 1 tests */
 
+/* test : change rtc freq */
+void rtc_test()
+{
+#ifdef RTC_VIRTUALIZE
+	puts("==RTC with virtualization==");
+#else
+	puts("==RTC no virtualization==");
+#endif
+	uint32_t fd = rtc_open();
+	uint32_t freq, j;
+#ifdef RTC_VIRTUALIZE
+	for (freq = 1; freq <= 20; freq += 2)
+	{
+#else
+	for (freq = 2; freq <= INTERRUPT_FREQ_HI; freq <<= 1)
+	{
+#endif
+		rtc_write(fd, &freq, sizeof(freq));
+		printf("\nfrequency: %d; ... ", freq);
+		/*
+		for(j = 0; j < 5 * freq; j++) {
+			!rtc_read(fd, NULL, 0);
+		}
+		puts(" 5 sec");
+		*/
+		for (j = 0; j < 26; j++)
+		{
+			rtc_read(fd, NULL, 0);
+			putc('A' + j);
+		}
+	}
+	rtc_close(fd);
+}
 
 /* IDT Test - Example
  *
@@ -69,9 +102,11 @@ void exc_test(int vector)
 	int test2 = 1;
 	int test3;
 	int *test4 = NULL;
-	if (vector > 0x13 && vector!=0 && vector!=0x80  && vector!=0x21 && vector!=0x28){ //those are valid idt number
+	if (vector > 0x13 && vector != 0 && vector != 0x80 && vector != 0x21 && vector != 0x28)
+	{ // those are valid idt number
 		printf("idt entry does not exist!");
-		return;} // we will not use exception greater than 0x13
+		return;
+	} // we will not use exception greater than 0x13
 	else if (vector == 0)
 	{ // the divide_error exception
 		test3 = test2 / test1;
@@ -140,9 +175,8 @@ void exc_test(int vector)
 			break;
 		case 0x80:
 			asm volatile(
-			"movl $0,%%eax\n\t" //0 is the system call parameter
-			"int $0x80"
-			::);
+				"movl $0,%%eax\n\t" // 0 is the system call parameter
+				"int $0x80" ::);
 		};
 	}
 }
@@ -215,54 +249,56 @@ int page_test(int vec)
 }
 
 /* Checkpoint 2 tests */
-int test_terminal(){
+int test_terminal()
+{
 	char buffer[128];
-	memset((void*)buffer, 0, 128);
+	memset((void *)buffer, 0, 128);
 	int r = 0, w = 0;
 	printf("terminal driver test begins\n");
 	while (1)
 	{
 		r = terminal_read(0, buffer, 128);
 		printf("read buf: %d\n", r);
-		if(r >= 0)	w = terminal_write(0, buffer, 128);
+		if (r >= 0)
+			w = terminal_write(0, buffer, 128);
 		printf("read buf: %d, write buf:%d\n", r, w);
-		if(r != w)
+		if (r != w)
 			break;
 	}
 	return -1;
 }
 
-
-
-/* test : change rtc freq */
-int rtc_test() {
-#ifdef RTC_VIRTUALIZE
-	puts("==test RTC with virtualization==\n");
-#else
-	puts("==test RTC without virtualization==\n");
-#endif
-	uint32_t fd = rtc_open();
-	uint32_t freq, j;
-#ifdef RTC_VIRTUALIZE
-	for (freq = 3; freq <= 50; freq += 3) {
-#else
-	for (freq = 2; freq <= INTERRUPT_FREQ_HI; freq <<= 1) {
-#endif
-		rtc_write(fd, &freq, sizeof(freq));
-		printf("frequency: %d; ", freq);
-		/*
-		for(j = 0; j < 5 * freq; j++) {
-			!rtc_read(fd, NULL, 0);
-		}
-		puts(" 5 sec"); 
-		*/
-		for(j = 0; j < 26; j++) {
-			rtc_read(fd, NULL, 0);
-			putc('A' + j);
-		}
-		putc('\n');
+int filesys_test(int vec)
+{
+	TEST_HEADER;
+	int result = PASS;
+	switch (vec)
+	{
+	case 0:
+		result = directory_read_test() == FS_SUCCEED;
+		break;
+	case 1:
+		result = file_read_test("frame0.txt") == FS_SUCCEED;
+		break;
+	case 2:
+		result = file_read_test("frame1.txt") == FS_SUCCEED;
+		break;
+	case 3:
+		result = file_read_test("grep") == FS_SUCCEED;
+		break;
+	case 4:
+		result = file_read_test("ls") == FS_SUCCEED;
+		break;
+	case 5:
+		result = file_read_test("fish") == FS_SUCCEED;
+		break;
+	case 6:
+		result = file_read_test("verylargetextwithverylongname.tx") == FS_SUCCEED;
+		break;
+	default:
+		result = PASS;
 	}
-	return !rtc_close(fd);
+	return result;
 }
 
 /* Checkpoint 3 tests */
@@ -273,9 +309,7 @@ int rtc_test() {
 void launch_tests()
 {
 
-	//TEST_OUTPUT("idt_test", idt_test());
-	TEST_OUTPUT("rtc_test", rtc_test());
-	TEST_OUTPUT("test_terminal", test_terminal());
+	// TEST_OUTPUT("idt_test", idt_test());
 	// exc_test(0);
-	// test_terminal();
+	TEST_OUTPUT("filesys_test",filesys_test(0));
 }
