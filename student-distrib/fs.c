@@ -131,13 +131,14 @@ int32_t read_data(uint32_t inodeIdx, uint32_t offset, uint8_t *buf, uint32_t len
     printf("end pos:%d\n", endPos);
 #endif
 
+    // initialize local variables
     uint32_t cacheOffset = 0;
     uint32_t curBlock = startBlock;
     uint32_t size;
     uint32_t *dataBlockIdxArr = (uint32_t *)&(inodes[inodeIdx].dataBlocks);
     uint32_t curBlockIdx;
 
-    // get the data and store into cache
+    /*loop through data blocks to get the data and store into cache*/
     while (curBlock <= endBlock)
     {
         curBlockIdx = dataBlockIdxArr[curBlock];
@@ -149,20 +150,20 @@ int32_t read_data(uint32_t inodeIdx, uint32_t offset, uint8_t *buf, uint32_t len
 #if DEBUG
         printf("curBlockIdx: %d\n", curBlockIdx);
 #endif
-        if (curBlock == startBlock)
+        if (curBlock == startBlock) // if it is the start block, only copy back part of it
         {
             size = length < (BLOCK_SIZE - startOffset) ? length : (BLOCK_SIZE - startOffset);
             memcpy(&(cache[cacheOffset]), &(dataBlock[curBlockIdx].data[startOffset]), size);
             cacheOffset += size;
         }
-        else if (curBlock == endBlock)
+        else if (curBlock == endBlock) // if it is the end block, only copy front part of it
         {
             if (endOffset == 0)
                 break;
             size = endOffset;
             memcpy(&(cache[cacheOffset]), &(dataBlock[curBlockIdx].data[0]), size);
         }
-        else
+        else // if it is the middle data block, copy all of it
         {
             memcpy(&(cache[cacheOffset]), &(dataBlock[curBlockIdx].data[0]), BLOCK_SIZE);
             cacheOffset += BLOCK_SIZE;
@@ -291,9 +292,9 @@ int32_t directory_read(uint32_t idx, uint8_t *buf)
     dentry_t dentry;
     if (read_dentry_by_index(idx, &dentry) == FS_FAIL) // sanity check
         return FS_FAIL;
-    nameLen = strlen((int8_t *)dentry.fileName);
-    size = nameLen < FILE_NAME_MAX ? nameLen : FILE_NAME_MAX;
-    memcpy(buf, dentry.fileName, nameLen);
+    nameLen = strlen((int8_t *)dentry.fileName);              // get the length of the filename
+    size = nameLen < FILE_NAME_MAX ? nameLen : FILE_NAME_MAX; // check whether the filename is too long
+    memcpy(buf, dentry.fileName, nameLen);                    // copy name
     return (int32_t)size;
 }
 
@@ -324,20 +325,22 @@ int32_t directory_write(int32_t fd, const void *buf, int32_t nbytes)
  */
 int32_t directory_read_test()
 {
-    clear();
+    clear(); // clear the screen before print the files
+    // initialization
     int i, j, k;
     uint32_t fileType;
     uint32_t fileSize;
     int32_t fileNameLen;
     dentry_t dentry;
     uint8_t fileName[FILE_NAME_MAX];
-    for (i = 0; i < dentryNum; i++)
+    for (i = 0; i < dentryNum; i++) // loop to get alll file information
     {
-        memset(fileName, 0, FILE_NAME_MAX);
+        memset(fileName, 0, FILE_NAME_MAX); // initialize cache
         dentry = (bootBlock->dentries[i]);
         fileType = dentry.fileType;
         fileSize = inodes[dentry.inodeIdx].size;
-        fileNameLen = directory_read(i, fileName);
+        fileNameLen = directory_read(i, fileName); // get file name
+        /*print entry*/
         printf("file_name: ");
         j = 32 - fileNameLen;
         for (; j > 0; j--)
@@ -348,6 +351,7 @@ int32_t directory_read_test()
         printf(", file_type: ");
         printf("%d", dentry.fileType);
         printf(", file_size: ");
+        // right alignment
         j = !fileSize;
         for (k = fileSize; k; j++, k /= 10)
             ;
@@ -378,10 +382,10 @@ int32_t file_read_test(const int8_t *fname)
         return FS_FAIL;
     fileSize = inodes[dentry.inodeIdx].size;
     uint8_t buf[fileSize];
-    if (fread((const uint8_t *)fname, buf, fileSize) == FS_FAIL) // sanity check
+    if (fread((const uint8_t *)fname, buf, fileSize) == FS_FAIL) // sanity check and read file
         return FS_FAIL;
     clear();
-    putc_rep(buf, fileSize);
+    putc_rep(buf, fileSize); // print all data including 0x00
     printf("\n");
     return FS_SUCCEED;
 }
