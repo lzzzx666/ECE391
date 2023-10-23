@@ -28,39 +28,6 @@ static inline void assertion_failure()
 /* Checkpoint 1 tests */
 
 
-
-/* test : change rtc freq */
-void rtc_test() {
-#ifdef RTC_VIRTUALIZE
-	puts("==RTC with virtualization==");
-#else
-	puts("==RTC no virtualization==");
-#endif
-	uint32_t fd = rtc_open();
-	uint32_t freq, j;
-#ifdef RTC_VIRTUALIZE
-	for (freq = 1; freq <= 20; freq += 2) {
-#else
-	for (freq = 2; freq <= INTERRUPT_FREQ_HI; freq <<= 1) {
-#endif
-		rtc_write(fd, &freq, sizeof(freq));
-		printf("\nfrequency: %d; ... ", freq);
-		/*
-		for(j = 0; j < 5 * freq; j++) {
-			!rtc_read(fd, NULL, 0);
-		}
-		puts(" 5 sec"); 
-		*/
-		for(j = 0; j < 26; j++) {
-			rtc_read(fd, NULL, 0);
-			putc('A' + j);
-		}
-	}
-	rtc_close(fd);
-}
-
-
-
 /* IDT Test - Example
  *
  * Asserts that first 10 IDT entries are not NULL
@@ -248,7 +215,7 @@ int page_test(int vec)
 }
 
 /* Checkpoint 2 tests */
-void test_terminal(){
+int test_terminal(){
 	char buffer[128];
 	memset((void*)buffer, 0, 128);
 	int r = 0, w = 0;
@@ -262,7 +229,39 @@ void test_terminal(){
 		if(r != w)
 			break;
 	}
-	//return -1;
+	return -1;
+}
+
+
+
+/* test : change rtc freq */
+int rtc_test() {
+#ifdef RTC_VIRTUALIZE
+	puts("==RTC with virtualization==");
+#else
+	puts("==RTC no virtualization==");
+#endif
+	uint32_t fd = rtc_open();
+	uint32_t freq, j;
+#ifdef RTC_VIRTUALIZE
+	for (freq = 1; freq <= 20; freq += 2) {
+#else
+	for (freq = 2; freq <= INTERRUPT_FREQ_HI; freq <<= 1) {
+#endif
+		rtc_write(fd, &freq, sizeof(freq));
+		printf("\nfrequency: %d; ... ", freq);
+		/*
+		for(j = 0; j < 5 * freq; j++) {
+			!rtc_read(fd, NULL, 0);
+		}
+		puts(" 5 sec"); 
+		*/
+		for(j = 0; j < 26; j++) {
+			rtc_read(fd, NULL, 0);
+			putc('A' + j);
+		}
+	}
+	return !rtc_close(fd);
 }
 
 /* Checkpoint 3 tests */
@@ -274,6 +273,8 @@ void launch_tests()
 {
 
 	//TEST_OUTPUT("idt_test", idt_test());
+	TEST_OUTPUT("rtc_test", rtc_test());
+	TEST_OUTPUT("test_terminal", test_terminal());
 	// exc_test(0);
-	test_terminal();
+	// test_terminal();
 }
