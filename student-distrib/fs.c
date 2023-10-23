@@ -19,9 +19,10 @@ dataBlock_t *dataBlock;
  */
 int32_t filesys_init(uint32_t filesys_img)
 {
-    bootBlock = (bootBlock_t *)filesys_img;
-    inodes = (inode_t *)(bootBlock + 1);
-    dataBlock = (dataBlock_t *)(inodes + bootBlock->inodeNum);
+    bootBlock = (bootBlock_t *)filesys_img;     //get boot block pointer
+    inodes = (inode_t *)(bootBlock + 1);        //get inodes pointer
+    dataBlock = (dataBlock_t *)(inodes + bootBlock->inodeNum);      //get data block pointer
+    // get file system information
     dentryNum = bootBlock->dentryNum;
     inodeNum = bootBlock->inodeNum;
     dataBlockNum = bootBlock->inodeNum;
@@ -43,12 +44,12 @@ int32_t read_dentry_by_name(const uint8_t *fname, dentry_t *dentry)
 {
     int i;
     uint32_t result;
-    for (i = 0; i < bootBlock->dentryNum; i++)
+    for (i = 0; i < bootBlock->dentryNum; i++)      //loop through all dentries to find target
     {
         dentry_t *curDentry = &(bootBlock->dentries[i]);
-        if (strncmp((int8_t *)fname, (int8_t *)curDentry->fileName, FILE_NAME_MAX) == 0)
+        if (strncmp((int8_t *)fname, (int8_t *)curDentry->fileName, FILE_NAME_MAX) == 0)    //compare file name
         {
-            result = read_dentry_by_index(i, dentry);
+            result = read_dentry_by_index(i, dentry);   //if names match, then get the dentry
             return result;
         }
     }
@@ -68,7 +69,7 @@ int32_t read_dentry_by_name(const uint8_t *fname, dentry_t *dentry)
  */
 int32_t read_dentry_by_index(uint32_t index, dentry_t *dentry)
 {
-    if (index >= (bootBlock->dentryNum))
+    if (index >= (bootBlock->dentryNum))        //sanity check
     {
         printf("fail to read dentry with invalid index! \n");
         return FS_FAIL;
@@ -95,21 +96,21 @@ int32_t read_dentry_by_index(uint32_t index, dentry_t *dentry)
 int32_t read_data(uint32_t inodeIdx, uint32_t offset, uint8_t *buf, uint32_t length)
 {
 
-    if (inodeIdx >= bootBlock->inodeNum)
+    if (inodeIdx >= bootBlock->inodeNum)    //sanity check
     {
         printf("fail to read inode with invalid index!\n");
         printf("max index: %d, request index: %d \n", bootBlock->inodeNum, inodeIdx);
         return FS_FAIL;
     }
 
-    if (length > inodes[inodeIdx].size - offset)
+    if (length > inodes[inodeIdx].size - offset)    //sanity check
     {
         printf("fail to read data with invalid length! \n");
         printf("file size: %d, request length: %d, offset: %d \n", inodes[inodeIdx].size, length, offset);
         return FS_FAIL;
     }
 
-    if (length == 0)
+    if (length == 0)    //sanity check
         return FS_SUCCEED;
 
     uint8_t cache[length];
@@ -137,7 +138,7 @@ int32_t read_data(uint32_t inodeIdx, uint32_t offset, uint8_t *buf, uint32_t len
     while (curBlock <= endBlock)
     {
         curBlockIdx = dataBlockIdxArr[curBlock];
-        if (curBlockIdx >= dataBlockNum)
+        if (curBlockIdx >= dataBlockNum)    //sanity check
         {
             printf("fail to access datablock with invalid index!");
             return FS_FAIL;
@@ -216,11 +217,11 @@ int32_t fread(const uint8_t* fname, void *buf, uint32_t nbytes)
     dentry_t dentry;
     uint32_t fileSize;
     uint32_t readBytes;
-    if (read_dentry_by_name(fname, &dentry) == FS_FAIL)
+    if (read_dentry_by_name(fname, &dentry) == FS_FAIL)     //sanity check
         return FS_FAIL;
     fileSize = inodes[dentry.inodeIdx].size;
     readBytes = fileSize < nbytes ? fileSize : nbytes;
-    if (read_data(dentry.inodeIdx, 0, buf, readBytes) == FS_FAIL)
+    if (read_data(dentry.inodeIdx, 0, buf, readBytes) == FS_FAIL)     //sanity check
         return FS_FAIL;
     return readBytes;
 }
@@ -275,7 +276,7 @@ int32_t directory_read(uint32_t idx, uint8_t *buf)
     uint32_t size = 0;
     uint32_t nameLen;
     dentry_t dentry;
-    if (read_dentry_by_index(idx, &dentry) == FS_FAIL)
+    if (read_dentry_by_index(idx, &dentry) == FS_FAIL)     //sanity check
         return FS_FAIL;
     nameLen = strlen((int8_t *)dentry.fileName);
     size = nameLen < FILE_NAME_MAX ? nameLen : FILE_NAME_MAX;
@@ -360,11 +361,11 @@ int32_t file_read_test(const int8_t *fname)
 
     dentry_t dentry;
     uint32_t fileSize;
-    if (read_dentry_by_name((const uint8_t *)fname, &dentry) == FS_FAIL)
+    if (read_dentry_by_name((const uint8_t *)fname, &dentry) == FS_FAIL)     //sanity check
         return FS_FAIL;
     fileSize = inodes[dentry.inodeIdx].size;
     uint8_t buf[fileSize];
-    if (fread((const uint8_t *)fname, buf, fileSize) == FS_FAIL)
+    if (fread((const uint8_t *)fname, buf, fileSize) == FS_FAIL)     //sanity check
         return FS_FAIL;
     clear();
     printc(buf, fileSize);
