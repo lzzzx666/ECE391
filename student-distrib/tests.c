@@ -237,19 +237,19 @@ int test_terminal(){
 /* test : change rtc freq */
 int rtc_test() {
 #ifdef RTC_VIRTUALIZE
-	puts("==RTC with virtualization==");
+	puts("==test RTC with virtualization==\n");
 #else
-	puts("==RTC no virtualization==");
+	puts("==test RTC without virtualization==\n");
 #endif
 	uint32_t fd = rtc_open();
 	uint32_t freq, j;
 #ifdef RTC_VIRTUALIZE
-	for (freq = 1; freq <= 20; freq += 2) {
+	for (freq = 3; freq <= 50; freq += 3) {
 #else
 	for (freq = 2; freq <= INTERRUPT_FREQ_HI; freq <<= 1) {
 #endif
 		rtc_write(fd, &freq, sizeof(freq));
-		printf("\nfrequency: %d; ... ", freq);
+		printf("frequency: %d; ", freq);
 		/*
 		for(j = 0; j < 5 * freq; j++) {
 			!rtc_read(fd, NULL, 0);
@@ -260,6 +260,7 @@ int rtc_test() {
 			rtc_read(fd, NULL, 0);
 			putc('A' + j);
 		}
+		putc('\n');
 	}
 	return !rtc_close(fd);
 }
