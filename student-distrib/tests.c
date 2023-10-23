@@ -87,7 +87,7 @@ int idt_test()
 		}
 	}
 	rtc_test();
-	//test_terminal();
+	// test_terminal();
 	return result;
 }
 /* exc_test
@@ -283,29 +283,36 @@ int filesys_test(int vec)
 	int result = PASS;
 	switch (vec)
 	{
-	case 0:		//read directory and list all of th files in it
+	case 0: // read directory and list all of th files in it
 		result = directory_read_test() == FS_SUCCEED;
 		break;
 	// small files read tests
-	case 1:		//read frame0.txt
+	case 1: // read frame0.txt
 		result = file_read_test("frame0.txt") == FS_SUCCEED;
 		break;
-	case 2:		//read frame1.txt
+	case 2: // read frame1.txt
 		result = file_read_test("frame1.txt") == FS_SUCCEED;
 		break;
-	//executables read test
-	case 3:		//read grep
+	// executables read test
+	case 3: // read grep
 		result = file_read_test("grep") == FS_SUCCEED;
 		break;
-	case 4:		//read ls
+	case 4: // read ls
 		result = file_read_test("ls") == FS_SUCCEED;
 		break;
-	//large files read test
-	case 5:		//read fish
+	// large files read test
+	case 5: // read fish
 		result = file_read_test("fish") == FS_SUCCEED;
 		break;
-	case 6:		//read verylargetextwithverylongname.tx
+	case 6: // read verylargetextwithverylongname.tx
 		result = file_read_test("verylargetextwithverylongname.tx") == FS_SUCCEED;
+		break;
+	case 7:
+		printf("Integrated tests for fopen, fclose, directory_open, directory_close \n");
+		result &= fopen((const uint8_t *)"frame0.txt") == FS_SUCCEED;
+		result &= fclose(0) == FS_SUCCEED;
+		result &= directory_open((const uint8_t *)"frame1.txt") == FS_SUCCEED;
+		result &= directory_close(0) == FS_SUCCEED;
 		break;
 	default:
 		result = PASS;
@@ -323,5 +330,6 @@ void launch_tests()
 
 	// TEST_OUTPUT("idt_test", idt_test());
 	// exc_test(0);
-	TEST_OUTPUT("filesys_test",filesys_test(0));
+	TEST_OUTPUT("filesys_test", filesys_test(7));
+	// test_terminal();
 }

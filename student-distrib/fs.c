@@ -243,6 +243,7 @@ int32_t fread(const uint8_t *fname, void *buf, uint32_t nbytes)
  */
 int32_t fwrite(int32_t fd, const void *buf, int32_t nbytes)
 {
+    printf("This file system is read only!");
     return FS_FAIL;
 }
 
@@ -312,6 +313,7 @@ int32_t directory_read(uint32_t idx, uint8_t *buf)
  */
 int32_t directory_write(int32_t fd, const void *buf, int32_t nbytes)
 {
+    printf("This file system is read only!");
     return FS_FAIL;
 }
 
