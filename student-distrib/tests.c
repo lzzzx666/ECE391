@@ -28,38 +28,6 @@ static inline void assertion_failure()
 /* Checkpoint 1 tests */
 
 /* test : change rtc freq */
-void rtc_test()
-{
-#ifdef RTC_VIRTUALIZE
-	puts("==RTC with virtualization==");
-#else
-	puts("==RTC no virtualization==");
-#endif
-	uint32_t fd = rtc_open();
-	uint32_t freq, j;
-#ifdef RTC_VIRTUALIZE
-	for (freq = 1; freq <= 20; freq += 2)
-	{
-#else
-	for (freq = 2; freq <= INTERRUPT_FREQ_HI; freq <<= 1)
-	{
-#endif
-		rtc_write(fd, &freq, sizeof(freq));
-		printf("\nfrequency: %d; ... ", freq);
-		/*
-		for(j = 0; j < 5 * freq; j++) {
-			!rtc_read(fd, NULL, 0);
-		}
-		puts(" 5 sec");
-		*/
-		for (j = 0; j < 26; j++)
-		{
-			rtc_read(fd, NULL, 0);
-			putc('A' + j);
-		}
-	}
-	rtc_close(fd);
-}
 
 /* IDT Test - Example
  *
@@ -86,8 +54,6 @@ int idt_test()
 			result = FAIL;
 		}
 	}
-	rtc_test();
-	//test_terminal();
 	return result;
 }
 /* exc_test
@@ -249,6 +215,39 @@ int page_test(int vec)
 }
 
 /* Checkpoint 2 tests */
+
+/* test : change rtc freq */
+int rtc_test() {
+#ifdef RTC_VIRTUALIZE
+	puts("==test RTC with virtualization==\n");
+#else
+	puts("==test RTC without virtualization==\n");
+#endif
+	uint32_t fd = rtc_open();
+	uint32_t freq, j;
+#ifdef RTC_VIRTUALIZE
+	for (freq = 3; freq <= 50; freq += 3) {
+#else
+	for (freq = 2; freq <= INTERRUPT_FREQ_HI; freq <<= 1) {
+#endif
+		rtc_write(fd, &freq, sizeof(freq));
+		printf("frequency: %d; ", freq);
+		/*
+		for(j = 0; j < 5 * freq; j++) {
+			!rtc_read(fd, NULL, 0);
+		}
+		puts(" 5 sec"); 
+		*/
+		for(j = 0; j < 26; j++) {
+			rtc_read(fd, NULL, 0);
+			putc('A' + j);
+		}
+		putc('\n');
+	}
+	return !rtc_close(fd);
+}
+
+
 int test_terminal()
 {
 	char buffer[128];
@@ -311,5 +310,8 @@ void launch_tests()
 
 	// TEST_OUTPUT("idt_test", idt_test());
 	// exc_test(0);
-	TEST_OUTPUT("filesys_test",filesys_test(0));
+	TEST_OUTPUT("page test",page_test(6));
+	// TEST_OUTPUT("filesys_test 1",filesys_test(6));
+//	TEST_OUTPUT("rtc_test",rtc_test(0));
+	//TEST_OUTPUT("test_terminal",test_terminal(0));
 }
