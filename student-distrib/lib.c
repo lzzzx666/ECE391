@@ -574,7 +574,7 @@ void test_interrupts(void)
     }
 }
 
-int32_t printc(uint8_t *string, uint32_t n)
+int32_t putc_rep(uint8_t *string, uint32_t n)
 {
     register uint32_t i = 0;
     while (i < n)

@@ -159,7 +159,7 @@ int rtc_write(int32_t fd, const void* buf, int32_t nbytes) {
 }
 
 /**
- * rtc_write
+ * rtc_read
  * return after an interrupt occured
  */
 int rtc_read(int32_t fd, const void* buf, int32_t nbytes) {
