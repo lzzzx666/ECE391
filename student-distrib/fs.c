@@ -286,7 +286,7 @@ int32_t directory_close(int32_t fd)
  * @param buf - A pointer to the buffer where the directory entry's name will be copied.
  * @return The length of the directory entry's name copied to the buffer, or FS_FAIL if an error occurs.
  */
-int32_t directory_read(uint32_t idx, uint8_t *buf)
+int32_t directory_read(uint32_t idx, uint8_t *buf,int32_t padding)
 {
     uint32_t size = 0;
     uint32_t nameLen;
@@ -341,7 +341,7 @@ int32_t directory_read_test()
         dentry = (bootBlock->dentries[i]);
         fileType = dentry.fileType;
         fileSize = inodes[dentry.inodeIdx].size;
-        fileNameLen = directory_read(i, fileName); // get file name
+        fileNameLen = directory_read(i, fileName,PADDING); // get file name
         /*print entry*/
         printf("file_name: ");
         j = 32 - fileNameLen;

@@ -8,9 +8,9 @@
 #include "debug.h"
 #include "terminal.h"
 #include "keyboard.h"
-#include "fs.h"
 #define PASS 1
 #define FAIL 0
+
 
 /* format these macros as you see fit */
 #define TEST_HEADER \
@@ -27,7 +27,39 @@ static inline void assertion_failure()
 
 /* Checkpoint 1 tests */
 
+
+
 /* test : change rtc freq */
+void rtc_test() {
+#ifdef RTC_VIRTUALIZE
+	puts("==RTC with virtualization==");
+#else
+	puts("==RTC no virtualization==");
+#endif
+	uint32_t fd = rtc_open();
+	uint32_t freq, j;
+#ifdef RTC_VIRTUALIZE
+	for (freq = 1; freq <= 20; freq += 2) {
+#else
+	for (freq = 2; freq <= INTERRUPT_FREQ_HI; freq <<= 1) {
+#endif
+		rtc_write(fd, &freq, sizeof(freq));
+		printf("\nfrequency: %d; ... ", freq);
+		/*
+		for(j = 0; j < 5 * freq; j++) {
+			!rtc_read(fd, NULL, 0);
+		}
+		puts(" 5 sec"); 
+		*/
+		for(j = 0; j < 26; j++) {
+			rtc_read(fd, NULL, 0);
+			putc('A' + j);
+		}
+	}
+	rtc_close(fd);
+}
+
+
 
 /* IDT Test - Example
  *
@@ -54,6 +86,8 @@ int idt_test()
 			result = FAIL;
 		}
 	}
+	rtc_test();
+	//test_terminal();
 	return result;
 }
 /* exc_test
@@ -68,11 +102,9 @@ void exc_test(int vector)
 	int test2 = 1;
 	int test3;
 	int *test4 = NULL;
-	if (vector > 0x13 && vector != 0 && vector != 0x80 && vector != 0x21 && vector != 0x28)
-	{ // those are valid idt number
+	if (vector > 0x13 && vector!=0 && vector!=0x80  && vector!=0x21 && vector!=0x28){ //those are valid idt number
 		printf("idt entry does not exist!");
-		return;
-	} // we will not use exception greater than 0x13
+		return;} // we will not use exception greater than 0x13
 	else if (vector == 0)
 	{ // the divide_error exception
 		test3 = test2 / test1;
@@ -141,8 +173,9 @@ void exc_test(int vector)
 			break;
 		case 0x80:
 			asm volatile(
-				"movl $0,%%eax\n\t" // 0 is the system call parameter
-				"int $0x80" ::);
+			"movl $0,%%eax\n\t" //0 is the system call parameter
+			"int $0x80"
+			::);
 		};
 	}
 }
@@ -215,108 +248,21 @@ int page_test(int vec)
 }
 
 /* Checkpoint 2 tests */
-
-/* test : change rtc freq */
-int rtc_test() {
-#ifdef RTC_VIRTUALIZE
-	puts("==test RTC with virtualization==\n");
-#else
-	puts("==test RTC without virtualization==\n");
-#endif
-	uint32_t fd = rtc_open();
-	uint32_t freq, j;
-#ifdef RTC_VIRTUALIZE
-	for (freq = 3; freq <= 50; freq += 3) {
-#else
-	for (freq = 2; freq <= INTERRUPT_FREQ_HI; freq <<= 1) {
-#endif
-		rtc_write(fd, &freq, sizeof(freq));
-		printf("frequency: %d; ", freq);
-		/*
-		for(j = 0; j < 5 * freq; j++) {
-			!rtc_read(fd, NULL, 0);
-		}
-		puts(" 5 sec"); 
-		*/
-		for(j = 0; j < 26; j++) {
-			rtc_read(fd, NULL, 0);
-			putc('A' + j);
-		}
-		putc('\n');
-	}
-	return !rtc_close(fd);
-}
-
-
-int test_terminal()
-{
+void test_terminal(){
 	char buffer[128];
-	memset((void *)buffer, 0, 128);
+	memset((void*)buffer, 0, 128);
 	int r = 0, w = 0;
 	printf("terminal driver test begins\n");
 	while (1)
 	{
 		r = terminal_read(0, buffer, 128);
 		printf("read buf: %d\n", r);
-		if (r >= 0)
-			w = terminal_write(0, buffer, 128);
+		if(r >= 0)	w = terminal_write(0, buffer, 128);
 		printf("read buf: %d, write buf:%d\n", r, w);
-		if (r != w)
+		if(r != w)
 			break;
 	}
-	return -1;
-}
-
-/**
- * int filesys_test(int vec)
- *
- * This function performs various file system tests based on the provided vector.
- * It returns PASS if the vector value is out of range or no specific test is selected.
- *
- * @param vec: An integer vector indicating which file system test to perform.
- * @return: PASS if succeed or FAIL otherwise
- */
-int filesys_test(int vec)
-{
-	TEST_HEADER;
-	int result = PASS;
-	switch (vec)
-	{
-	case 0: // read directory and list all of th files in it
-		result = directory_read_test() == FS_SUCCEED;
-		break;
-	// small files read tests
-	case 1: // read frame0.txt
-		result = file_read_test("frame0.txt") == FS_SUCCEED;
-		break;
-	case 2: // read frame1.txt
-		result = file_read_test("frame1.txt") == FS_SUCCEED;
-		break;
-	// executables read test
-	case 3: // read grep
-		result = file_read_test("grep") == FS_SUCCEED;
-		break;
-	case 4: // read ls
-		result = file_read_test("ls") == FS_SUCCEED;
-		break;
-	// large files read test
-	case 5: // read fish
-		result = file_read_test("fish") == FS_SUCCEED;
-		break;
-	case 6: // read verylargetextwithverylongname.tx
-		result = file_read_test("verylargetextwithverylongname.tx") == FS_SUCCEED;
-		break;
-	case 7:
-		printf("Integrated tests for fopen, fclose, directory_open, directory_close \n");
-		result &= fopen((const uint8_t *)"frame0.txt") == FS_SUCCEED;
-		result &= fclose(0) == FS_SUCCEED;
-		result &= directory_open((const uint8_t *)"frame1.txt") == FS_SUCCEED;
-		result &= directory_close(0) == FS_SUCCEED;
-		break;
-	default:
-		result = PASS;
-	}
-	return result;
+	//return -1;
 }
 
 /* Checkpoint 3 tests */
@@ -326,9 +272,69 @@ int filesys_test(int vec)
 /* Test suite entry point */
 void launch_tests()
 {
+	/*以下测试仅测系统调用函数（在kernal测试），并不遵循系统调用流程*/
+	// int8_t buf[7000]={'\0'};
+	// int32_t pid=create_pcb();
+	// printf("------------file read test-----------------\n");
+	// printf("open the file:\n");
+	// int32_t fd=open("frame0.txt");
+	// 	printf("read this file:\n");
+	// read(fd,buf,7000);
 
-	// TEST_OUTPUT("idt_test", idt_test());
+	// printf(buf);
+	// printf("\n");
+	// printf("close the file:\n");
+	// close(fd);
+	// printf("try to read it again:\n");
+	// read(fd,buf,9);
+
+	// printf("------------dir read test-----------------\n");
+	// memset(buf,'\0',7000);
+	// printf("open the file:\n");
+	// fd=open(".");
+	// printf("read this file:\n");
+	// read(fd,buf,7000);
+	// printf(buf);
+	// printf("\n");
+	// printf("close the file:\n");
+	// close(fd);
+	// printf("try to read it again:\n");
+	// read(fd,buf,9);
+
+	// printf("------------terminal read test-----------------\n");
+	// printf("test terminal syscall:\n");
+	// memset(buf,'\0',7000);
+	// read(0,buf,128);
+	// printf("the buffer content is:\n");
+	// printf(buf);
+	// printf("\n");
+
+	// printf("------------terminal write test-----------------\n");
+	// printf("test terminal syscall:\n");
+	// memset(buf,'\0',7000);
+	// buf[0]='a';
+	// write(1,buf,128);
+	// printf("the buffer content is:\n");
+	// printf("\n");
+
+	printf("------------execute test-----------------\n");
+	const uint8_t* pro_name="hello";
+	execute(pro_name);
+
+
+	// asm volatile(
+	// 	"movl $1,%%eax\n\t"
+	// 	"movl %0,%%ebx\n\t"
+	// 	"int $0x80"
+		
+	// 	:
+	// 	:"r"(pro_name)
+	// 	:"%eax","%ebx"
+	// );
+
+
+
+	//TEST_OUTPUT("idt_test", idt_test());
 	// exc_test(0);
-	TEST_OUTPUT("filesys_test", filesys_test(0));
 	// test_terminal();
 }

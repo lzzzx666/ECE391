@@ -94,7 +94,7 @@ extern int32_t fwrite(int32_t fd, const void *buf, int32_t nbytes);
 
 extern int32_t directory_open(const uint8_t *fname);
 extern int32_t directory_close(int32_t fd);
-extern int32_t directory_read(uint32_t idx, uint8_t *buf);
+extern int32_t directory_read(uint32_t idx, uint8_t *buf,int32_t padding);
 extern int32_t directory_write(int32_t fd, const void *buf, int32_t nbytes);
 
 // tests utilities

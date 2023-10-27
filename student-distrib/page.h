@@ -1,6 +1,7 @@
 #ifndef PAGE_H
 #define PAGE_H
 #include "types.h"
+#include "systemcall.h"
 
 /*the starting address of kernel code, which is 4MB*/
 #define KERNEL_START_ADDR (4 * 1024 * 1024) // 4MB = 4 * 2^10 * 2^10 = 4*1024*1024
@@ -8,6 +9,8 @@
 #define PAGE_TABLE_ENTRY_NUM 1024
 #define INV_PD_IDX -1
 #define INV_PT_IDX -1
+#define ONE_PROGRAM_SIZE KERNEL_START_ADDR
+#define PROGRAM_START_ADDRESS 2*ONE_PROGRAM_SIZE
 
 // global variables to store the status of control registers
 extern uint32_t cr0, cr2, cr3, cr4;
@@ -76,24 +79,21 @@ typedef struct PTE
  * CR4 is a control register in x86 architecture that controls various processor
  * features and modes. This structure defines the individual bits and fields of CR4.
  */
-typedef struct cr4
-{
-    union
-    {
-        uint32_t val; // 32-bit value of the CR4 register.
-        struct
-        {
-            uint8_t vme : 1;         // Virtual 8086 Mode Extensions.
-            uint8_t pvi : 1;         // Protected-Mode Virtual Interrupts.
-            uint8_t tsd : 1;         // Time Stamp Disable.
-            uint8_t de : 1;          // Debugging Extensions.
-            uint8_t pse : 1;         // Page Size Extensions.
-            uint8_t pae : 1;         // Physical Address Extension.
-            uint8_t mce : 1;         // Machine-Check Exception.
-            uint8_t pge : 1;         // Page Global Enable.
-            uint8_t pce : 1;         // Performance-Monitoring Counter Enable.
-            uint8_t osfxsr : 1;      // Operating System Support for FXSAVE/FXRSTOR instructions.
-            uint8_t osxmmexcpt : 1;  // Operating System Support for Unmasked SIMD Floating-Point Exceptions.
+typedef struct cr4 {
+    union {
+        uint32_t val;         // 32-bit value of the CR4 register.
+        struct {
+            uint8_t vme : 1;       // Virtual 8086 Mode Extensions.
+            uint8_t pvi : 1;       // Protected-Mode Virtual Interrupts.
+            uint8_t tsd : 1;       // Time Stamp Disable.
+            uint8_t de : 1;        // Debugging Extensions.
+            uint8_t pse : 1;       // Page Size Extensions.
+            uint8_t pae : 1;       // Physical Address Extension.
+            uint8_t mce : 1;       // Machine-Check Exception.
+            uint8_t pge : 1;       // Page Global Enable.
+            uint8_t pce : 1;       // Performance-Monitoring Counter Enable.
+            uint8_t osfxsr : 1;    // Operating System Support for FXSAVE/FXRSTOR instructions.
+            uint8_t osxmmexcpt : 1; // Operating System Support for Unmasked SIMD Floating-Point Exceptions.
             uint32_t reserverd : 21; // Reserved bits.
         } __attribute__((packed));
     };
@@ -106,17 +106,14 @@ typedef struct cr4
  * base of the page directory for a task. This structure defines the individual bits and fields
  * of CR3.
  */
-typedef struct cr3
-{
-    union
-    {
-        uint32_t val; // 32-bit value of the CR3 register.
-        struct
-        {
-            uint8_t reserved2 : 3;           // Reserved bits.
-            uint8_t pwt : 1;                 // Page-level Write-Through.
-            uint8_t pcd : 1;                 // Page-level Cache Disable.
-            uint8_t reserved1 : 7;           // Reserved bits.
+typedef struct cr3 {
+    union {
+        uint32_t val;                 // 32-bit value of the CR3 register.
+        struct {
+            uint8_t reserved2 : 3;     // Reserved bits.
+            uint8_t pwt : 1;           // Page-level Write-Through.
+            uint8_t pcd : 1;           // Page-level Cache Disable.
+            uint8_t reserved1 : 7;     // Reserved bits.
             uint32_t pageDirectoryBase : 20; // Physical base address of the page directory.
         } __attribute__((packed));
     };
@@ -128,8 +125,7 @@ typedef struct cr3
  * CR2 is a control register in x86 architecture that holds the linear address of the last
  * page-table entry that caused a page fault. This structure simply contains a 32-bit value.
  */
-typedef struct cr2
-{
+typedef struct cr2 {
     uint32_t val; ///< 32-bit value of the CR2 register.
 } cr2_t;
 
@@ -139,27 +135,24 @@ typedef struct cr2
  * CR0 is a control register in x86 architecture that controls various processor operating
  * modes and features. This structure defines the individual bits and fields of CR0.
  */
-typedef struct cr0
-{
-    union
-    {
-        uint32_t val; // 32-bit value of the CR0 register.
-        struct
-        {
-            uint8_t pe : 1;          // Protection Enable.
-            uint8_t mp : 1;          // Monitor Coprocessor.
-            uint8_t em : 1;          // Emulation.
-            uint8_t ts : 1;          // Task Switched.
-            uint8_t et : 1;          // Extension Type.
-            uint8_t ne : 1;          // Numeric Error.
+typedef struct cr0 {
+    union {
+        uint32_t val;         // 32-bit value of the CR0 register.
+        struct {
+            uint8_t pe : 1;        // Protection Enable.
+            uint8_t mp : 1;        // Monitor Coprocessor.
+            uint8_t em : 1;        // Emulation.
+            uint8_t ts : 1;        // Task Switched.
+            uint8_t et : 1;        // Extension Type.
+            uint8_t ne : 1;        // Numeric Error.
             uint16_t reserved1 : 10; // Reserved bits.
-            uint8_t wp : 1;          // Write Protect.
-            uint8_t reserved2 : 1;   // Reserved bit.
-            uint8_t am : 1;          // Alignment Mask.
+            uint8_t wp : 1;        // Write Protect.
+            uint8_t reserved2 : 1; // Reserved bit.
+            uint8_t am : 1;        // Alignment Mask.
             uint16_t reserved3 : 10; // Reserved bits.
-            uint8_t nw : 1;          // Not Write-Through.
-            uint8_t cd : 1;          // Cache Disable.
-            uint8_t pg : 1;          // Paging.
+            uint8_t nw : 1;        // Not Write-Through.
+            uint8_t cd : 1;        // Cache Disable.
+            uint8_t pg : 1;        // Paging.
         } __attribute__((packed));
     };
 } cr0_t;
@@ -170,8 +163,7 @@ typedef struct cr0
  * This structure combines the control registers CR0, CR2, CR3, and CR4 into a single
  * data structure for easy management and access.
  */
-typedef struct cr
-{
+typedef struct cr {
     cr0_t cr0; // Control Register 0.
     cr2_t cr2; // Control Register 2.
     cr3_t cr3; // Control Register 3.
@@ -203,5 +195,12 @@ extern void get_cr();
 extern int page_init();
 extern void update_cr3();
 
+
+extern int32_t set_paging(int32_t fd);
 // #define SET_PDE()
 #endif
+
+
+
+
+
