@@ -25,3 +25,21 @@ MP3.1
 	    find takes:30min
 	    how to fix:I have two files named idt.c and idt.S, they will both generate the idt.o file, so 
 		            confliction happans. I rename idt.S to idt_linkage.S
+
+
+MP3.2
+    BUG1
+        description: read_data function could not get the correct size of the file. End position is 
+                     always wrong with non-zero offset
+        find takes: 10 min 
+        fix takes: 5 min
+        how to fix: offset/4096 and offset>>12 are not equivalent without casting 4096 to uint32_t. 
+                    Using 4096u solves the problem.
+    
+    BUG2
+        description: always get a page fault when read_data function tries to access the second data 
+                     block of an inode
+        find takes: 10 min 
+        fix takes: 5 min
+        how to fix: the data blocks of a file is not consecutive, I have to get every data block's  
+                    index when I finishes reading one data block

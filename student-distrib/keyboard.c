@@ -118,7 +118,7 @@ void keyboard_handler()
             }
             else
             {
-                if(main_terminal.count < READ_MAX_SIZE)
+                if(main_terminal.count < READ_MAX_SIZE - 1)
                 {
                     main_terminal.terminal_buf[main_terminal.count++] = ascii; //default condition
                     putc(ascii);
