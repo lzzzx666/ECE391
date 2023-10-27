@@ -5,6 +5,9 @@
 #include "idt.h"
 #include "page.h"
 #include "rtc.h"
+#include "debug.h"
+#include "terminal.h"
+#include "keyboard.h"
 #define PASS 1
 #define FAIL 0
 
@@ -23,6 +26,40 @@ static inline void assertion_failure()
 }
 
 /* Checkpoint 1 tests */
+
+
+
+/* test : change rtc freq */
+void rtc_test() {
+#ifdef RTC_VIRTUALIZE
+	puts("==RTC with virtualization==");
+#else
+	puts("==RTC no virtualization==");
+#endif
+	uint32_t fd = rtc_open();
+	uint32_t freq, j;
+#ifdef RTC_VIRTUALIZE
+	for (freq = 1; freq <= 20; freq += 2) {
+#else
+	for (freq = 2; freq <= INTERRUPT_FREQ_HI; freq <<= 1) {
+#endif
+		rtc_write(fd, &freq, sizeof(freq));
+		printf("\nfrequency: %d; ... ", freq);
+		/*
+		for(j = 0; j < 5 * freq; j++) {
+			!rtc_read(fd, NULL, 0);
+		}
+		puts(" 5 sec"); 
+		*/
+		for(j = 0; j < 26; j++) {
+			rtc_read(fd, NULL, 0);
+			putc('A' + j);
+		}
+	}
+	rtc_close(fd);
+}
+
+
 
 /* IDT Test - Example
  *
@@ -49,6 +86,8 @@ int idt_test()
 			result = FAIL;
 		}
 	}
+	rtc_test();
+	//test_terminal();
 	return result;
 }
 /* exc_test
@@ -209,6 +248,23 @@ int page_test(int vec)
 }
 
 /* Checkpoint 2 tests */
+void test_terminal(){
+	char buffer[128];
+	memset((void*)buffer, 0, 128);
+	int r = 0, w = 0;
+	printf("terminal driver test begins\n");
+	while (1)
+	{
+		r = terminal_read(0, buffer, 128);
+		printf("read buf: %d\n", r);
+		if(r >= 0)	w = terminal_write(0, buffer, 128);
+		printf("read buf: %d, write buf:%d\n", r, w);
+		if(r != w)
+			break;
+	}
+	//return -1;
+}
+
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
@@ -216,9 +272,69 @@ int page_test(int vec)
 /* Test suite entry point */
 void launch_tests()
 {
-	// printf("qqq");
+	/*以下测试仅测系统调用函数（在kernal测试），并不遵循系统调用流程*/
+	// int8_t buf[7000]={'\0'};
+	// int32_t pid=create_pcb();
+	// printf("------------file read test-----------------\n");
+	// printf("open the file:\n");
+	// int32_t fd=open("frame0.txt");
+	// 	printf("read this file:\n");
+	// read(fd,buf,7000);
 
-	// TEST_OUTPUT("idt_test", idt_test());
-	// TEST_OUTPUT("page_test", page_test(0));
-	exc_test(0x80);
+	// printf(buf);
+	// printf("\n");
+	// printf("close the file:\n");
+	// close(fd);
+	// printf("try to read it again:\n");
+	// read(fd,buf,9);
+
+	// printf("------------dir read test-----------------\n");
+	// memset(buf,'\0',7000);
+	// printf("open the file:\n");
+	// fd=open(".");
+	// printf("read this file:\n");
+	// read(fd,buf,7000);
+	// printf(buf);
+	// printf("\n");
+	// printf("close the file:\n");
+	// close(fd);
+	// printf("try to read it again:\n");
+	// read(fd,buf,9);
+
+	// printf("------------terminal read test-----------------\n");
+	// printf("test terminal syscall:\n");
+	// memset(buf,'\0',7000);
+	// read(0,buf,128);
+	// printf("the buffer content is:\n");
+	// printf(buf);
+	// printf("\n");
+
+	// printf("------------terminal write test-----------------\n");
+	// printf("test terminal syscall:\n");
+	// memset(buf,'\0',7000);
+	// buf[0]='a';
+	// write(1,buf,128);
+	// printf("the buffer content is:\n");
+	// printf("\n");
+
+	printf("------------execute test-----------------\n");
+	const uint8_t* pro_name="hello";
+	execute(pro_name);
+
+
+	// asm volatile(
+	// 	"movl $1,%%eax\n\t"
+	// 	"movl %0,%%ebx\n\t"
+	// 	"int $0x80"
+		
+	// 	:
+	// 	:"r"(pro_name)
+	// 	:"%eax","%ebx"
+	// );
+
+
+
+	//TEST_OUTPUT("idt_test", idt_test());
+	// exc_test(0);
+	// test_terminal();
 }

@@ -10,7 +10,7 @@ handlers:
    .long floating_point_error,alignment_check,machine_check,simd_floating_point_exception
    .long keyboard,real_time_clock,syscall_linkage
 syscall:
-    .long halt,execute,read,write,open
+    .long 0,halt,execute,read,write,open
     .long close,getargs,vidmap,set_handler,sigreturn
 #the commom assembly linkage for exception/interrupt
 ex_ir_linkage:

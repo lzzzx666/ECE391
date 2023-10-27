@@ -1,25 +1,38 @@
 #ifndef SYSTEMCALL
 #define SYSTEMCALL
-#include "types.h"
-#include "lib.h"
-#include "pcb.h"
-#include "x86_desc.h"
+
 /*macros are defined here*/
 #define MAX_FD 8
 #define OPEN 0
 #define CLOSE 1
 #define READ 2
 #define WRITE 3
+
 #define MAX_FILE_NAME 32
 #define MAX_BUF 128
+
 #define PROGRAM_IMAGE 0x08048000
 #define PROGRAM_IMAGE_END 0x08400000
 #define PROGRAM_IMAGE_SIZE PROGRAM_IMAGE_END-PROGRAM_IMAGE
 
-extern int32_t* terminal_o[];
-extern int32_t* rtc_o[];
-extern int32_t* file_o[];
-extern int32_t* dir_o[];
+#define EXECUTAVLE_MAGIC_NUMBER_SIZE 4
+#define EXECUTABLE_MAGIC_NUMBER0 0x7f
+#define EXECUTABLE_MAGIC_NUMBER1 0x45
+#define EXECUTABLE_MAGIC_NUMBER2 0x4c
+#define EXECUTABLE_MAGIC_NUMBER3 0x46
+
+#define SYSCALL_SUCCESS 0
+#define SYSCALL_FAIL -1
+#define PADDING 0
+
+
+#include "types.h"
+#include "lib.h"
+#include "pcb.h"
+#include "x86_desc.h"
+#include "fs.h"
+
+
 
 /*sys_halt*/
 extern int32_t halt(uint8_t status);
@@ -41,6 +54,10 @@ extern int32_t vidmap(uint8_t **screen_start);
 extern int32_t set_handler(int32_t signum, void *handler);
 /*sys_sigretur*/
 extern int32_t sigreturn(void);
+
+
 /**/
-void to_user_mode();
+void to_user_mode(int32_t eip,int32_t eflags,int32_t esp,int32_t fd);
+/**/
+
 #endif

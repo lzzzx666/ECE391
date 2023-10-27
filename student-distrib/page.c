@@ -79,7 +79,6 @@ int set_pde(PD_t *baseAddr, int idx, uint8_t us, uint8_t g, uint8_t ps, uint32_t
     return 0;
 }
 
-
 /**
  * Initialize the page tables and enable paging.
  *
@@ -90,7 +89,7 @@ int set_pde(PD_t *baseAddr, int idx, uint8_t us, uint8_t g, uint8_t ps, uint32_t
  */
 int page_init()
 {
-    int i;// loop counter
+    int i; // loop counter
     /*initialize page table and page directory*/
     for (i = 0; i < PAGE_TABLE_ENTRY_NUM; i++)
     {
@@ -107,21 +106,31 @@ int page_init()
 
     /*set page directory entry 0 and 1. 0 for page table
      occupied by video memory, 1 for kernel code    */
-    set_pde(&pageDirectory, 0, 0, 0, 0, ((uint32_t)&pageTable) >> 12);// 0 entry shold be user and 4kb
-    set_pde(&pageDirectory, 1, 0, 1, 1, KERNEL_START_ADDR >> 12);// 1st entry should be supervisior and 4mb
+    set_pde(&pageDirectory, 0, 0, 0, 0, ((uint32_t)&pageTable) >> 12); // 0 entry shold be user and 4kb
+    set_pde(&pageDirectory, 1, 0, 1, 1, KERNEL_START_ADDR >> 12);      // 1st entry should be supervisior and 4mb
+
     /*enable paging function*/
-    (*set_cr)((uint32_t)(pageDirectory));
+    get_cr();                                         // get the control registers values into corresponding global variables
+    ((cr4_t *)&cr4)->pse = 1;                         // turn on pse feature (allow 4MB page)
+    ((cr3_t *)&cr3)->val = (uint32_t)(pageDirectory); // set cr3 to the pageDirectory address
+    ((cr0_t *)&cr0)->pg = 1;                          // turn on the paging feature
+    set_cr();                                         // set the control registers to the corresponding value
+
     return 0;
 }
+
+
+void update_cr3()
+{
+    get_cr();
+    set_cr();
+}
+
 
 /**/
 int32_t set_paging(int32_t fd){
     int32_t program_address=fd*ONE_PROGRAM_SIZE+PROGRAM_START_ADDRESS;
-    set_pde(&pageDirectory,PROGRAM_IMAGE>>22,0,0,1,program_address>>12);
-    asm volatile(
-        "movl %%cr3,%%eax\n\t"
-        "movl %%eax,%%cr3"
-        :::"%eax","cr3"
-    );
+    set_pde(&pageDirectory,PROGRAM_IMAGE>>22,1,0,1,program_address>>12);
+    update_cr3();
     return 0;
 }
