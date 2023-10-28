@@ -173,7 +173,7 @@ int32_t read(int32_t fd, void *buf, int32_t nbytes)
     }
 
     /*read data*/
-    if(cur_pcb)
+
     read_bytes=(cur_pcb->file_obj_table[fd].f_operation.read)(fd,(int32_t*)buf,nbytes);
     cur_pcb->file_obj_table[fd].f_position+=read_bytes;
     return read_bytes;

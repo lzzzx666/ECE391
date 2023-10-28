@@ -1,13 +1,14 @@
 #include "fs.h"
 #include "page.h"
 #include "pcb.h"
-
+#include "systemcall.h"
 #define DEBUG 0
 
 /*file scope variables to store the pointers to bootBlock, inodes and dataBlock*/
 bootBlock_t *bootBlock;
 inode_t *inodes;
 dataBlock_t *dataBlock;
+uint32_t directoryIdx;
 
 /**
  * int32_t filesys_init(uint32_t filesys_img)
@@ -264,7 +265,6 @@ int32_t file_write(int32_t fd, const void *buf, int32_t nbytes)
     return FS_FAIL;
 }
 
-/*** USELESS FOR CKPT2 ***/
 /**
  * int32_t directory_open(const uint8_t *fname)
  *
@@ -275,6 +275,7 @@ int32_t file_write(int32_t fd, const void *buf, int32_t nbytes)
  */
 int32_t directory_open(const uint8_t *fname)
 {
+    directoryIdx = 0;
     return FS_SUCCEED;
 }
 
@@ -303,23 +304,23 @@ int32_t directory_close(int32_t fd)
  * @param buf - A pointer to the buffer where the directory entry's name will be copied.
  * @return The length of the directory entry's name copied to the buffer, or FS_FAIL if an error occurs.
  */
-int32_t directory_read(int32_t fd, uint8_t *buf, int32_t padding)
+int32_t directory_read(int32_t fd, uint8_t *buf, int32_t nbytes)
 {
-    int32_t cur_pid;
-    uint32_t size = 0;
-    uint32_t nameLen;
     dentry_t dentry;
-    uint32_t idx;
-    pcb_t* cur_pcb=NULL;
-    get_current_task(&cur_pid);
-    cur_pcb=pcb_array[cur_pid];
-    idx= cur_pcb->file_obj_table[fd].f_position;
-    if (read_dentry_by_index(idx, &dentry) == FS_FAIL) // sanity check
-        return FS_FAIL;
-    nameLen = strlen((int8_t *)dentry.fileName);              // get the length of the filename
-    size = nameLen < FILE_NAME_MAX ? nameLen : FILE_NAME_MAX; // check whether the filename is too long
-    memcpy(buf, dentry.fileName, nameLen);                    // copy name
-    return (int32_t)size;
+    uint8_t cache[MAX_FILE_NAME + 1];
+    uint32_t nameLen;
+    int32_t ret;
+    if (directoryIdx >= bootBlock->dentryNum)
+        return 0;
+    cache[MAX_FILE_NAME] = '\0';
+    ret = read_dentry_by_index(directoryIdx, &dentry);
+    if (ret == FS_FAIL)
+        return 0;
+    memcpy(cache, dentry.fileName, FILE_NAME_MAX);
+    ret = strlen(cache);
+    memcpy(buf, cache, ret);
+    directoryIdx++;
+    return ret;
 }
 
 /*** USELESS FOR CKPT2 ***/
@@ -351,42 +352,65 @@ int32_t directory_write(int32_t fd, const void *buf, int32_t nbytes)
 int32_t directory_read_test()
 {
     clear(); // clear the screen before print the files
-    // initialization
-    int i, j, k;
-    uint32_t fileType;
-    uint32_t fileSize;
-    int32_t fileNameLen;
-    dentry_t dentry;
-    uint8_t fileName[FILE_NAME_MAX];
-    for (i = 0; i < dentryNum; i++) // loop to get alll file information
+             // initialization
+             // int i, j, k;
+             // uint32_t fileType;
+             // uint32_t fileSize;
+             // int32_t fileNameLen;
+             // dentry_t dentry;
+             // uint8_t fileName[FILE_NAME_MAX];
+             // for (i = 0; i < dentryNum; i++) // loop to get alll file information
+             // {
+             //     memset(fileName, 0, FILE_NAME_MAX); // initialize cache
+             //     dentry = (bootBlock->dentries[i]);
+             //     fileType = dentry.fileType;
+             //     fileSize = inodes[dentry.inodeIdx].size;
+             //     fileNameLen = directory_read(i, fileName, PADDING); // get file name
+             //     /*print entry*/
+             //     printf("file_name: ");
+             //     j = 32 - fileNameLen;
+             //     for (; j > 0; j--)
+             //     {
+             //         printf(" ");
+             //     }
+             //     putc_rep(fileName, fileNameLen);
+             //     printf(", file_type: ");
+             //     printf("%d", dentry.fileType);
+             //     printf(", file_size: ");
+             //     // right alignment
+             //     j = !fileSize;
+             //     for (k = fileSize; k; j++, k /= 10)
+             //         ;
+             //     for (; j < 9; j++)
+             //     {
+             //         printf(" ");
+             //     }
+             //     printf("%d\n", fileSize);
+             // }
+             // return FS_SUCCEED;
+    int32_t fd, cnt;
+    uint8_t buf[33];
+    current_pid = 0;
+    create_pcb();
+    if (-1 == (fd = open(".")))
     {
-        memset(fileName, 0, FILE_NAME_MAX); // initialize cache
-        dentry = (bootBlock->dentries[i]);
-        fileType = dentry.fileType;
-        fileSize = inodes[dentry.inodeIdx].size;
-        fileNameLen = directory_read(i, fileName, PADDING); // get file name
-        /*print entry*/
-        printf("file_name: ");
-        j = 32 - fileNameLen;
-        for (; j > 0; j--)
-        {
-            printf(" ");
-        }
-        putc_rep(fileName, fileNameLen);
-        printf(", file_type: ");
-        printf("%d", dentry.fileType);
-        printf(", file_size: ");
-        // right alignment
-        j = !fileSize;
-        for (k = fileSize; k; j++, k /= 10)
-            ;
-        for (; j < 9; j++)
-        {
-            printf(" ");
-        }
-        printf("%d\n", fileSize);
+        printf("directory open failed\n");
+        return 2;
     }
-    return FS_SUCCEED;
+
+    while (0 != (cnt = read(fd, buf, 32)))
+    {
+        if (-1 == cnt)
+        {
+            printf("directory entry read failed\n");
+            return 3;
+        }
+        buf[cnt] = '\n';
+        if (-1 == write(1, buf, cnt + 1))
+            return 3;
+    }
+    delete_pcb();
+    return 0;
 }
 
 /**
