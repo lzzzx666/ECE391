@@ -303,11 +303,17 @@ int32_t directory_close(int32_t fd)
  * @param buf - A pointer to the buffer where the directory entry's name will be copied.
  * @return The length of the directory entry's name copied to the buffer, or FS_FAIL if an error occurs.
  */
-int32_t directory_read(uint32_t idx, uint8_t *buf, int32_t padding)
+int32_t directory_read(int32_t fd, uint8_t *buf, int32_t padding)
 {
+    int32_t cur_pid;
     uint32_t size = 0;
     uint32_t nameLen;
     dentry_t dentry;
+    uint32_t idx;
+    pcb_t* cur_pcb=NULL;
+    get_current_task(&cur_pid);
+    cur_pcb=pcb_array[cur_pid];
+    idx= cur_pcb->file_obj_table[fd].f_position;
     if (read_dentry_by_index(idx, &dentry) == FS_FAIL) // sanity check
         return FS_FAIL;
     nameLen = strlen((int8_t *)dentry.fileName);              // get the length of the filename

@@ -8,7 +8,6 @@ pcb_t *pcb_array[MAX_TASK];
 int8_t pcb_bitmap = 0x00;
 int32_t current_pid;
 
-
 /**
  * create_pcb
  * it will find a empty position in the pcb_array and create a new pcb to fill it
@@ -85,7 +84,6 @@ void initialize_new_pcb(pcb_t *pcb, int32_t pid)
     if ((pcb_bitmap >> (7 - current_pid)))
     {
         pcb->parent_pid = current_pid;
-        
         // asm("movl %%eax, %0" : "=r" (registerValue));??????????????????
     }
     else
@@ -111,11 +109,17 @@ void initialize_new_pcb(pcb_t *pcb, int32_t pid)
 void initialize_file_object(file_object_t *file_object, dentry_t dentry)
 {
     /*initialize all parameters*/
-    file_object->exist = 1;
-    file_object->f_position = 0;
-    file_object->filename = dentry.fileName;
-    file_object->inode = dentry.inodeIdx;
-    assign_operation(file_object, dentry.fileType);
+    if (dentry.fileType <= 3)
+    {
+        file_object->exist = 1;
+        file_object->f_position = 0;
+        file_object->inode = dentry.inodeIdx;
+        assign_operation(file_object, dentry.fileType);
+    }
+    else
+    {
+        file_object->exist = 0;
+    }
 }
 
 /**
@@ -129,7 +133,7 @@ void initialize_stdin_stdout(pcb_t *pcb)
     /*initialize the stdin*/
     pcb->file_obj_table[0].exist = 1;
     pcb->file_obj_table[0].f_position = 0;
-    pcb->file_obj_table[0].inode = 0; //???
+    pcb->file_obj_table[0].inode = 0; 
     assign_operation(&(pcb->file_obj_table)[0], TERMINAL);
 
     /*initialize the stdout*/

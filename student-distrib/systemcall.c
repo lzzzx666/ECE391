@@ -158,27 +158,24 @@ void to_user_mode(int32_t eip, int32_t eflags, int32_t esp, int32_t fd)
  */
 int32_t read(int32_t fd, void *buf, int32_t nbytes)
 {
-    // 应增加file size判断
-    pcb_t *cur_pcb = NULL;
+    //应增加file size判断
+    pcb_t* cur_pcb = NULL;
     int32_t file_position;
     int32_t read_bytes;
-    dentry_t dentry;
 
     get_current_task(&current_pid);
-    cur_pcb = pcb_array[current_pid];
+    cur_pcb=pcb_array[current_pid];
 
     /*sanity check*/
-    if (nbytes <= 0 || fd >= MAX_FD || buf == NULL || cur_pcb->file_obj_table[fd].exist == 0 || fd < 0)
-    {
+    if(nbytes<=0 || fd>=MAX_FD || buf==NULL || cur_pcb->file_obj_table[fd].exist==0 || fd<0){
         printf("Can't read!\n");
         return SYSCALL_FAIL;
     }
 
     /*read data*/
-    // file_position=cur_pcb->file_obj_table[fd].f_position;
-    // read_dentry_by_index(cur_pcb->file_obj_table[fd].inode,&dentry);
-    read_bytes = (cur_pcb->file_obj_table[fd].f_operation.read)(cur_pcb->file_obj_table[fd].filename, buf, nbytes);
-    cur_pcb->file_obj_table[fd].f_position += read_bytes;
+    if(cur_pcb)
+    read_bytes=(cur_pcb->file_obj_table[fd].f_operation.read)(fd,(int32_t*)buf,nbytes);
+    cur_pcb->file_obj_table[fd].f_position+=read_bytes;
     return read_bytes;
 
     return SYSCALL_SUCCESS;
@@ -192,27 +189,26 @@ int32_t read(int32_t fd, void *buf, int32_t nbytes)
 int32_t write(int32_t fd, const void *buf, int32_t nbytes)
 {
 
-    pcb_t *cur_pcb = pcb_array[current_pid];
-    int32_t file_position;
+    pcb_t* cur_pcb = NULL;
     int32_t write_bytes;
 
+    /*get the active pcb*/
+    get_current_task(&current_pid);
+    cur_pcb=pcb_array[current_pid];
+
     /*sanity check*/
-    // printf("check:",cur_pcb->file_obj_table[fd].);
-    if (nbytes <= 0 || fd >= MAX_FD || buf == NULL || cur_pcb->file_obj_table[fd].exist == 0 || fd < 0)
-    {
+    if(nbytes<=0 || fd>=MAX_FD || buf==NULL || cur_pcb->file_obj_table[fd].exist==0 || fd<0){
         printf("Can't write!\n");
         return SYSCALL_FAIL;
     }
 
     /*write data*/
-    // file_position=cur_pcb->file_obj_table[fd].f_position;
-    if (write_bytes = (cur_pcb->file_obj_table[fd].f_operation.write)(fd, buf, nbytes) == FS_FAIL)
-    {
+    if(write_bytes=(cur_pcb->file_obj_table[fd].f_operation.write)(fd,buf,nbytes)==FS_FAIL){
         printf("Can't write!\n");
         return SYSCALL_FAIL;
     }
-
-    return SYSCALL_SUCCESS;
+    
+    return write_bytes;
 }
 
 /**
@@ -226,30 +222,38 @@ int32_t open(const uint8_t *filename)
     int32_t fd;
     dentry_t dentry;
     file_object_t current_file;
-    pcb_t *cur_pcb = pcb_array[current_pid];
+    pcb_t* cur_pcb = NULL;
+
+    /*get the active pcb*/
+    get_current_task(&current_pid);
+    cur_pcb=pcb_array[current_pid];
 
     /*find the file in the file system*/
-    if (read_dentry_by_name(filename, &dentry) == FS_FAIL)
-    {
+    if(read_dentry_by_name(filename,&dentry)==FS_FAIL){
         return SYSCALL_FAIL;
+    
     }
+    
     /*sanity check*/
-    if (open_o[dentry.fileType](filename) == FS_FAIL)
-    {
+    if(file_open(filename)==FS_FAIL){
         printf("Can't find this file!\n");
         return SYSCALL_FAIL;
     }
-    if (cur_pcb->f_number >= MAX_FD)
-    {
+    if(cur_pcb->f_number>=MAX_FD){
         printf("Can't open more file!\n");
         return SYSCALL_FAIL;
     }
 
     /*initialize the file object*/
-    initialize_file_object(&current_file, dentry);
+    initialize_file_object(&current_file,dentry);
+
+    /*the case when initialization fail*/
+    if(current_file.exist==0){
+        return SYSCALL_FAIL;
+    }
 
     /*assign this file to pcb*/
-    fd = put_file_to_pcb(&current_file);
+    fd=put_file_to_pcb(&current_file);
 
     /*open the file*/
     cur_pcb->file_obj_table[fd].f_operation.open(filename);
@@ -263,23 +267,25 @@ int32_t open(const uint8_t *filename)
  * OUTPUT: print the system call message
  */
 int32_t close(int32_t fd)
-{
-    pcb_t *cur_pcb = NULL;
+{   
+    pcb_t* cur_pcb = NULL;
+    
+    /*get the active pcb*/
     get_current_task(&current_pid);
-    cur_pcb = pcb_array[current_pid];
-    if (fd < 2 || fd >= MAX_FD)
-    {
+    cur_pcb=pcb_array[current_pid];
+
+    /*sanity check*/
+    if(fd<2 || fd>=MAX_FD){ //we can't close terminal
         return SYSCALL_FAIL;
     }
-    if (cur_pcb->file_obj_table[fd].exist = 0)
-    {
-        return -SYSCALL_FAIL;
+    if(cur_pcb->file_obj_table[fd].exist=0){
+        return SYSCALL_FAIL;
     }
-    /*close the file*/
-    cur_pcb->file_obj_table[fd].f_operation.close(fd);
 
-    cur_pcb->file_obj_table[fd].exist = 0;
+    /*close the file*/
+    cur_pcb->file_obj_table[fd].exist=0;
     cur_pcb->f_number--;
+    cur_pcb->file_obj_table[fd].f_operation.close(fd);
 
     return SYSCALL_SUCCESS;
 }
@@ -327,3 +333,4 @@ int32_t sigreturn(void)
     printf("sys_sigreturn!");
     return 0;
 }
+
