@@ -1,5 +1,6 @@
 #include "fs.h"
 #include "page.h"
+#include "pcb.h"
 
 #define DEBUG 0
 
@@ -43,11 +44,17 @@ int32_t filesys_init(uint32_t filesys_img)
 int32_t read_dentry_by_name(const uint8_t *fname, dentry_t *dentry)
 {
     int i;
+    uint32_t inputLen = strlen((const int8_t *)fname);
+    uint8_t buf[FILE_NAME_MAX + 1];
     uint32_t result;
+    buf[FILE_NAME_MAX] = '\0';
     for (i = 0; i < bootBlock->dentryNum; i++) // loop through all dentries to find target
     {
+        memset(buf, 0, FILE_NAME_MAX + 1);
         dentry_t *curDentry = &(bootBlock->dentries[i]);
-        if (strncmp((int8_t *)fname, (int8_t *)curDentry->fileName, FILE_NAME_MAX) == 0) // compare file name
+        memcpy(buf, curDentry->fileName, FILE_NAME_MAX);
+        uint32_t nameLen = strlen((const int8_t *)buf);
+        if ((inputLen == nameLen) && (strncmp((int8_t *)fname, (int8_t *)buf, nameLen) == 0)) // compare file name
         {
             result = read_dentry_by_index(i, dentry); // if names match, then get the dentry
             return result;
@@ -99,15 +106,19 @@ int32_t read_data(uint32_t inodeIdx, uint32_t offset, uint8_t *buf, uint32_t len
 
     if (inodeIdx >= bootBlock->inodeNum) // sanity check
     {
+#if DEBUG
         printf("fail to read inode with invalid index!\n");
         printf("max index: %d, request index: %d \n", bootBlock->inodeNum, inodeIdx);
+#endif
         return FS_FAIL;
     }
 
     if (length > inodes[inodeIdx].size - offset) // sanity check
     {
+#if DEBUG
         printf("fail to read data with invalid length! \n");
         printf("file size: %d, request length: %d, offset: %d \n", inodes[inodeIdx].size, length, offset);
+#endif
         return FS_FAIL;
     }
 
@@ -144,7 +155,9 @@ int32_t read_data(uint32_t inodeIdx, uint32_t offset, uint8_t *buf, uint32_t len
         curBlockIdx = dataBlockIdxArr[curBlock];
         if (curBlockIdx >= dataBlockNum) // sanity check
         {
+#if DEBUG
             printf("fail to access datablock with invalid index!");
+#endif
             return FS_FAIL;
         }
 #if DEBUG
@@ -184,7 +197,7 @@ int32_t read_data(uint32_t inodeIdx, uint32_t offset, uint8_t *buf, uint32_t len
  * @return FS_SUCCEED if the file is successfully opened and its directory entry is retrieved,
  *         FS_FAIL if the file is not found or an error occurs.
  */
-int32_t fopen(const uint8_t *fname)
+int32_t file_open(const uint8_t *fname)
 {
     dentry_t dentry;
     int32_t result;
@@ -201,7 +214,7 @@ int32_t fopen(const uint8_t *fname)
  * @param fd - The file descriptor of the file to close.
  * @return FS_SUCCEED if the file is successfully closed, an error code otherwise.
  */
-int32_t fclose(int32_t fd)
+int32_t file_close(int32_t fd)
 {
     return FS_SUCCEED;
 }
@@ -216,16 +229,20 @@ int32_t fclose(int32_t fd)
  * @param nbytes - The number of bytes to read.
  * @return The number of bytes read from the file and copied into the buffer, or FS_FAIL if an error occurs.
  */
-int32_t fread(const uint8_t *fname, void *buf, uint32_t nbytes)
+int32_t file_read(int32_t fd, void *buf, uint32_t nbytes)
 {
     dentry_t dentry;
     uint32_t fileSize;
     uint32_t readBytes;
-    if (read_dentry_by_name(fname, &dentry) == FS_FAIL) // sanity check
+    int32_t cur_pid;
+    get_current_task(&cur_pid);
+    uint32_t inodeIdx = pcb_array[cur_pid]->file_obj_table[fd].inode;
+    uint32_t offset = pcb_array[cur_pid]->file_obj_table[fd].f_position;
+    if (read_dentry_by_index(inodeIdx, &dentry) == FS_FAIL) // sanity check
         return FS_FAIL;
-    fileSize = inodes[dentry.inodeIdx].size;
-    readBytes = fileSize < nbytes ? fileSize : nbytes;            // get the max bytes could be read or need to be read
-    if (read_data(dentry.inodeIdx, 0, buf, readBytes) == FS_FAIL) // sanity check and read data
+    fileSize = inodes[inodeIdx].size;
+    readBytes = fileSize < nbytes ? fileSize : nbytes;                 // get the max bytes could be read or need to be read
+    if (read_data(dentry.inodeIdx, offset, buf, readBytes) == FS_FAIL) // sanity check and read data
         return FS_FAIL;
     return readBytes;
 }
@@ -241,7 +258,7 @@ int32_t fread(const uint8_t *fname, void *buf, uint32_t nbytes)
  * @param nbytes - The number of bytes to write.
  * @return FS_FAIL as the function is currently USELESS
  */
-int32_t fwrite(int32_t fd, const void *buf, int32_t nbytes)
+int32_t file_write(int32_t fd, const void *buf, int32_t nbytes)
 {
     printf("This file system is read only!");
     return FS_FAIL;
@@ -286,7 +303,7 @@ int32_t directory_close(int32_t fd)
  * @param buf - A pointer to the buffer where the directory entry's name will be copied.
  * @return The length of the directory entry's name copied to the buffer, or FS_FAIL if an error occurs.
  */
-int32_t directory_read(uint32_t idx, uint8_t *buf,int32_t padding)
+int32_t directory_read(uint32_t idx, uint8_t *buf, int32_t padding)
 {
     uint32_t size = 0;
     uint32_t nameLen;
@@ -341,7 +358,7 @@ int32_t directory_read_test()
         dentry = (bootBlock->dentries[i]);
         fileType = dentry.fileType;
         fileSize = inodes[dentry.inodeIdx].size;
-        fileNameLen = directory_read(i, fileName,PADDING); // get file name
+        fileNameLen = directory_read(i, fileName, PADDING); // get file name
         /*print entry*/
         printf("file_name: ");
         j = 32 - fileNameLen;
@@ -384,7 +401,7 @@ int32_t file_read_test(const int8_t *fname)
         return FS_FAIL;
     fileSize = inodes[dentry.inodeIdx].size;
     uint8_t buf[fileSize];
-    if (fread((const uint8_t *)fname, buf, fileSize) == FS_FAIL) // sanity check and read file
+    if (read_data(dentry.inodeIdx, 0, buf, fileSize) == FS_FAIL) // sanity check and read file
         return FS_FAIL;
     clear();
     putc_rep(buf, fileSize); // print all data including 0x00

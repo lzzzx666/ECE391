@@ -579,7 +579,8 @@ int32_t putc_rep(uint8_t *string, uint32_t n)
     register uint32_t i = 0;
     while (i < n)
     {
-        putc(string[i]);
+        if (string[i] != NULL)
+            putc(string[i]);
         i++;
     }
     return 0;

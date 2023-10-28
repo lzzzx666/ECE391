@@ -1,12 +1,13 @@
 #include "pcb.h"
-open_func open_o[4]={rtc_open,directory_open,fopen,terminal_open};
-close_func close_o[4]={rtc_close,directory_close,fclose,terminal_close};
-read_func read_o[4]={rtc_read,directory_read,fread,terminal_read};
-write_func write_o[4]={rtc_write,directory_write,fwrite,terminal_write};
+open_func open_o[4] = {rtc_open, directory_open, file_open, terminal_open};
+close_func close_o[4] = {rtc_close, directory_close, file_close, terminal_close};
+read_func read_o[4] = {rtc_read, directory_read, file_read, terminal_read};
+write_func write_o[4] = {rtc_write, directory_write, file_write, terminal_write};
 
-pcb_t* pcb_array[MAX_TASK];
-int8_t pcb_bitmap=0x00;
+pcb_t *pcb_array[MAX_TASK];
+int8_t pcb_bitmap = 0x00;
 int32_t current_pid;
+
 
 /**
  * create_pcb
@@ -14,33 +15,37 @@ int32_t current_pid;
  * input:none
  * @return the pid for the new pcb on success or -1 for fail
  */
-int32_t create_pcb(){
-    
-    int32_t pcb_index=0;
-    pcb_t* new_pcb=NULL;
+int32_t create_pcb()
+{
+
+    int32_t pcb_index = 0;
+    pcb_t *new_pcb = NULL;
     int32_t i;
 
     /*get a pid*/
-    while(1){
-        if(((pcb_bitmap>>(7-pcb_index))&0x1)==TASK_NONEXIST || pcb_index>=MAX_TASK){
+    while (1)
+    {
+        if (((pcb_bitmap >> (7 - pcb_index)) & 0x1) == TASK_NONEXIST || pcb_index >= MAX_TASK)
+        {
             break;
         }
         pcb_index++;
     }
-    if(pcb_index>=MAX_TASK){
+    if (pcb_index >= MAX_TASK)
+    {
         return -1;
     }
 
     /*initialize the new task*/
-    new_pcb= KERNAL_BOTTOM-TASK_STACK_SIZE*(pcb_index+1);
-    initialize_new_pcb(new_pcb,pcb_index);
+    new_pcb = KERNAL_BOTTOM - TASK_STACK_SIZE * (pcb_index + 1);
+    initialize_new_pcb(new_pcb, pcb_index);
 
     /*initialize the stdin and stdout*/
     initialize_stdin_stdout(new_pcb);
 
     /*add the new pcb to the array*/
-    pcb_array[pcb_index]=new_pcb;
-    pcb_bitmap=pcb_bitmap|(0x1<<(7-pcb_index));
+    pcb_array[pcb_index] = new_pcb;
+    pcb_bitmap = pcb_bitmap | (0x1 << (7 - pcb_index));
 
     return pcb_index;
 }
@@ -51,13 +56,13 @@ int32_t create_pcb(){
  * input:none
  * @return 0 on success
  */
-int32_t delete_pcb(){
+int32_t delete_pcb()
+{
     get_current_task(&current_pid);
-    pcb_array[current_pid]=NULL;
-    pcb_bitmap=pcb_bitmap&~( 0x1<<(7-current_pid));
+    pcb_array[current_pid] = NULL;
+    pcb_bitmap = pcb_bitmap & ~(0x1 << (7 - current_pid));
     return 0;
 }
-
 
 /*-----------------------------------helper function-----------------------------------------------------*/
 
@@ -68,27 +73,32 @@ int32_t delete_pcb(){
  * @param pid - the pid for the new created pcb
  * output:none
  */
-void initialize_new_pcb(pcb_t* pcb,int32_t pid){
+void initialize_new_pcb(pcb_t *pcb, int32_t pid)
+{
     int32_t i;
     get_current_task(&current_pid);
 
-    pcb->pid=pid;
-    pcb->f_number=0;
+    pcb->pid = pid;
+    pcb->f_number = 0;
 
     /*store the parent pcb information*/
-    if((pcb_bitmap>>(7-current_pid))){
-        pcb->parent_pid=current_pid;
+    if ((pcb_bitmap >> (7 - current_pid)))
+    {
+        pcb->parent_pid = current_pid;
+        
         // asm("movl %%eax, %0" : "=r" (registerValue));??????????????????
-    }else{
-        pcb->parent_pid=NULL;
-        pcb->parent_esp=NULL;
+    }
+    else
+    {
+        pcb->parent_pid = NULL;
+        pcb->parent_esp = NULL;
     }
 
     /*clear the file object table of the pcb*/
-    for(i=0;i<MAX_FD;i++){
-        pcb->file_obj_table[i].exist=0;
+    for (i = 0; i < MAX_FD; i++)
+    {
+        pcb->file_obj_table[i].exist = 0;
     }
-
 }
 
 /**
@@ -98,14 +108,14 @@ void initialize_new_pcb(pcb_t* pcb,int32_t pid){
  * @param dentry - the dentry for the corresponding file
  * output:none
  */
-void initialize_file_object(file_object_t* file_object,dentry_t dentry)
+void initialize_file_object(file_object_t *file_object, dentry_t dentry)
 {
     /*initialize all parameters*/
-    file_object->exist=1;
-    file_object->f_position=0;
-    file_object->filename=dentry.fileName;
-    file_object->inode=dentry.inodeIdx;
-    assign_operation(file_object,dentry.fileType);
+    file_object->exist = 1;
+    file_object->f_position = 0;
+    file_object->filename = dentry.fileName;
+    file_object->inode = dentry.inodeIdx;
+    assign_operation(file_object, dentry.fileType);
 }
 
 /**
@@ -114,21 +124,22 @@ void initialize_file_object(file_object_t* file_object,dentry_t dentry)
  * @param pcb - the new created pcb(or new program)
  * output:none
  */
-void initialize_stdin_stdout(pcb_t* pcb){
+void initialize_stdin_stdout(pcb_t *pcb)
+{
     /*initialize the stdin*/
-    pcb->file_obj_table[0].exist=1;
-    pcb->file_obj_table[0].f_position=0;
-    pcb->file_obj_table[0].inode=0; //???
-    assign_operation(&(pcb->file_obj_table)[0],TERMINAL);
+    pcb->file_obj_table[0].exist = 1;
+    pcb->file_obj_table[0].f_position = 0;
+    pcb->file_obj_table[0].inode = 0; //???
+    assign_operation(&(pcb->file_obj_table)[0], TERMINAL);
 
     /*initialize the stdout*/
-    pcb->file_obj_table[1].exist=1;
-    pcb->file_obj_table[1].f_position=0;
-    pcb->file_obj_table[1].inode=0;
-    assign_operation(&(pcb->file_obj_table)[1],TERMINAL);
+    pcb->file_obj_table[1].exist = 1;
+    pcb->file_obj_table[1].f_position = 0;
+    pcb->file_obj_table[1].inode = 0;
+    assign_operation(&(pcb->file_obj_table)[1], TERMINAL);
 
     /*stdin/out are counted as two files*/
-    pcb->f_number=2;
+    pcb->f_number = 2;
 }
 
 /**
@@ -138,13 +149,14 @@ void initialize_stdin_stdout(pcb_t* pcb){
  * @param file_type - the file type for the file
  * output:none
  */
-void assign_operation(file_object_t* file_object,int32_t file_type){
+void assign_operation(file_object_t *file_object, int32_t file_type)
+{
 
     /*assign open,close,read and write operations based on the file type*/
-    (*file_object).f_operation.open=open_o[file_type];
-    (*file_object).f_operation.close=close_o[file_type];
-    (*file_object).f_operation.read=read_o[file_type];
-    (*file_object).f_operation.write=write_o[file_type];
+    (*file_object).f_operation.open = open_o[file_type];
+    (*file_object).f_operation.close = close_o[file_type];
+    (*file_object).f_operation.read = read_o[file_type];
+    (*file_object).f_operation.write = write_o[file_type];
 }
 
 /**
@@ -153,23 +165,24 @@ void assign_operation(file_object_t* file_object,int32_t file_type){
  * @param file_object - the file object to be assigned
  * output:none
  */
-int32_t put_file_to_pcb(file_object_t* file_object)
+int32_t put_file_to_pcb(file_object_t *file_object)
 {
     int32_t fd;
-    pcb_t* pcb;
+    pcb_t *pcb;
 
     /*get active task*/
     get_current_task(&current_pid);
-    pcb=pcb_array[current_pid];
+    pcb = pcb_array[current_pid];
 
     /*find the empty entry*/
-    for(fd=0;fd<MAX_FD;fd++){
-        if(!pcb->file_obj_table[fd].exist)
-        break;
+    for (fd = 0; fd < MAX_FD; fd++)
+    {
+        if (!pcb->file_obj_table[fd].exist)
+            break;
     }
 
     /*put it to the file object table*/
-    pcb->file_obj_table[fd]=*file_object;
+    pcb->file_obj_table[fd] = *file_object;
     pcb->f_number++;
     return fd;
 }
@@ -181,20 +194,20 @@ int32_t put_file_to_pcb(file_object_t* file_object)
  * output:none
  */
 
-void get_current_task(int32_t* cur_pid){
+void get_current_task(int32_t *cur_pid)
+{
     int32_t temp_pid;
-    
+
     /*get the address of the pcb */
     asm volatile(
         "movl %%esp,%%eax\n\t"
         "andl $0xffffe000,%%eax\n\t"
         "movl %%eax,%0"
-        :"=r"(temp_pid)
+        : "=r"(temp_pid)
         :
-        : "%eax"
-    );
+        : "%eax");
 
     /*calculate the pid based on the pcb*/
-    temp_pid=(KERNAL_BOTTOM-temp_pid-TASK_STACK_SIZE)/TASK_STACK_SIZE;
-    *cur_pid=temp_pid;
+    temp_pid = (KERNAL_BOTTOM - temp_pid - TASK_STACK_SIZE) / TASK_STACK_SIZE;
+    *cur_pid = temp_pid;
 }

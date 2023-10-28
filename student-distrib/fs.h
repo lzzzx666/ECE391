@@ -85,10 +85,10 @@ extern int32_t read_data(uint32_t inode, uint32_t offset, uint8_t *buf, uint32_t
 
 // fs system call interfaces for file operations
 
-extern int32_t fopen(const uint8_t *fname);
-extern int32_t fclose(int32_t fd);
-extern int32_t fread(const uint8_t *fname, void *buf, uint32_t nbytes);
-extern int32_t fwrite(int32_t fd, const void *buf, int32_t nbytes);
+extern int32_t file_open(const uint8_t *fname);
+extern int32_t file_close(int32_t fd);
+extern int32_t file_read(int32_t fd, void *buf, uint32_t nbytes);
+extern int32_t file_write(int32_t fd, const void *buf, int32_t nbytes);
 
 // fs system call interfaces for direcotry operations
 
