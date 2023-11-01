@@ -68,9 +68,9 @@ syscall_linkage:
 
     #execute the system call
     cmpl $10,%eax #sanity check
-    jg non_exist
-    cmpl $0,%eax
-    jl non_exist
+    ja non_exist
+    cmpl $1,%eax
+    jb non_exist
     pushl %edx
     pushl %ecx
     pushl %ebx

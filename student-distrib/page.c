@@ -119,18 +119,18 @@ int page_init()
     return 0;
 }
 
-
 void update_cr3()
 {
     get_cr();
     set_cr();
 }
 
-
 /**/
-int32_t set_paging(int32_t fd){
-    int32_t program_address=fd*ONE_PROGRAM_SIZE+PROGRAM_START_ADDRESS;
-    set_pde(&pageDirectory,PROGRAM_IMAGE>>22,1,0,1,program_address>>12);
+int32_t set_paging(int32_t fd)
+{
+    int32_t program_address = fd * ONE_PROGRAM_SIZE + PROGRAM_START_ADDRESS;
+    set_pde(&pageDirectory, PROGRAM_IMAGE >> 22, 1, 0, 1, program_address >> 12);
     update_cr3();
     return 0;
 }
+

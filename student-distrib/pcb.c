@@ -1,13 +1,15 @@
 #include "pcb.h"
+
 open_func open_o[4] = {rtc_open, directory_open, file_open, terminal_open};
 close_func close_o[4] = {rtc_close, directory_close, file_close, terminal_close};
-read_func read_o[4] = {rtc_read, directory_read, file_read, terminal_read};
-write_func write_o[4] = {rtc_write, directory_write, file_write, terminal_write};
+read_func read_o[4] = {(read_func)rtc_read, (read_func)directory_read,
+                       (read_func)file_read, (read_func)terminal_read};
+write_func write_o[4] = {(write_func)rtc_write, (write_func)directory_write,
+                         (write_func)file_write, (write_func)terminal_write};
 
 pcb_t *pcb_array[MAX_TASK];
 int8_t pcb_bitmap = 0x00;
 int32_t current_pid;
-
 /**
  * create_pcb
  * it will find a empty position in the pcb_array and create a new pcb to fill it
@@ -18,8 +20,7 @@ int32_t create_pcb()
 {
 
     int32_t pcb_index = 0;
-    pcb_t *new_pcb = NULL;
-    int32_t i;
+    void *new_pcb = NULL;
 
     /*get a pid*/
     while (1)
@@ -36,8 +37,8 @@ int32_t create_pcb()
     }
 
     /*initialize the new task*/
-    new_pcb = KERNAL_BOTTOM - TASK_STACK_SIZE * (pcb_index + 1);
-    initialize_new_pcb(new_pcb, pcb_index);
+    new_pcb = (void *)(KERNAL_BOTTOM - TASK_STACK_SIZE * (pcb_index + 1));
+    initialize_new_pcb((pcb_t *)new_pcb, pcb_index);
 
     /*initialize the stdin and stdout*/
     initialize_stdin_stdout(new_pcb);
@@ -57,7 +58,7 @@ int32_t create_pcb()
  */
 int32_t delete_pcb()
 {
-    get_current_task(&current_pid);
+    update_current_pid();
     pcb_array[current_pid] = NULL;
     pcb_bitmap = pcb_bitmap & ~(0x1 << (7 - current_pid));
     return 0;
@@ -75,16 +76,15 @@ int32_t delete_pcb()
 void initialize_new_pcb(pcb_t *pcb, int32_t pid)
 {
     int32_t i;
-    get_current_task(&current_pid);
+    update_current_pid();
 
     pcb->pid = pid;
     pcb->f_number = 0;
 
     /*store the parent pcb information*/
-    if ((pcb_bitmap >> (7 - current_pid)))
+    if (((pcb_bitmap >> (7 - current_pid)) & 1))
     {
         pcb->parent_pid = current_pid;
-        // asm("movl %%eax, %0" : "=r" (registerValue));??????????????????
     }
     else
     {
@@ -133,7 +133,7 @@ void initialize_stdin_stdout(pcb_t *pcb)
     /*initialize the stdin*/
     pcb->file_obj_table[0].exist = 1;
     pcb->file_obj_table[0].f_position = 0;
-    pcb->file_obj_table[0].inode = 0; 
+    pcb->file_obj_table[0].inode = 0;
     assign_operation(&(pcb->file_obj_table)[0], TERMINAL);
 
     /*initialize the stdout*/
@@ -172,11 +172,7 @@ void assign_operation(file_object_t *file_object, int32_t file_type)
 int32_t put_file_to_pcb(file_object_t *file_object)
 {
     int32_t fd;
-    pcb_t *pcb;
-
-    /*get active task*/
-    get_current_task(&current_pid);
-    pcb = pcb_array[current_pid];
+    pcb_t *pcb = get_current_pcb();
 
     /*find the empty entry*/
     for (fd = 0; fd < MAX_FD; fd++)
@@ -198,7 +194,7 @@ int32_t put_file_to_pcb(file_object_t *file_object)
  * output:none
  */
 
-void get_current_task(int32_t *cur_pid)
+void update_current_pid()
 {
     int32_t temp_pid;
 
@@ -213,5 +209,11 @@ void get_current_task(int32_t *cur_pid)
 
     /*calculate the pid based on the pcb*/
     temp_pid = (KERNAL_BOTTOM - temp_pid - TASK_STACK_SIZE) / TASK_STACK_SIZE;
-    *cur_pid = temp_pid;
+    current_pid = temp_pid;
+}
+
+pcb_t *get_current_pcb()
+{
+    update_current_pid();
+    return pcb_array[current_pid];
 }

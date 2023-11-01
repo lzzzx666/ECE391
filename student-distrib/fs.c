@@ -6,7 +6,7 @@
 
 /*file scope variables to store the pointers to bootBlock, inodes and dataBlock*/
 bootBlock_t *bootBlock;
-inode_t *inodes;
+inode_t *inodesArr;
 dataBlock_t *dataBlock;
 uint32_t directoryIdx;
 
@@ -21,9 +21,9 @@ uint32_t directoryIdx;
  */
 int32_t filesys_init(uint32_t filesys_img)
 {
-    bootBlock = (bootBlock_t *)filesys_img;                    // get boot block pointer
-    inodes = (inode_t *)(bootBlock + 1);                       // get inodes pointer
-    dataBlock = (dataBlock_t *)(inodes + bootBlock->inodeNum); // get data block pointer
+    bootBlock = (bootBlock_t *)filesys_img;                       // get boot block pointer
+    inodesArr = (inode_t *)(bootBlock + 1);                       // get inodes pointer
+    dataBlock = (dataBlock_t *)(inodesArr + bootBlock->inodeNum); // get data block pointer
     /*get file system information*/
     dentryNum = bootBlock->dentryNum;
     inodeNum = bootBlock->inodeNum;
@@ -114,27 +114,19 @@ int32_t read_data(uint32_t inodeIdx, uint32_t offset, uint8_t *buf, uint32_t len
         return FS_FAIL;
     }
 
-    if (length > inodes[inodeIdx].size - offset) // sanity check
-    {
-#if DEBUG
-        printf("fail to read data with invalid length! \n");
-        printf("file size: %d, request length: %d, offset: %d \n", inodes[inodeIdx].size, length, offset);
-#endif
-        return FS_FAIL;
-    }
-
     if (length == 0) // sanity check
         return FS_SUCCEED;
 
-    uint8_t cache[length];                    // cache buffer to store the data
+    uint32_t readLen = length < inodesArr[inodeIdx].size ? length : inodesArr[inodeIdx].size;
+    uint8_t data[readLen];                    // data buffer to store the data
     uint32_t startBlock = offset >> 12;       // equivalent ot offset / 4096
     uint32_t startOffset = (offset & 0x0FFF); // equivalent ot offset % 4096
-    uint32_t endPos = offset + length;        // relative end position
+    uint32_t endPos = offset + readLen;       // relative end position
     uint32_t endBlock = endPos >> 12;         // equivalent ot endPos / 4096
     uint32_t endOffset = (endPos & 0x0FFF);   // equivalent ot endPos % 4096
 
 #if DEBUG // all of the information that may be help to debug
-    printf("inode size: %d\n", inodes[inodeIdx].size);
+    printf("inode size: %d\n", inodesArr[inodeIdx].size);
     printf("length: %d, max: %d \n", length, (BLOCK_SIZE - startOffset));
     printf("start offset:%d\n", startOffset);
     printf("start block:%d\n", startBlock);
@@ -144,13 +136,13 @@ int32_t read_data(uint32_t inodeIdx, uint32_t offset, uint8_t *buf, uint32_t len
 #endif
 
     // initialize local variables
-    uint32_t cacheOffset = 0;
+    uint32_t dataOffset = 0;
     uint32_t curBlock = startBlock;
     uint32_t size;
-    uint32_t *dataBlockIdxArr = (uint32_t *)&(inodes[inodeIdx].dataBlocks);
+    uint32_t *dataBlockIdxArr = (uint32_t *)&(inodesArr[inodeIdx].dataBlocks);
     uint32_t curBlockIdx;
-
-    /*loop through data blocks to get the data and store into cache*/
+    memset(&data, 0, readLen);
+    /*loop through data blocks to get the data and store into data*/
     while (curBlock <= endBlock)
     {
         curBlockIdx = dataBlockIdxArr[curBlock];
@@ -166,26 +158,27 @@ int32_t read_data(uint32_t inodeIdx, uint32_t offset, uint8_t *buf, uint32_t len
 #endif
         if (curBlock == startBlock) // if it is the start block, only copy back part of it
         {
-            size = length < (BLOCK_SIZE - startOffset) ? length : (BLOCK_SIZE - startOffset);
-            memcpy(&(cache[cacheOffset]), &(dataBlock[curBlockIdx].data[startOffset]), size);
-            cacheOffset += size;
+            size = readLen < (BLOCK_SIZE - startOffset) ? readLen : (BLOCK_SIZE - startOffset);
+            memcpy(&(data[dataOffset]), &(dataBlock[curBlockIdx].data[startOffset]), size);
+            dataOffset += size;
         }
         else if (curBlock == endBlock) // if it is the end block, only copy front part of it
         {
             if (endOffset == 0)
                 break;
             size = endOffset;
-            memcpy(&(cache[cacheOffset]), &(dataBlock[curBlockIdx].data[0]), size);
+            memcpy(&(data[dataOffset]), &(dataBlock[curBlockIdx].data[0]), size);
         }
         else // if it is the middle data block, copy all of it
         {
-            memcpy(&(cache[cacheOffset]), &(dataBlock[curBlockIdx].data[0]), BLOCK_SIZE);
-            cacheOffset += BLOCK_SIZE;
+            memcpy(&(data[dataOffset]), &(dataBlock[curBlockIdx].data[0]), BLOCK_SIZE);
+            dataOffset += BLOCK_SIZE;
         }
         curBlock++;
     }
-    memcpy(buf, &cache, length); // copy data from cache into buffer
-    return FS_SUCCEED;
+    memset(buf, 0, sizeof(buf));
+    memcpy(buf, &data, readLen); // copy data from data into buffer
+    return readLen;
 }
 
 /*** USELESS FOR CKPT2 ***/
@@ -235,13 +228,13 @@ int32_t file_read(int32_t fd, void *buf, uint32_t nbytes)
     dentry_t dentry;
     uint32_t fileSize;
     uint32_t readBytes;
-    int32_t cur_pid;
-    get_current_task(&cur_pid);
-    uint32_t inodeIdx = pcb_array[cur_pid]->file_obj_table[fd].inode;
-    uint32_t offset = pcb_array[cur_pid]->file_obj_table[fd].f_position;
+    pcb_t *pcbPtr;
+    pcbPtr = get_current_pcb();
+    uint32_t inodeIdx = pcbPtr->file_obj_table[fd].inode;
+    uint32_t offset = pcbPtr->file_obj_table[fd].f_position;
     if (read_dentry_by_index(inodeIdx, &dentry) == FS_FAIL) // sanity check
         return FS_FAIL;
-    fileSize = inodes[inodeIdx].size;
+    fileSize = inodesArr[inodeIdx].size;
     readBytes = fileSize < nbytes ? fileSize : nbytes;                 // get the max bytes could be read or need to be read
     if (read_data(dentry.inodeIdx, offset, buf, readBytes) == FS_FAIL) // sanity check and read data
         return FS_FAIL;
@@ -292,6 +285,7 @@ int32_t directory_open(const uint8_t *fname)
  */
 int32_t directory_close(int32_t fd)
 {
+    directoryIdx = 0;
     return FS_SUCCEED;
 }
 
@@ -307,20 +301,18 @@ int32_t directory_close(int32_t fd)
 int32_t directory_read(int32_t fd, uint8_t *buf, int32_t nbytes)
 {
     dentry_t dentry;
-    uint8_t cache[MAX_FILE_NAME + 1];
-    uint32_t nameLen;
-    int32_t ret;
+    uint8_t data[MAX_FILE_NAME + 1];
+    int32_t readLen;
     if (directoryIdx >= bootBlock->dentryNum)
         return 0;
-    cache[MAX_FILE_NAME] = '\0';
-    ret = read_dentry_by_index(directoryIdx, &dentry);
-    if (ret == FS_FAIL)
+    data[MAX_FILE_NAME] = '\0';
+    if (read_dentry_by_index(directoryIdx, &dentry) == FS_FAIL)
         return 0;
-    memcpy(cache, dentry.fileName, FILE_NAME_MAX);
-    ret = strlen(cache);
-    memcpy(buf, cache, ret);
+    memcpy(data, dentry.fileName, FILE_NAME_MAX);
+    readLen = strlen((const int8_t *)data);
+    memcpy(buf, data, readLen);
     directoryIdx++;
-    return ret;
+    return readLen;
 }
 
 /*** USELESS FOR CKPT2 ***/
@@ -351,66 +343,72 @@ int32_t directory_write(int32_t fd, const void *buf, int32_t nbytes)
  */
 int32_t directory_read_test()
 {
-    clear(); // clear the screen before print the files
-             // initialization
-             // int i, j, k;
-             // uint32_t fileType;
-             // uint32_t fileSize;
-             // int32_t fileNameLen;
-             // dentry_t dentry;
-             // uint8_t fileName[FILE_NAME_MAX];
-             // for (i = 0; i < dentryNum; i++) // loop to get alll file information
-             // {
-             //     memset(fileName, 0, FILE_NAME_MAX); // initialize cache
-             //     dentry = (bootBlock->dentries[i]);
-             //     fileType = dentry.fileType;
-             //     fileSize = inodes[dentry.inodeIdx].size;
-             //     fileNameLen = directory_read(i, fileName, PADDING); // get file name
-             //     /*print entry*/
-             //     printf("file_name: ");
-             //     j = 32 - fileNameLen;
-             //     for (; j > 0; j--)
-             //     {
-             //         printf(" ");
-             //     }
-             //     putc_rep(fileName, fileNameLen);
-             //     printf(", file_type: ");
-             //     printf("%d", dentry.fileType);
-             //     printf(", file_size: ");
-             //     // right alignment
-             //     j = !fileSize;
-             //     for (k = fileSize; k; j++, k /= 10)
-             //         ;
-             //     for (; j < 9; j++)
-             //     {
-             //         printf(" ");
-             //     }
-             //     printf("%d\n", fileSize);
-             // }
-             // return FS_SUCCEED;
-    int32_t fd, cnt;
-    uint8_t buf[33];
-    current_pid = 0;
-    create_pcb();
-    if (-1 == (fd = open(".")))
+    clear();
+    /*
+    clear the screen before print the files
+    initialization
+    */
+    int i, j, k;
+    uint32_t fileType;
+    uint32_t fileSize;
+    int32_t fileNameLen;
+    dentry_t dentry;
+    uint8_t fileName[FILE_NAME_MAX];
+    for (i = 0; i < dentryNum; i++) // loop to get alll file information
     {
-        printf("directory open failed\n");
-        return 2;
-    }
+        memset(fileName, 0, FILE_NAME_MAX); // initialize data
+        dentry = (bootBlock->dentries[i]);
+        fileType = dentry.fileType;
+        fileSize = inodesArr[dentry.inodeIdx].size;
+        read_dentry_by_index(i, &dentry); // get file name
+        fileNameLen = strlen((const int8_t *)dentry.fileName) < FILE_NAME_MAX ?
+         strlen((const int8_t *)dentry.fileName) : FILE_NAME_MAX;
 
-    while (0 != (cnt = read(fd, buf, 32)))
-    {
-        if (-1 == cnt)
+        /*print entry*/
+        printf("file_name: ");
+        j = 32 - fileNameLen;
+        for (; j > 0; j--)
         {
-            printf("directory entry read failed\n");
-            return 3;
+            printf(" ");
         }
-        buf[cnt] = '\n';
-        if (-1 == write(1, buf, cnt + 1))
-            return 3;
+        putc_rep(dentry.fileName, fileNameLen);
+        printf(", file_type: ");
+        printf("%d", dentry.fileType);
+        printf(", file_size: ");
+        // right alignment
+        j = !fileSize;
+        for (k = fileSize; k; j++, k /= 10)
+            ;
+        for (; j < 9; j++)
+        {
+            printf(" ");
+        }
+        printf("%d\n", fileSize);
     }
-    delete_pcb();
-    return 0;
+    return FS_SUCCEED;
+    // int32_t fd, cnt;
+    // uint8_t buf[33];
+    // current_pid = 0;
+    // create_pcb();
+    // if (-1 == (fd = open((const uint8_t *)".")))
+    // {
+    //     printf("directory open failed\n");
+    //     return 2;
+    // }
+
+    // while (0 != (cnt = read(fd, buf, 32)))
+    // {
+    //     if (-1 == cnt)
+    //     {
+    //         printf("directory entry read failed\n");
+    //         return 3;
+    //     }
+    //     buf[cnt] = '\n';
+    //     if (-1 == write(1, buf, cnt + 1))
+    //         return 3;
+    // }
+    // delete_pcb();
+    // return 0;
 }
 
 /**
@@ -427,14 +425,17 @@ int32_t file_read_test(const int8_t *fname)
 
     dentry_t dentry;
     uint32_t fileSize;
+    int32_t readLen;
     if (read_dentry_by_name((const uint8_t *)fname, &dentry) == FS_FAIL) // sanity check
         return FS_FAIL;
-    fileSize = inodes[dentry.inodeIdx].size;
+    fileSize = inodesArr[dentry.inodeIdx].size;
     uint8_t buf[fileSize];
-    if (read_data(dentry.inodeIdx, 0, buf, fileSize) == FS_FAIL) // sanity check and read file
+    readLen = read_data(dentry.inodeIdx, 0, buf, fileSize);
+    if (readLen == FS_FAIL) // sanity check and read file
         return FS_FAIL;
+
     clear();
-    putc_rep(buf, fileSize); // print all data including 0x00
+    putc_rep(buf, readLen); // print all data including 0x00
     printf("\n");
     return FS_SUCCEED;
 }

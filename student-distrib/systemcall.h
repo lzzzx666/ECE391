@@ -13,26 +13,19 @@
 
 #define PROGRAM_IMAGE 0x08048000
 #define PROGRAM_IMAGE_END 0x08400000
-#define PROGRAM_IMAGE_SIZE PROGRAM_IMAGE_END-PROGRAM_IMAGE
+#define PROGRAM_IMAGE_SIZE PROGRAM_IMAGE_END - PROGRAM_IMAGE
 
 #define EXECUTAVLE_MAGIC_NUMBER_SIZE 4
-#define EXECUTABLE_MAGIC_NUMBER0 0x7f
-#define EXECUTABLE_MAGIC_NUMBER1 0x45
-#define EXECUTABLE_MAGIC_NUMBER2 0x4c
-#define EXECUTABLE_MAGIC_NUMBER3 0x46
 
 #define SYSCALL_SUCCESS 0
 #define SYSCALL_FAIL -1
 #define PADDING 0
-
 
 #include "types.h"
 #include "lib.h"
 #include "pcb.h"
 #include "x86_desc.h"
 #include "fs.h"
-
-
 
 /*sys_halt*/
 extern int32_t halt(uint8_t status);
@@ -55,9 +48,8 @@ extern int32_t set_handler(int32_t signum, void *handler);
 /*sys_sigretur*/
 extern int32_t sigreturn(void);
 
-
 /**/
-void to_user_mode(int32_t eip,int32_t eflags,int32_t esp,int32_t fd);
+void to_user_mode(int32_t eip, int32_t eflags, int32_t esp, int32_t fd);
 /**/
 
 #endif

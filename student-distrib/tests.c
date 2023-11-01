@@ -34,7 +34,7 @@ void rtc_test()
 #else
 	puts("==RTC no virtualization==");
 #endif
-	uint32_t fd = rtc_open();
+	uint32_t fd = rtc_open((const uint8_t*)"rtc");
 	uint32_t freq, j;
 #ifdef RTC_VIRTUALIZE
 	for (freq = 1; freq <= 20; freq += 2)

@@ -177,7 +177,7 @@ void entry(unsigned long magic, unsigned long addr)
     /*run the shell*/
 
         /* Run tests */
-    launch_tests();
+    // launch_tests();
     execute((const uint8_t*)"shell");
     //     /* Execute the first program ("shell") ... */
 
