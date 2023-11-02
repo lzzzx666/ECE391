@@ -118,7 +118,7 @@ int32_t read_data(uint32_t inodeIdx, uint32_t offset, uint8_t *buf, uint32_t len
     if (length == 0 || offset>=inodesArr[inodeIdx].size) // sanity check
         return FS_SUCCEED;
     uint32_t readLen = length < (inodesArr[inodeIdx].size-offset) ? length : (inodesArr[inodeIdx].size-offset);
-    uint8_t data[readLen];                    // data buffer to store the data
+    // uint8_t data[readLen];                    // data buffer to store the data
     uint32_t startBlock = offset >> 12;       // equivalent ot offset / 4096
     uint32_t startOffset = (offset & 0x0FFF); // equivalent ot offset % 4096
     uint32_t endPos = offset + readLen;       // relative end position

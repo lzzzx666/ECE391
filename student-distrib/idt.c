@@ -2,6 +2,7 @@
 #include "x86_desc.h"
 #include "keyboard.h"
 #include "rtc.h"
+#include "page.h"
 /**
  * idt_init
  * initialize the interrupt descriptor table

@@ -1,6 +1,8 @@
 #include "systemcall.h"
 #include "page.h"
 #include "pcb.h"
+#include "terminal.h"
+extern terminal_t main_terminal,prev_terminal;
 
 const int8_t executableMagicStr[4] = {0x7f, 0x45, 0x4c, 0x46};
 int32_t retVal;
@@ -13,13 +15,13 @@ int32_t retVal;
 int32_t
 halt(uint8_t status)
 {
-
+    printf("halt return\n");
     int i;
-    pcb_t *cur_pcb= get_current_pcb();
+    pcb_t *cur_pcb = get_current_pcb();
     if (current_pid == 0)
     {
         delete_pcb();
-        execute("shell");
+        execute((const uint8_t *)"shell");
     }
 
     /* Close all file descriptors */
@@ -39,7 +41,7 @@ halt(uint8_t status)
 
     delete_pcb();
     retVal = status;
-
+    // main_terminal = prev_terminal;
     asm volatile("movl %0, %%ebp \n\t"
                  "movl %1, %%esp \n\t"
                  "leave          \n\t"
@@ -67,8 +69,7 @@ int32_t execute(const uint8_t *command)
     int32_t pcb_index;
     pcb_t *cur_pcb = NULL;
     pcb_t *new_pcb = NULL;
-    int32_t eip, cs, eflags, esp, ss;
-    int32_t temp_file;
+    int32_t eip, eflags, esp;
 
     /*check if it is the first process*/
     update_current_pid();
@@ -155,7 +156,7 @@ int32_t execute(const uint8_t *command)
 
     /*go to user space*/
     to_user_mode(eip, eflags, esp, pcb_index);
-    // printf("execute return \n");
+    printf("execute return \n");
     return retVal;
 }
 /**/
@@ -184,6 +185,7 @@ void to_user_mode(int32_t eip, int32_t eflags, int32_t esp, int32_t pid)
         "iret" ::"r"(eip),
         "r"(cs), "r"(esp), "r"(ss)
         : "memory");
+    printf("to user mode return");
 }
 /**
  * sys_read
@@ -210,7 +212,6 @@ int32_t read(int32_t fd, void *buf, int32_t nbytes)
     read_bytes = (cur_pcb->file_obj_table[fd].f_operation.read)(fd, (int32_t *)buf, nbytes);
     cur_pcb->file_obj_table[fd].f_position += read_bytes;
     return read_bytes;
-
 }
 
 /**
@@ -238,7 +239,7 @@ int32_t write(int32_t fd, const void *buf, int32_t nbytes)
 
     /*write data*/
     write_bytes = (cur_pcb->file_obj_table[fd].f_operation.write)(fd, buf, nbytes);
-    
+
     if (write_bytes == FS_FAIL)
     {
         printf("Can't write!\n");

@@ -197,6 +197,7 @@ void scroll_up()
  *  Function: Output a character to the console */
 void putc(uint8_t c)
 {
+    cli();
     if (c == '\n' || c == '\r')
     {
         main_terminal.cursor_y++;
@@ -224,6 +225,7 @@ void putc(uint8_t c)
         }
         update_cursor(main_terminal.cursor_x, main_terminal.cursor_y);
     }
+    sti();
 }
 void backspace(void)
 {
