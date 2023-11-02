@@ -49,7 +49,7 @@ extern int32_t set_handler(int32_t signum, void *handler);
 extern int32_t sigreturn(void);
 
 /**/
-void to_user_mode(int32_t eip, int32_t eflags, int32_t esp, int32_t fd);
+void to_user_mode(int32_t eip, int32_t eflags, int32_t esp, int32_t pid);
 /**/
 
 #endif

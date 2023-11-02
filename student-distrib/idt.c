@@ -80,10 +80,12 @@ void set_idt_entry(idt_desc_t idt[], int index)
  * INPUT: type:the vector number
  * OUTPUT: it will print the exception type of execute interrupt function
  */
-void exe_handler(enum idt_type type)
+void exc_ir_handler(enum idt_type type)
 {
-
+    
     cli();
+    int i;
+    pcb_t *cur_pcb = get_current_pcb();
     /*for different types of interrupt/exception/system call, print different value*/
     switch (type)
     {
@@ -148,21 +150,38 @@ void exe_handler(enum idt_type type)
     case SIMD_FLOATING_POINT_EXCEPTION:
         printf("simd_floating_point_exception!");
         break;
-    case KEYBOARD:
-        keyboard_handler();
-        sti();
-        return;
-        break;
-    case REAL_TIME_CLOCK:
-        rtc_handler();
-        sti();
-        return;
     default:
-
         break;
     }
-    /*hold on the screen(blue screen)*/
-    while (1)
-        ;
+    while(1);
+    /*then go to the shell*/
+    if(cur_pcb->pid==0){
+        return;
+    }
+    /* Close all file descriptors */
+    for (i = 0; i < MAX_FILE_NUM; i++)
+    {   
+        if (cur_pcb->file_obj_table[i].exist)
+        { 
+            (cur_pcb->file_obj_table[i].f_operation.close)(i);
+            cur_pcb->file_obj_table[i].exist = 0;
+        }
+    }
+    // /* Set paging for parent process */
+
+    set_paging(cur_pcb->parent_pid);
+    tss.ss0 = KERNEL_DS;
+    tss.esp0 = KERNAL_BOTTOM - cur_pcb->parent_pid * TASK_STACK_SIZE - 4;
+    delete_pcb();
     sti();
+    asm volatile("movl %0, %%ebp \n\t"
+                 "movl %1, %%esp \n\t"
+                 "movl $256, %%eax \n\t"
+                 "leave          \n\t"
+                 "ret"
+                 : /* no output */
+                 :"r"(cur_pcb->parent_ebp),
+                 "r"(cur_pcb->parent_esp)
+                 :"ebp", "esp");
+    return;
 }

@@ -57,6 +57,7 @@ void keyboard_handler()
     unsigned char scan_code = inb(KEYBOARD_DATA_PORT);
     char ascii;
     uint8_t user_interrupt = 0;
+    pcb_t *cur_pcb;
     switch (scan_code)
     {
     case TAB:
@@ -147,6 +148,11 @@ void keyboard_handler()
     send_eoi(KEYBOARD_IRQ);
 
     sti();
-    if (user_interrupt)
-        halt((uint8_t)256);
+    if (user_interrupt ){
+        cur_pcb=get_current_pcb();
+        if(cur_pcb->pid!=0){
+            halt(1);
+        }
+    }
+        
 }
