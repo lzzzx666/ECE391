@@ -5,6 +5,7 @@
 #include "i8259.h"
 #include "lib.h"
 
+#define KEY_BOARD_BUF_SIZE 128
 #define READ_MAX_SIZE 127
 #define KEYBOARD_DATA_PORT 0x60
 #define REGISTER_PORT 0x64
@@ -28,5 +29,6 @@
 
 void init_keyboard();
 extern void keyboard_handler();
+extern void clear_keyboard_buffer();
 
 #endif

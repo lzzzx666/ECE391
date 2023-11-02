@@ -1,8 +1,7 @@
 #include "systemcall.h"
 #include "page.h"
 #include "pcb.h"
-#include "terminal.h"
-extern terminal_t main_terminal,prev_terminal;
+#include "keyboard.h"
 
 const int8_t executableMagicStr[4] = {0x7f, 0x45, 0x4c, 0x46};
 int32_t retVal;
@@ -15,7 +14,6 @@ int32_t retVal;
 int32_t
 halt(uint8_t status)
 {
-    printf("halt return\n");
     int i;
     pcb_t *cur_pcb = get_current_pcb();
     if (current_pid == 0)
@@ -38,10 +36,9 @@ halt(uint8_t status)
     set_paging(cur_pcb->parent_pid);
     tss.ss0 = KERNEL_DS;
     tss.esp0 = KERNAL_BOTTOM - cur_pcb->parent_pid * TASK_STACK_SIZE - 4;
-
     delete_pcb();
     retVal = status;
-    // main_terminal = prev_terminal;
+    clear_keyboard_buffer();
     asm volatile("movl %0, %%ebp \n\t"
                  "movl %1, %%esp \n\t"
                  "leave          \n\t"
@@ -156,7 +153,6 @@ int32_t execute(const uint8_t *command)
 
     /*go to user space*/
     to_user_mode(eip, eflags, esp, pcb_index);
-    printf("execute return \n");
     return retVal;
 }
 /**/
@@ -185,7 +181,6 @@ void to_user_mode(int32_t eip, int32_t eflags, int32_t esp, int32_t pid)
         "iret" ::"r"(eip),
         "r"(cs), "r"(esp), "r"(ss)
         : "memory");
-    printf("to user mode return");
 }
 /**
  * sys_read
@@ -337,7 +332,7 @@ int32_t close(int32_t fd)
 int32_t getargs(uint8_t *buf, int32_t nbytes)
 {
 
-    printf("sys_getargs!");
+    printf("sys_getargs!\n");
     return 0;
 }
 
@@ -348,7 +343,7 @@ int32_t getargs(uint8_t *buf, int32_t nbytes)
  */
 int32_t vidmap(uint8_t **screen_start)
 {
-    printf("sys_vidmap!");
+    printf("sys_vidmap!\n");
     return 0;
 }
 
@@ -359,7 +354,7 @@ int32_t vidmap(uint8_t **screen_start)
  */
 int32_t set_handler(int32_t signum, void *handler)
 {
-    printf("sys_set_handler!");
+    printf("sys_set_handler!\n");
     return 0;
 }
 
@@ -370,6 +365,6 @@ int32_t set_handler(int32_t signum, void *handler)
  */
 int32_t sigreturn(void)
 {
-    printf("sys_sigreturn!");
+    printf("sys_sigreturn!\n");
     return 0;
 }

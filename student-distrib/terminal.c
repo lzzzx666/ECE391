@@ -23,6 +23,7 @@ void initialize_terminal()
 // side effect:Closes the terminal
 int32_t terminal_close(int32_t fd)
 {
+    memset((void *)main_terminal.terminal_buf, '\0', MAX_TERMINAL_SIZE);
     return 0;
 }
 // int32_t terminal_open(int32_t fd)

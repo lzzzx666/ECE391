@@ -8,7 +8,7 @@ static int shift_pressed = 0; // 0 stands for not pushing
 static int capslock_pressed = 0;
 static int alt_pressed = 0;
 static int ctrl_pressed = 0;
-char keyboard_buffer[128];
+char keyboard_buffer[KEY_BOARD_BUF_SIZE];
 extern terminal_t main_terminal, prev_terminal;
 
 char scan_code_set[NUM_SCANCODES] = {
@@ -148,11 +148,19 @@ void keyboard_handler()
     send_eoi(KEYBOARD_IRQ);
 
     sti();
-    if (user_interrupt ){
-        cur_pcb=get_current_pcb();
-        if(cur_pcb->pid!=0){
+    if (user_interrupt)
+    {
+        cur_pcb = get_current_pcb();
+        if (cur_pcb->pid != 0)
+        {
             halt(1);
         }
     }
-        
+}
+
+void clear_keyboard_buffer()
+{
+    main_terminal.count = 0;
+    prev_terminal.count = 0;
+    memset(keyboard_buffer, '\0', KEY_BOARD_BUF_SIZE);
 }

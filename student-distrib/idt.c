@@ -92,64 +92,64 @@ void exc_ir_handler(enum idt_type type)
     {
 
     case DIVIDE_ERROR:
-        printf("divided_error!");
+        printf("divided_error!\n");
         break;
     case DEBUG_EXCEPTION:
-        printf("debug_exception!");
+        printf("debug_exception!\n");
         break;
     case NMI_INTERRUPT:
-        printf("nmi_interrupt!");
+        printf("nmi_interrupt!\n");
         break;
     case BREAKPOINT:
-        printf("breakpoint!");
+        printf("breakpoint!\n");
         break;
     case OVERFLOW:
-        printf("overflow!");
+        printf("overflow!\n");
         break;
     case BOUND_RANGE_EXCEEDED:
-        printf("bound_range_exceeded!");
+        printf("bound_range_exceeded!\n");
         break;
     case INVALID_OPCODE:
-        printf("invalid_opcode!");
+        printf("invalid_opcode!\n");
         break;
     case DEVICE_NOT_AVAILABLE:
-        printf("device_not_available!");
+        printf("device_not_available!\n");
         break;
     case DOUBLE_FAULT:
-        printf("double_fault!");
+        printf("double_fault!\n");
         break;
     case COPROCESSOR_SEGMENT_OVERRUN:
-        printf("coprocessor_segment_overrun!");
+        printf("coprocessor_segment_overrun!\n");
         break;
     case INVALID_TSS:
-        printf("invalid_tss!");
+        printf("invalid_tss!\n");
         break;
     case SEGMENT_NOT_PRESENT:
-        printf("segment_not_present!");
+        printf("segment_not_present!\n");
         break;
     case STACK_SEGMENT_FAULT:
-        printf("stack_segment_fault!");
+        printf("stack_segment_fault!\n");
         break;
     case GENERAL_PROTECTION:
-        printf("general_protection!");
+        printf("general_protection!\n");
         break;
     case PAGE_FAULT:
-        printf("page_fault!");
+        printf("page_fault!\n");
         break;
     case INTEL_RESERVED:
-        printf("intel_reserved!");
+        printf("intel_reserved!\n");
         break;
     case FLOATING_POINT_ERROR:
-        printf("floating_point_error!");
+        printf("floating_point_error!\n");
         break;
     case ALIGNMENT_CHECK:
-        printf("alignment_check!");
+        printf("alignment_check!\n");
         break;
     case MACHINE_CHECK:
-        printf("machine_check!");
+        printf("machine_check!\n");
         break;
     case SIMD_FLOATING_POINT_EXCEPTION:
-        printf("simd_floating_point_exception!");
+        printf("simd_floating_point_exception!\n");
         break;
     default:
         break;
