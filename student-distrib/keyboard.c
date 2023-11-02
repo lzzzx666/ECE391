@@ -158,9 +158,3 @@ void keyboard_handler()
     }
 }
 
-void clear_keyboard_buffer()
-{
-    main_terminal.count = 0;
-    prev_terminal.count = 0;
-    memset(keyboard_buffer, '\0', KEY_BOARD_BUF_SIZE);
-}

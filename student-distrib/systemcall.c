@@ -38,7 +38,6 @@ halt(uint8_t status)
     tss.esp0 = KERNAL_BOTTOM - cur_pcb->parent_pid * TASK_STACK_SIZE - 4;
     delete_pcb();
     retVal = status;
-    clear_keyboard_buffer();
     asm volatile("movl %0, %%ebp \n\t"
                  "movl %1, %%esp \n\t"
                  "leave          \n\t"

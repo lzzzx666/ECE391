@@ -29,6 +29,5 @@
 
 void init_keyboard();
 extern void keyboard_handler();
-extern void clear_keyboard_buffer();
 
 #endif
