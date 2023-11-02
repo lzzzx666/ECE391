@@ -14,10 +14,12 @@ int32_t
 halt(uint8_t status)
 {
     int i;
-    pcb_t *cur_pcb = get_current_pcb();
+    pcb_t *cur_pcb= get_current_pcb();
     if (current_pid == 0)
     {
-        return status;
+        printf("you can't exit shell!!\n");
+        delete_pcb();
+        execute((const uint8_t *)"shell");
     }
 
     /* Close all file descriptors */
@@ -30,11 +32,11 @@ halt(uint8_t status)
         }
     }
 
-
     // /* Set paging for parent process */
     set_paging(cur_pcb->parent_pid);
     tss.ss0 = KERNEL_DS;
     tss.esp0 = KERNAL_BOTTOM - cur_pcb->parent_pid * TASK_STACK_SIZE - 4;
+
     delete_pcb();
     retVal = status;
     asm volatile("movl %0, %%ebp \n\t"
@@ -42,9 +44,9 @@ halt(uint8_t status)
                  "leave          \n\t"
                  "ret"
                  : /* no output */
-                 :"r"(cur_pcb->parent_ebp),
-                 "r"(cur_pcb->parent_esp)
-                 :"ebp", "esp");
+                 : "r"(cur_pcb->parent_ebp),
+                   "r"(cur_pcb->parent_esp)
+                 : "ebp", "esp");
     return status;
 }
 
@@ -56,7 +58,6 @@ halt(uint8_t status)
  */
 int32_t execute(const uint8_t *command)
 {
-
     int32_t i;
     uint8_t name_buf[MAX_FILE_NAME] = {'\0'};
     uint8_t args[MAX_BUF - MAX_FILE_NAME] = {'\0'};
@@ -65,7 +66,7 @@ int32_t execute(const uint8_t *command)
     int32_t pcb_index;
     pcb_t *cur_pcb = NULL;
     pcb_t *new_pcb = NULL;
-    int32_t eip, cs, eflags, esp, ss;
+    int32_t eip, eflags, esp;
 
     /*check if it is the first process*/
     update_current_pid();
@@ -137,13 +138,11 @@ int32_t execute(const uint8_t *command)
     set_paging(pcb_index);
 
     /*load into memory*/
-    read_data(dentry.inodeIdx, 0, (uint8_t *)PROGRAM_IMAGE, /*PROGRAM_IMAGE_SIZE5605*/ 5349);
+    read_data(dentry.inodeIdx, 0, (uint8_t *)PROGRAM_IMAGE, /*PROGRAM_IMAGE_SIZE5605*/ PROGRAM_IMAGE_SIZE);
 
     /*get eip*/
     read_data(dentry.inodeIdx, 24, (uint8_t *)&eip, 4);
     current_pid = pcb_index;
-    ss = USER_DS;
-    cs = USER_CS;
     esp = PROGRAM_IMAGE_END - 4;
     asm volatile(
         "pushfl\n\t"
@@ -153,7 +152,7 @@ int32_t execute(const uint8_t *command)
 
     /*go to user space*/
     to_user_mode(eip, eflags, esp, pcb_index);
-
+    // printf("execute return \n");
     return retVal;
 }
 /**/
@@ -199,7 +198,10 @@ int32_t read(int32_t fd, void *buf, int32_t nbytes)
     // 应增加file size判断
     pcb_t *cur_pcb = get_current_pcb();
     int32_t read_bytes;
-    if(fd==1){return -1;}
+    if (fd == 1)
+    {
+        return -1;
+    }
     /*sanity check*/
     if (nbytes <= 0 || fd >= MAX_FD || buf == NULL || cur_pcb->file_obj_table[fd].exist == 0 || fd < 0)
     {
@@ -226,7 +228,8 @@ int32_t write(int32_t fd, const void *buf, int32_t nbytes)
 
     pcb_t *cur_pcb = get_current_pcb();
     int32_t write_bytes;
-    if(fd==0){
+    if (fd == 0)
+    {
         return -1;
     }
     /*sanity check*/
@@ -334,6 +337,7 @@ int32_t close(int32_t fd)
  */
 int32_t getargs(uint8_t *buf, int32_t nbytes)
 {
+
     printf("sys_getargs!");
     return 0;
 }

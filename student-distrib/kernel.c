@@ -179,6 +179,7 @@ void entry(unsigned long magic, unsigned long addr)
         /* Run tests */
     // launch_tests();
     execute((const uint8_t*)"shell");
+    printf("halt");
     //     /* Execute the first program ("shell") ... */
 
     //     /* Spin (nicely, so we don't chew up cycles) */

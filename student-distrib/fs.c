@@ -10,6 +10,7 @@ inode_t *inodesArr;
 dataBlock_t *dataBlock;
 uint32_t directoryIdx;
 
+
 /**
  * int32_t filesys_init(uint32_t filesys_img)
  *
@@ -118,7 +119,7 @@ int32_t read_data(uint32_t inodeIdx, uint32_t offset, uint8_t *buf, uint32_t len
         return FS_SUCCEED;
 
     uint32_t readLen = length < inodesArr[inodeIdx].size ? length : inodesArr[inodeIdx].size;
-    uint8_t data[readLen];                    // data buffer to store the data
+    // uint8_t data[readLen];                    // data buffer to store the data
     uint32_t startBlock = offset >> 12;       // equivalent ot offset / 4096
     uint32_t startOffset = (offset & 0x0FFF); // equivalent ot offset % 4096
     uint32_t endPos = offset + readLen;       // relative end position
@@ -141,7 +142,7 @@ int32_t read_data(uint32_t inodeIdx, uint32_t offset, uint8_t *buf, uint32_t len
     uint32_t size;
     uint32_t *dataBlockIdxArr = (uint32_t *)&(inodesArr[inodeIdx].dataBlocks);
     uint32_t curBlockIdx;
-    memset(&data, 0, readLen);
+    memset(buf, 0, readLen);
     /*loop through data blocks to get the data and store into data*/
     while (curBlock <= endBlock)
     {
@@ -159,7 +160,7 @@ int32_t read_data(uint32_t inodeIdx, uint32_t offset, uint8_t *buf, uint32_t len
         if (curBlock == startBlock) // if it is the start block, only copy back part of it
         {
             size = readLen < (BLOCK_SIZE - startOffset) ? readLen : (BLOCK_SIZE - startOffset);
-            memcpy(&(data[dataOffset]), &(dataBlock[curBlockIdx].data[startOffset]), size);
+            memcpy(&(buf[dataOffset]), &(dataBlock[curBlockIdx].data[startOffset]), size);
             dataOffset += size;
         }
         else if (curBlock == endBlock) // if it is the end block, only copy front part of it
@@ -167,17 +168,17 @@ int32_t read_data(uint32_t inodeIdx, uint32_t offset, uint8_t *buf, uint32_t len
             if (endOffset == 0)
                 break;
             size = endOffset;
-            memcpy(&(data[dataOffset]), &(dataBlock[curBlockIdx].data[0]), size);
+            memcpy(&(buf[dataOffset]), &(dataBlock[curBlockIdx].data[0]), size);
         }
         else // if it is the middle data block, copy all of it
         {
-            memcpy(&(data[dataOffset]), &(dataBlock[curBlockIdx].data[0]), BLOCK_SIZE);
+            memcpy(&(buf[dataOffset]), &(dataBlock[curBlockIdx].data[0]), BLOCK_SIZE);
             dataOffset += BLOCK_SIZE;
         }
         curBlock++;
     }
-    memset(buf, 0, sizeof(buf));
-    memcpy(buf, &data, readLen); // copy data from data into buffer
+    // memset(buf, 0, sizeof(buf));
+    // memcpy(buf, &data, readLen); // copy data from data into buffer
     return readLen;
 }
 
