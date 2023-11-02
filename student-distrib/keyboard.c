@@ -8,7 +8,7 @@ static int shift_pressed = 0; // 0 stands for not pushing
 static int capslock_pressed = 0;
 static int alt_pressed = 0;
 static int ctrl_pressed = 0;
-char keyboard_buffer[KEY_BOARD_BUF_SIZE];
+
 extern terminal_t main_terminal, prev_terminal;
 
 char scan_code_set[NUM_SCANCODES] = {
@@ -76,7 +76,6 @@ void keyboard_handler()
         main_terminal.terminal_buf[main_terminal.count = 0] = '\0'; // restore count
         memset((void *)main_terminal.terminal_buf, '\0', MAX_TERMINAL_SIZE);
         putc('\n');
-        // terminal_read(0, keyboard_buffer, main_terminal.count);
         break;
     case CAPS_LOCK:
         capslock_pressed = 1 - capslock_pressed;
