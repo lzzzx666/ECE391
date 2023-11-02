@@ -13,11 +13,13 @@ int32_t retVal;
 int32_t
 halt(uint8_t status)
 {
+
     int i;
     pcb_t *cur_pcb = get_current_pcb();
     if (current_pid == 0)
     {
-        return status;
+        delete_pcb();
+        execute("shell");
     }
 
     /* Close all file descriptors */
@@ -30,21 +32,22 @@ halt(uint8_t status)
         }
     }
 
-
     // /* Set paging for parent process */
     set_paging(cur_pcb->parent_pid);
     tss.ss0 = KERNEL_DS;
     tss.esp0 = KERNAL_BOTTOM - cur_pcb->parent_pid * TASK_STACK_SIZE - 4;
+
     delete_pcb();
     retVal = status;
+
     asm volatile("movl %0, %%ebp \n\t"
                  "movl %1, %%esp \n\t"
                  "leave          \n\t"
                  "ret"
                  : /* no output */
-                 :"r"(cur_pcb->parent_ebp),
-                 "r"(cur_pcb->parent_esp)
-                 :"ebp", "esp");
+                 : "r"(cur_pcb->parent_ebp),
+                   "r"(cur_pcb->parent_esp)
+                 : "ebp", "esp");
     return status;
 }
 
@@ -66,6 +69,7 @@ int32_t execute(const uint8_t *command)
     pcb_t *cur_pcb = NULL;
     pcb_t *new_pcb = NULL;
     int32_t eip, cs, eflags, esp, ss;
+    int32_t temp_file;
 
     /*check if it is the first process*/
     update_current_pid();
@@ -90,12 +94,13 @@ int32_t execute(const uint8_t *command)
     {
         name_buf[i] = command[i];
         i++;
+        /*check if file name is so long*/
+        if (i >= MAX_FILE_NAME)
+        {
+            return -1;
+        }
     }
-    /*check if file name is so long*/
-    if (i >= MAX_FILE_NAME)
-    {
-        return -1;
-    }
+
     /*check if the file exists*/
     if (read_dentry_by_name(name_buf, &dentry) == FS_FAIL)
     {
@@ -137,7 +142,7 @@ int32_t execute(const uint8_t *command)
     set_paging(pcb_index);
 
     /*load into memory*/
-    read_data(dentry.inodeIdx, 0, (uint8_t *)PROGRAM_IMAGE, /*PROGRAM_IMAGE_SIZE5605*/ 5349);
+    read_data(dentry.inodeIdx, 0, (uint8_t *)PROGRAM_IMAGE, PROGRAM_IMAGE_SIZE);
 
     /*get eip*/
     read_data(dentry.inodeIdx, 24, (uint8_t *)&eip, 4);
@@ -157,22 +162,16 @@ int32_t execute(const uint8_t *command)
     return retVal;
 }
 /**/
-void to_user_mode(int32_t eip, int32_t eflags, int32_t esp, int32_t fd)
+void to_user_mode(int32_t eip, int32_t eflags, int32_t esp, int32_t pid)
 {
 
-    /*change DS register*/
-    // asm volatile(
-    //     "movl %0,%%ds"
-    //     :
-    //     :"r"(USER_DS)
-    // );
     /*change tss*/
     int32_t cs = USER_CS;
     int32_t ss = USER_DS;
     uint32_t cur_esp;
     uint32_t cur_ebp;
     tss.ss0 = KERNEL_DS;
-    tss.esp0 = KERNAL_BOTTOM - fd * TASK_STACK_SIZE - 4;
+    tss.esp0 = KERNAL_BOTTOM - pid * TASK_STACK_SIZE - 4;
     asm volatile("mov %%esp, %0"
                  : "=r"(cur_esp));
     asm volatile("mov %%ebp, %0"
@@ -196,10 +195,12 @@ void to_user_mode(int32_t eip, int32_t eflags, int32_t esp, int32_t fd)
  */
 int32_t read(int32_t fd, void *buf, int32_t nbytes)
 {
-    // 应增加file size判断
     pcb_t *cur_pcb = get_current_pcb();
     int32_t read_bytes;
-    if(fd==1){return -1;}
+    if (fd == 1)
+    {
+        return SYSCALL_FAIL;
+    }
     /*sanity check*/
     if (nbytes <= 0 || fd >= MAX_FD || buf == NULL || cur_pcb->file_obj_table[fd].exist == 0 || fd < 0)
     {
@@ -213,7 +214,6 @@ int32_t read(int32_t fd, void *buf, int32_t nbytes)
     cur_pcb->file_obj_table[fd].f_position += read_bytes;
     return read_bytes;
 
-    return SYSCALL_SUCCESS;
 }
 
 /**
@@ -226,19 +226,22 @@ int32_t write(int32_t fd, const void *buf, int32_t nbytes)
 
     pcb_t *cur_pcb = get_current_pcb();
     int32_t write_bytes;
-    if(fd==0){
-        return -1;
+    if (fd == 0)
+    {
+        return SYSCALL_FAIL;
     }
     /*sanity check*/
 
     if (nbytes <= 0 || fd >= MAX_FD || buf == NULL || cur_pcb->file_obj_table[fd].exist == 0 || fd < 0)
     {
+
         printf("Can't write!\n");
         return SYSCALL_FAIL;
     }
 
     /*write data*/
     write_bytes = (cur_pcb->file_obj_table[fd].f_operation.write)(fd, buf, nbytes);
+    
     if (write_bytes == FS_FAIL)
     {
         printf("Can't write!\n");
@@ -312,6 +315,7 @@ int32_t close(int32_t fd)
     /*sanity check*/
     if (fd < 2 || fd >= MAX_FD)
     { // we can't close terminal
+
         return SYSCALL_FAIL;
     }
     if (cur_pcb->file_obj_table[fd].exist == 0)

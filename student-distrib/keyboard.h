@@ -27,6 +27,6 @@
 #define F3  0x3D
 
 void init_keyboard();
-void keyboard_handler();
+extern void keyboard_handler();
 
 #endif

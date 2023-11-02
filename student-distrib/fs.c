@@ -114,10 +114,9 @@ int32_t read_data(uint32_t inodeIdx, uint32_t offset, uint8_t *buf, uint32_t len
         return FS_FAIL;
     }
 
-    if (length == 0) // sanity check
+    if (length == 0 || offset>=inodesArr[inodeIdx].size) // sanity check
         return FS_SUCCEED;
-
-    uint32_t readLen = length < inodesArr[inodeIdx].size ? length : inodesArr[inodeIdx].size;
+    uint32_t readLen = length < (inodesArr[inodeIdx].size-offset) ? length : (inodesArr[inodeIdx].size-offset);
     uint8_t data[readLen];                    // data buffer to store the data
     uint32_t startBlock = offset >> 12;       // equivalent ot offset / 4096
     uint32_t startOffset = (offset & 0x0FFF); // equivalent ot offset % 4096
@@ -233,11 +232,14 @@ int32_t file_read(int32_t fd, void *buf, uint32_t nbytes)
     uint32_t inodeIdx = pcbPtr->file_obj_table[fd].inode;
     uint32_t offset = pcbPtr->file_obj_table[fd].f_position;
     if (read_dentry_by_index(inodeIdx, &dentry) == FS_FAIL) // sanity check
-        return FS_FAIL;
+        return 0;
     fileSize = inodesArr[inodeIdx].size;
-    readBytes = fileSize < nbytes ? fileSize : nbytes;                 // get the max bytes could be read or need to be read
+    if(offset>=fileSize){
+        return 0;
+    }
+    readBytes = (fileSize-offset) < nbytes ? (fileSize-offset) : nbytes;                 // get the max bytes could be read or need to be read
     if (read_data(dentry.inodeIdx, offset, buf, readBytes) == FS_FAIL) // sanity check and read data
-        return FS_FAIL;
+        return 0;
     return readBytes;
 }
 

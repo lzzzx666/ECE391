@@ -28,12 +28,25 @@ ex_ir_linkage:
     pushl %ebx
     pushfl
 
-    #execute the specific handler
+    #execute the exception handler
     movl 44(%esp),%esi  #44 can be used to locate the vector number
-    pushl %esi #the vector number
-    call exe_handler
-    popl %esi
+    cmpl $0x21,%esi
+    jne rtc
+    call keyboard_handler
+    jmp exc_ir_tear_down
 
+rtc:
+    cmpl $0x28,%esi
+    jne exception
+    call rtc_handler
+    jmp exc_ir_tear_down
+
+exception:
+    pushl %esi #the vector number
+    call exc_ir_handler
+    popl %esi
+    
+exc_ir_tear_down:
     #restore all registers
     popfl
     popl %ebx
@@ -71,6 +84,7 @@ syscall_linkage:
     ja non_exist
     cmpl $1,%eax
     jb non_exist
+
     pushl %edx
     pushl %ecx
     pushl %ebx
@@ -78,10 +92,12 @@ syscall_linkage:
     popl %ebx
     popl %ecx
     popl %edx
+
     jmp tear_down
 non_exist:
     movl $-1,%eax  #return -1 when the system call fail
 tear_down:
+
     #restore all registers
     popfl
     popl %ebx

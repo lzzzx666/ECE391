@@ -60,6 +60,6 @@ extern void idt_init();
 extern void set_idt_entry(idt_desc_t idt[], int index);
 
 /*the main part of the handler function*/
-void exe_handler(enum idt_type type);
+void exc_ir_handler(enum idt_type type);
 
 #endif
