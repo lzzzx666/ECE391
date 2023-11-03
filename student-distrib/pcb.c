@@ -237,9 +237,6 @@ void update_current_pid()
     current_pid = temp_pid;
 }
 
-pcb_t *get_current_pcb() {
-    update_current_pid(); // Update the current PID if necessary.
-    return pcb_array[current_pid]; // Return the PCB of the current process.
 /**
  * get_current_pcb
  * it will get the active task(the pcb for the task)
