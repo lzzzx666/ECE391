@@ -61,7 +61,9 @@ int32_t read_dentry_by_name(const uint8_t *fname, dentry_t *dentry)
             return result;
         }
     }
+#if DEBUG
     printf("no such file with name: %s \n", fname);
+#endif
     return FS_FAIL;
 }
 
@@ -79,7 +81,9 @@ int32_t read_dentry_by_index(uint32_t index, dentry_t *dentry)
 {
     if (index >= (bootBlock->dentryNum)) // sanity check
     {
+    #if DEBUG
         printf("fail to read dentry with invalid index! \n");
+    #endif
         return FS_FAIL;
     }
     // populate dentry
@@ -254,7 +258,9 @@ int32_t file_read(int32_t fd, void *buf, uint32_t nbytes)
  */
 int32_t file_write(int32_t fd, const void *buf, int32_t nbytes)
 {
+    #if DEBUG
     printf("This file system is read only!");
+    #endif
     return FS_FAIL;
 }
 
@@ -329,7 +335,9 @@ int32_t directory_read(int32_t fd, uint8_t *buf, int32_t nbytes)
  */
 int32_t directory_write(int32_t fd, const void *buf, int32_t nbytes)
 {
+    #if DEBUG
     printf("This file system is read only!");
+    #endif
     return FS_FAIL;
 }
 

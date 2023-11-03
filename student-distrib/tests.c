@@ -8,9 +8,12 @@
 #include "debug.h"
 #include "terminal.h"
 #include "keyboard.h"
+#include "pcb.h"
+#include  "systemcall.h"
 #define PASS 1
 #define FAIL 0
-
+#define SAMPLE_NUMBER 10 //this is the size of the sample bytes umber
+#define BUF_SIZE 100//this is the size of the whole buffer
 /* format these macros as you see fit */
 #define TEST_HEADER \
 	printf("[TEST %s] Running %s at %s:%d\n", __FUNCTION__, __FUNCTION__, __FILE__, __LINE__)
@@ -307,12 +310,234 @@ int filesys_test(int vec)
 }
 
 /* Checkpoint 3 tests */
+int sys_open_close_test(){
+	TEST_HEADER;
+	int result=PASS;
+	/*the current pcb pointer*/
+	pcb_t* current_pcb;
+	/*some fds for different file types*/
+	int reg_file,dir,rtc,garbage,try_open;
+	/*the iterator*/
+	int i;
+	/*we use this to mimic a pcb*/
+	create_pcb();
+	current_pcb=get_current_pcb();
+	/*test garbag open input*/
+	printf("garbage open input test:\n");
+	garbage=open((uint8_t*)"garbage");
+	if(garbage!=-1){
+		printf("garbage open input test fail!\n");
+		result=FAIL;
+	}else{
+		printf("garbage open input test pass!\n");
+	}
+	/*then try regular file, dir, rtc*/
+	printf("regular file, dir, rtc open input test:\n");
+	reg_file=open((uint8_t*)"frame0.txt");
+	dir=open((uint8_t*)".");
+	rtc=open((uint8_t*)"rtc");
+	if(current_pcb->file_obj_table[reg_file].exist && 
+	current_pcb->file_obj_table[dir].exist &&
+	current_pcb->file_obj_table[rtc].exist
+	){
+		printf("regular file, dir, rtc open input test pass!\n");
+	}else{
+		printf("regular file, dir, rtc open input test fail!\n");
+		result=FAIL;
+	}
+	/*try to open more than 8 file*/
+	printf("file capacity test:\n");
+	for(i=0;i<8;i++){ //use 8 as a excessive file number
+		open((uint8_t*)"frame0.txt");
+	}
+	if((try_open=open((uint8_t*)"frame0.txt"))!=-1){
+		printf("file capacity test fail!\n");
+		result=FAIL;
+	}else{
+		printf("file capacity test pass!\n");
+	}
+	/*delete excessive files*/
+	for(i=0;i<8;i++){ //this 8 is the max file number
+		if(i>rtc){
+			close(i);
+		}
+	}
+	/*fd filling test*/
+	printf("file insert decision test:\n");
+	i=reg_file;
+	close(reg_file);
+	reg_file=open((uint8_t*)"frame0.txt");
+	if(reg_file!=i){
+		printf("file insert decision test fail!\n");
+		result=FAIL;
+	}else{
+		printf("file insert decision test pass!\n");
+	}
+	/*close garbage input test*/
+	printf("garbage close input test:\n");
+	if(close(-1)==-1){
+	printf("garbage close input test pass!\n");
+	}else{
+	printf("garbage close input test fail!\n");
+	result=FAIL;
+	}
+	/*reg,dir,rtc file close test*/
+	printf("regular file, dir, rtc close test:\n");
+	close(reg_file);
+	close(dir);
+	close(rtc);
+	if(current_pcb->file_obj_table[reg_file].exist || 
+	current_pcb->file_obj_table[dir].exist ||
+	current_pcb->file_obj_table[rtc].exist
+	){
+		printf("regular file, dir, rtc close test fail!\n");
+		result=FAIL;
+	}else{
+		printf("regular file, dir, rtc close test pass!\n");
+	}
+	/*close terminal test*/
+	printf("close terminal test:\n");
+	close(1);
+	close(0);
+	if(current_pcb->file_obj_table[0].exist && //0 and 1 are stdin/out
+	current_pcb->file_obj_table[1].exist
+	){
+	printf("close terminal test pass!\n");
+	}else{
+	printf("close terminal test fail!\n");
+	result=FAIL;
+	}
+	return result;
 
+}
+int sys_read_test(){
+	TEST_HEADER;
+	int result=PASS;
+	/*the buf used to read*/
+	uint8_t buf[BUF_SIZE]; //choose the buffer size to 100(maybe I don't use so much)
+	/*the current pcb pointer*/
+	pcb_t* current_pcb;
+	/*define some different fds*/
+	int file,dir,rtc,stdin=0,stdout=1;
+	/*we use this to mimic a pcb*/
+	create_pcb();
+	current_pcb=get_current_pcb();
+	/*first we test read*/
+	/*open necessary file*/
+	file=open((uint8_t*)"frame0.txt");
+	rtc=open((uint8_t*)"rtc");
+	dir=open((uint8_t*)".");
+	/*test the regular file read*/
+	printf("regular file read test:\n");
+	memset(buf,'\0',BUF_SIZE);
+	read(file,buf,SAMPLE_NUMBER); //just read first 10 bytes
+	printf("the first 10 bytes of the file:\n");
+	printf("\n%s\n",buf);
+
+	/*test the regular file read*/
+	printf("continue file read test:\n");
+	read(file,buf,SAMPLE_NUMBER); //just read first 10 bytes
+	printf("the second 10 bytes of the file:\n");
+	printf("\n%s\n",buf);
+
+	/*the dir read test*/
+	/*I think ls program can test this so there is no need to add extra test*/
+	memset(buf,'\0',BUF_SIZE);
+	/*rtc read test*/
+	printf("rtc read test:\n");
+	if(read(rtc,buf,SAMPLE_NUMBER)!=0){
+			printf("rtc read test fail!\n");
+			result=FAIL;
+	}else{
+			printf("rtc read test pass!\n");
+	}
+	/*terminal read test*/
+	printf("read in the stdout port test:\n");
+	if(	read(stdout,buf,SAMPLE_NUMBER)!=-1){
+		printf("read in the stdout port test fail!\n");
+		result=FAIL;
+	}else{
+		printf("read in the stdout port test pass!\n");
+	}
+	printf("terminal read test:\n");
+	memset(buf,'\0',BUF_SIZE);
+	read(stdin,buf,SAMPLE_NUMBER);
+	printf("print the context readed from stdin:\n");
+	printf("%s\n",buf);
+	close(file);
+	close(dir);
+	close(rtc);
+	delete_pcb();
+	return result;
+}
+int sys_write_test(){
+	TEST_HEADER;
+	int result=PASS;
+	/*the buf used to write*/
+	uint8_t buf[BUF_SIZE]; //choose the buffer size to 100(maybe I don't use so much)
+	/*the current pcb pointer*/
+	pcb_t* current_pcb;
+	/*define some different fds*/
+	int file,dir,rtc,stdin=0,stdout=1;
+	/*some sample frequency*/
+	int freq[2]={4,8};
+	/*we use this to mimic a pcb*/
+	create_pcb();
+	current_pcb=get_current_pcb();
+	/*open necessary file*/
+	file=open((uint8_t*)"frame0.txt");
+	rtc=open((uint8_t*)"rtc");
+	dir=open((uint8_t*)".");
+	/*write to the regular file*/
+	memset(buf,'\0',SAMPLE_NUMBER);
+	printf("write to the regular file test:\n");
+	buf[0]='s';
+	if(write(file,buf,SAMPLE_NUMBER)!=-1){
+		printf("write to the regular file test fail!\n");
+		result=FAIL;
+	}else{
+		printf("write to the regular file test pass!\n");
+	}
+	/*write to the dir*/
+	memset(buf,'\0',BUF_SIZE);
+	printf("write to the dir test:\n");
+	buf[0]='s';
+	if(write(dir,buf,100)!=-1){//use 100 to write the whole message
+		printf("write to the dir test fail!\n");
+		result=FAIL;
+	}else{
+		printf("write to the dir test pass!\n");
+	}
+	/*write to the terminal*/
+	printf("write to the stdin(wrong port) test:\n");
+	if(write(stdin,"any message",100)!=-1){//use 100 to write the whole message
+		printf("write to the stdin test fail!\n");
+		result=FAIL;
+	}else{
+		printf("write to the stdin test pass!\n");
+	}
+	memset(buf,'\0',BUF_SIZE);
+	printf("write to the terminal test:\n");
+	write(stdout,"The appear of this message indicates that write to terminal test pass!\n",100);//use 100 to write the whole message
+
+	/*write to rtc test*/
+	printf("write to the rtc test:\n");
+	memset(buf,'\0',BUF_SIZE);
+	write(rtc,"any message",sizeof(int32_t)); 
+
+	close(file);
+	close(dir);
+	close(rtc);
+	delete_pcb();
+	return result;
+}
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
 
 /* Test suite entry point */
 void launch_tests()
 {
-	filesys_test(0);
+	// TEST_OUTPUT("sys_open_close_test",sys_open_close_test());
+	TEST_OUTPUT("sys_read_test",sys_read_test());
+	// TEST_OUTPUT("sys_write_test",sys_write_test());
 }

@@ -2,22 +2,22 @@
 #define SYSTEMCALL
 
 /*macros are defined here*/
-#define MAX_FD 8
-#define OPEN 0
+#define MAX_FD 8 //maximum file number for a process
+#define OPEN 0  //those 0,1,2,3 are index in the operation table
 #define CLOSE 1
 #define READ 2
 #define WRITE 3
 
-#define MAX_FILE_NAME 32
-#define MAX_BUF 128
+#define MAX_FILE_NAME 32 //32 is the maximum size of file name
+#define MAX_BUF 128     //128 is the maximum size of the terminal buffer
 
-#define PROGRAM_IMAGE 0x08048000
-#define PROGRAM_IMAGE_END 0x08400000
-#define PROGRAM_IMAGE_SIZE PROGRAM_IMAGE_END - PROGRAM_IMAGE
+#define PROGRAM_IMAGE 0x08048000    //0x08048000 is the start place of the program image
+#define PROGRAM_IMAGE_END 0x08400000    //the end of the program page
+#define PROGRAM_IMAGE_SIZE PROGRAM_IMAGE_END - PROGRAM_IMAGE //the maximum size of the the program image
 
 #define EXECUTABLE_MAGIC_NUMBER_SIZE 4
 
-#define SYSCALL_SUCCESS 0
+#define SYSCALL_SUCCESS 0  //those are some macros that used for convenience
 #define SYSCALL_FAIL -1
 #define PADDING 0
 
@@ -26,6 +26,8 @@
 #include "pcb.h"
 #include "x86_desc.h"
 #include "fs.h"
+/*the return value*/
+extern int32_t retVal;
 
 /**
  * @brief Halt the current process with a given status code.
@@ -99,6 +101,7 @@ extern int32_t open(const uint8_t *filename);
  */
 extern int32_t close(int32_t fd);
 
+/*------------------------those functions are not used now------------------------------------------------*/
 /*sys_getargs*/
 extern int32_t getargs(uint8_t *buf, int32_t nbytes);
 

@@ -5,7 +5,7 @@
 
 #define EXCEPTION_TEST 0
 
-
+#define DEBUG 0
 const int8_t executableMagicStr[4] = {0x7f, 0x45, 0x4c, 0x46};
 int32_t retVal;
 uint8_t argv[MAX_TERMINAL_SIZE];
@@ -208,7 +208,9 @@ int32_t read(int32_t fd, void *buf, int32_t nbytes)
     // Sanity check for input parameters.
     if (nbytes <= 0 || fd >= MAX_FD || buf == NULL || cur_pcb->file_obj_table[fd].exist == 0 || fd < 0)
     {
-        printf("Can't read!\n"); // Optional error message.
+#if DEBUG
+        printf("Can't read!\n");
+#endif
         return SYSCALL_FAIL;
     }
 
@@ -233,7 +235,9 @@ int32_t write(int32_t fd, const void *buf, int32_t nbytes)
     // Sanity check for input parameters.
     if (nbytes <= 0 || fd >= MAX_FD || buf == NULL || cur_pcb->file_obj_table[fd].exist == 0 || fd < 0)
     {
-        printf("Can't write!\n"); // Optional error message.
+#if DEBUG
+        printf("Can't write!\n");
+#endif
         return SYSCALL_FAIL;
     }
 
@@ -242,7 +246,10 @@ int32_t write(int32_t fd, const void *buf, int32_t nbytes)
 
     if (write_bytes == FS_FAIL)
     {
-        printf("Can't write!\n"); // Optional error message.
+#if DEBUG
+
+        printf("Can't write!\n");
+#endif
         return SYSCALL_FAIL;
     }
 
@@ -265,14 +272,18 @@ int32_t open(const uint8_t *filename)
     // Sanity check for opening the file.
     if (file_open(filename) == FS_FAIL)
     {
-        printf("Can't find this file!\n"); // Optional error message.
+#if DEBUG
+        printf("Can't find this file!\n");
+#endif
         return SYSCALL_FAIL;
     }
 
     // Check if the maximum number of open files has been reached.
     if (cur_pcb->f_number >= MAX_FD)
     {
-        printf("Can't open more files!\n"); // Optional error message.
+#if DEBUG
+        printf("Can't open more file!\n");
+#endif
         return SYSCALL_FAIL;
     }
 
@@ -318,6 +329,8 @@ int32_t close(int32_t fd)
     return SYSCALL_SUCCESS; // Return SYSCALL_SUCCESS on successful closure.
 }
 
+
+/*-----------these functions are not used now, please ignore them------------------------------*/
 /**
  * sys_getargs
  * INPUT: temporarily unkown
