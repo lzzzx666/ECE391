@@ -576,6 +576,17 @@ void test_interrupts(void)
     }
 }
 
+/**
+ * @brief Print a specified number of characters to the console.
+ *
+ * This function prints a specified number of characters from a string to the console.
+ * It uses the `putc` function to print each character if it is not a NULL character.
+ *
+ * @param string A pointer to the string containing the characters to print.
+ * @param n The number of characters to print.
+ *
+ * @return 0 to indicate successful printing.
+ */
 int32_t putc_rep(uint8_t *string, uint32_t n)
 {
     register uint32_t i = 0;

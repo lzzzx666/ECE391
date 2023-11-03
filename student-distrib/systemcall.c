@@ -84,10 +84,10 @@ int32_t execute(const uint8_t *command)
 {
     int32_t i;
     uint8_t name_buf[MAX_FILE_NAME] = {'\0'};
-    uint8_t args[MAX_BUF - MAX_FILE_NAME] = {'\0'};
     uint8_t test_buf[EXECUTABLE_MAGIC_NUMBER_SIZE];
     dentry_t dentry;
     int32_t pcb_index;
+    int32_t argvLen;
     pcb_t *cur_pcb = NULL;
     pcb_t *new_pcb = NULL;
     int32_t eip, eflags, esp;
@@ -117,14 +117,8 @@ int32_t execute(const uint8_t *command)
             return -1; // File name is too long.
         }
     }
-    while (command[i] == ' ')
-    {
-        i++;
-        if (i >= MAX_FILE_NAME)
-            break;
-    }
-    memset(argv, '\0', MAX_TERMINAL_SIZE);
-    memcpy(argv, &(command[i]), MAX_TERMINAL_SIZE - i);
+    i++;
+    argvLen = MAX_BUF - i;
     // Check if the file exists.
     if (read_dentry_by_name(name_buf, &dentry) == FS_FAIL)
     {
@@ -144,10 +138,8 @@ int32_t execute(const uint8_t *command)
     }
 
     // Get other arguments from the command.
-    for (i = MAX_FILE_NAME; i < MAX_BUF; i++)
-    {
-        args[i - MAX_FILE_NAME] = command[i];
-    }
+    memset(argv, '\0', MAX_BUF);
+    memcpy(argv, &(command[i]), argvLen);
 
     // Check if a new PCB can be created.
     pcb_index = create_pcb();
@@ -158,10 +150,7 @@ int32_t execute(const uint8_t *command)
 
     // Store arguments in the new PCB.
     new_pcb = pcb_array[pcb_index];
-    for (i = MAX_FILE_NAME; i < MAX_BUF; i++)
-    {
-        new_pcb->arguments[i - MAX_FILE_NAME] = args[i];
-    }
+    memcpy(&(new_pcb->arguments), argv, MAX_BUF);
 
     // Start paging for the new process.
     set_paging(pcb_index);
@@ -407,7 +396,6 @@ int32_t close(int32_t fd)
     return SYSCALL_SUCCESS; // Return SYSCALL_SUCCESS on successful closure.
 }
 
-
 /*-----------these functions are not used now, please ignore them------------------------------*/
 /**
  * sys_getargs
@@ -417,16 +405,18 @@ int32_t close(int32_t fd)
 #if EXCEPTION_TEST
 int32_t getargs(uint8_t *buf, int32_t nbytes)
 {
-    int32_t num = *(int32_t*)NULL;
+    int32_t num = *(int32_t *)NULL;
     return 0;
 }
 #else
 int32_t getargs(uint8_t *buf, int32_t nbytes)
 {
-    memcpy(buf, argv, nbytes);
+    pcb_t *curPcb = get_current_pcb();
+    memcpy(buf, curPcb->arguments, nbytes);
     return 0;
 }
 #endif
+
 /**
  * sys_vidmap
  * INPUT: temporarily unkown

@@ -66,7 +66,7 @@ typedef struct pcb
     int32_t parent_pid;
     int32_t parent_esp;
     int32_t parent_ebp;
-    int8_t arguments[MAX_BUF - MAX_FILE_NAME];
+    int8_t arguments[MAX_BUF];
 } pcb_t;
 
 /*it records the active process id*/
