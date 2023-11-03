@@ -333,6 +333,8 @@ int32_t close(int32_t fd)
     return SYSCALL_SUCCESS;
 }
 
+
+/*-----------these functions are not used now, please ignore them------------------------------*/
 /**
  * sys_getargs
  * INPUT: temporarily unkown
