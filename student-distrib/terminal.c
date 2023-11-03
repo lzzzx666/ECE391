@@ -26,7 +26,7 @@ int32_t terminal_close(int32_t fd)
     memset((void *)main_terminal.terminal_buf, '\0', MAX_TERMINAL_SIZE);
     main_terminal.count = 0;
     prev_terminal.count = 0;
-    return 0;
+    return -1;
 }
 // int32_t terminal_open(int32_t fd)
 // open the terminal.

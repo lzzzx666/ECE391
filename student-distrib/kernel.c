@@ -175,13 +175,13 @@ void entry(unsigned long magic, unsigned long addr)
 
     clear();
     /*run the shell*/
-
+#if RUN_TESTS
         /* Run tests */
-    // launch_tests();
-    execute((const uint8_t*)"shell");
-    printf("halt");
+    launch_tests();
+#else
     //     /* Execute the first program ("shell") ... */
-
+    execute((const uint8_t*)"shell");
+#endif
     //     /* Spin (nicely, so we don't chew up cycles) */
     //     asm volatile (".1: hlt; jmp .1;");
 }

@@ -2,7 +2,7 @@
 #include "page.h"
 #include "pcb.h"
 #include "keyboard.h"
-
+#define DEBUG 0
 const int8_t executableMagicStr[4] = {0x7f, 0x45, 0x4c, 0x46};
 int32_t retVal;
 /**
@@ -197,7 +197,9 @@ int32_t read(int32_t fd, void *buf, int32_t nbytes)
     /*sanity check*/
     if (nbytes <= 0 || fd >= MAX_FD || buf == NULL || cur_pcb->file_obj_table[fd].exist == 0 || fd < 0)
     {
+#if DEBUG
         printf("Can't read!\n");
+#endif
         return SYSCALL_FAIL;
     }
 
@@ -226,8 +228,9 @@ int32_t write(int32_t fd, const void *buf, int32_t nbytes)
 
     if (nbytes <= 0 || fd >= MAX_FD || buf == NULL || cur_pcb->file_obj_table[fd].exist == 0 || fd < 0)
     {
-
+#if DEBUG
         printf("Can't write!\n");
+#endif
         return SYSCALL_FAIL;
     }
 
@@ -236,7 +239,10 @@ int32_t write(int32_t fd, const void *buf, int32_t nbytes)
 
     if (write_bytes == FS_FAIL)
     {
+#if DEBUG
+
         printf("Can't write!\n");
+#endif
         return SYSCALL_FAIL;
     }
 
@@ -265,12 +271,16 @@ int32_t open(const uint8_t *filename)
     /*sanity check*/
     if (file_open(filename) == FS_FAIL)
     {
+#if DEBUG
         printf("Can't find this file!\n");
+#endif
         return SYSCALL_FAIL;
     }
     if (cur_pcb->f_number >= MAX_FD)
     {
+#if DEBUG
         printf("Can't open more file!\n");
+#endif
         return SYSCALL_FAIL;
     }
 

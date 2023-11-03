@@ -8,6 +8,8 @@
 #include "debug.h"
 #include "terminal.h"
 #include "keyboard.h"
+#include "pcb.h"
+#include  "systemcall.h"
 #define PASS 1
 #define FAIL 0
 
@@ -307,11 +309,112 @@ int filesys_test(int vec)
 }
 
 /* Checkpoint 3 tests */
+int sys_open_close_test(){
+	TEST_HEADER;
+	int result=PASS;
+	pcb_t* current_pcb;
+	int reg_file,dir,rtc,garbage,try_open;
+	int i;
+	/*we use this to mimic a pcb*/
+	create_pcb();
+	current_pcb=get_current_pcb();
+	/*test garbag open input*/
+	printf("garbage open input test:\n");
+	garbage=open((uint8_t*)"garbage");
+	if(garbage!=-1){
+		printf("garbage open input test fail!\n");
+		result=FAIL;
+	}else{
+		printf("garbage open input test pass!\n");
+	}
+	/*then try regular file, dir, rtc*/
+	printf("regular file, dir, rtc open input test:\n");
+	reg_file=open((uint8_t*)"frame0.txt");
+	dir=open((uint8_t*)".");
+	rtc=open((uint8_t*)"rtc");
+	if(current_pcb->file_obj_table[reg_file].exist && 
+	current_pcb->file_obj_table[dir].exist &&
+	current_pcb->file_obj_table[rtc].exist
+	){
+		printf("regular file, dir, rtc open input test pass!\n");
+	}else{
+		printf("regular file, dir, rtc open input test fail!\n");
+		result=FAIL;
+	}
+	/*try to open more than 8 file*/
+	printf("file capacity test:\n");
+	for(i=0;i<8;i++){
+		open((uint8_t*)"frame0.txt");
+	}
+	if((try_open=open((uint8_t*)"frame0.txt"))!=-1){
+		printf("file capacity test fail!\n");
+		result=FAIL;
+	}else{
+		printf("file capacity test pass!\n");
+	}
+	/*delete excessive files*/
+	for(i=0;i<8;i++){
+		if(i>rtc){
+			close(i);
+		}
+	}
+	/*fd filling test*/
+	printf("file insert decision test:\n");
+	i=reg_file;
+	close(reg_file);
+	reg_file=open((uint8_t*)"frame0.txt");
+	if(reg_file!=i){
+		printf("file insert decision test fail!\n");
+		result=FAIL;
+	}else{
+		printf("file insert decision test pass!\n");
+	}
+	/*close garbage input test*/
+	printf("garbage close input test:\n");
+	if(close(-1)==-1){
+	printf("garbage close input test pass!\n");
+	}else{
+	printf("garbage close input test fail!\n");
+	result=FAIL;
+	}
+	/*reg,dir,rtc file close test*/
+	printf("regular file, dir, rtc close test:\n");
+	close(reg_file);
+	close(dir);
+	close(rtc);
+	if(current_pcb->file_obj_table[reg_file].exist || 
+	current_pcb->file_obj_table[dir].exist ||
+	current_pcb->file_obj_table[rtc].exist
+	){
+		printf("regular file, dir, rtc close test fail!\n");
+		result=FAIL;
+	}else{
+		printf("regular file, dir, rtc close test pass!\n");
+	}
+	/*close terminal test*/
+	printf("close terminal test:\n");
+	close(1);
+	close(0);
+	if(current_pcb->file_obj_table[0].exist &&
+	current_pcb->file_obj_table[1].exist
+	){
+	printf("close terminal test pass!\n");
+	}else{
+	printf("close terminal test fail!\n");
+	result=FAIL;
+	}
+	return result;
+
+}
+int sys_read_write_test(){
+	TEST_HEADER;
+	int result=PASS;
+}
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
 
 /* Test suite entry point */
 void launch_tests()
 {
-	filesys_test(0);
+	TEST_OUTPUT("sys_open_close_test",sys_open_close_test());
 }

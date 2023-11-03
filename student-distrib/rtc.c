@@ -150,7 +150,7 @@ int32_t rtc_open(const uint8_t *fname)
  */
 int32_t rtc_close(int32_t fd)
 {
-    return 0;
+    return -1;
 }
 
 /**
