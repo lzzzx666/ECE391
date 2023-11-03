@@ -6,10 +6,24 @@
 #define EXCEPTION_TEST 0
 
 #define DEBUG 0
+
+/*those are numbers used for executable file*/
 const int8_t executableMagicStr[4] = {0x7f, 0x45, 0x4c, 0x46};
+
+/*the return value for execute*/
 int32_t retVal;
+
+/*the arguments*/
 uint8_t argv[MAX_TERMINAL_SIZE];
 
+/**
+ * @brief Halt the current process with a given status code.
+ * This function halts the execution of the current process and performs various cleanup tasks.
+ *
+ * @param status The status code indicating the reason for halting.
+ *
+ * @return The status code provided as input, which is returned upon process termination.
+ */
 int32_t halt(uint8_t status)
 {
     int i;
@@ -55,6 +69,17 @@ int32_t halt(uint8_t status)
     return status; // Return the status code, indicating the reason for process termination.
 }
 
+/**
+ * @brief Execute a specified executable file.
+ * This function executes the specified executable file by loading it into memory,
+ * setting up the process control block (PCB), and transitioning to user mode.
+ *
+ * @param command The name of the executable file and its arguments.
+ *
+ * @return Return status:
+ * - 0 on successful execution.
+ * - -1 if an error occurs, such as file not found, file type mismatch, or other issues.
+ */
 int32_t execute(const uint8_t *command)
 {
     int32_t i;
@@ -161,6 +186,18 @@ int32_t execute(const uint8_t *command)
     return retVal; // Return the execution status.
 }
 
+/**
+ * @brief Switch the processor to user mode.
+ * This function changes the processor's state to user mode by modifying the
+ * Task State Segment (TSS) and executing an interrupt return (IRET) instruction.
+ * It sets the code segment (CS), data segment (SS), stack pointer (ESP), and
+ * stack segment (SS0) to user mode values, allowing the execution of user-level code.
+ *
+ * @param eip The instruction pointer value for the user mode code.
+ * @param eflags The flags register value for the user mode.
+ * @param esp The user mode stack pointer.
+ * @param pid The Process ID (PID) of the user process.
+ */
 void to_user_mode(int32_t eip, int32_t eflags, int32_t esp, int32_t pid)
 {
     /* Change TSS */
@@ -194,6 +231,17 @@ void to_user_mode(int32_t eip, int32_t eflags, int32_t esp, int32_t pid)
         : "memory");
 }
 
+/**
+ * @brief Read data from a file descriptor.
+ *
+ * This function reads data from a file descriptor into the provided buffer.
+ *
+ * @param fd The file descriptor index.
+ * @param buf A pointer to the buffer where the data will be stored.
+ * @param nbytes The number of bytes to read.
+ *
+ * @return The number of bytes read on success, or SYSCALL_FAIL on failure.
+ */
 int32_t read(int32_t fd, void *buf, int32_t nbytes)
 {
     pcb_t *cur_pcb = get_current_pcb();
@@ -221,6 +269,16 @@ int32_t read(int32_t fd, void *buf, int32_t nbytes)
     return read_bytes; // Return the number of bytes read on success.
 }
 
+/**
+ * @brief Write data to a file descriptor.
+ * This function writes data from a buffer to a file descriptor.
+ *
+ * @param fd The file descriptor index.
+ * @param buf A pointer to the buffer containing the data to be written.
+ * @param nbytes The number of bytes to write.
+ *
+ * @return The number of bytes written on success, or SYSCALL_FAIL on failure.
+ */
 int32_t write(int32_t fd, const void *buf, int32_t nbytes)
 {
     pcb_t *cur_pcb = get_current_pcb();
@@ -256,6 +314,15 @@ int32_t write(int32_t fd, const void *buf, int32_t nbytes)
     return write_bytes; // Return the number of bytes written on success.
 }
 
+/**
+ * @brief Open a file for reading or writing.
+ * This function opens a file with the specified name and associates it with a file descriptor.
+ *
+ * @param filename The name of the file to be opened.
+ *
+ * @return The file descriptor (fd) associated with the opened file on success,
+ *         or SYSCALL_FAIL on failure.
+ */
 int32_t open(const uint8_t *filename)
 {
     int32_t fd;
@@ -305,6 +372,17 @@ int32_t open(const uint8_t *filename)
     return fd; // Return the file descriptor on success.
 }
 
+/**
+ * @brief Close a file descriptor.
+ *
+ * This function closes a file descriptor, releasing associated resources and marking it as available for reuse.
+ *
+ * @param fd The file descriptor to be closed.
+ *
+ * @return SYSCALL_SUCCESS on successful closure, or SYSCALL_FAIL on failure. Possible failure conditions include:
+ * - Attempting to close standard input (fd < 2).
+ * - Attempting to close an invalid or unopened file descriptor.
+ */
 int32_t close(int32_t fd)
 {
     pcb_t *cur_pcb = get_current_pcb();
