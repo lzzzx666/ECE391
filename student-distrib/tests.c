@@ -479,6 +479,9 @@ int sys_write_test(){
 	pcb_t* current_pcb;
 	/*define some different fds*/
 	int file,dir,rtc,stdin=0,stdout=1;
+	/*variable used for rtc*/
+	char print, temp;
+	int32_t f;
 	/*some sample frequency*/
 	int freq[2]={4,8};
 	/*we use this to mimic a pcb*/
@@ -523,8 +526,15 @@ int sys_write_test(){
 	/*write to rtc test*/
 	printf("write to the rtc test:\n");
 	memset(buf,'\0',BUF_SIZE);
-	write(rtc,"any message",sizeof(int32_t)); 
-
+	for(f = 0; f < sizeof(freq) / sizeof(int32_t); f++) {
+		write(rtc, &freq[f], sizeof(freq[f]));
+		printf("frequency = %d  ", freq[f]);
+		for(print = 'A'; print <= 'Z'; print++) {
+			read(rtc, &temp, sizeof(temp));
+			putc(print);
+		}
+		putc('\n');
+	}
 	close(file);
 	close(dir);
 	close(rtc);
@@ -538,6 +548,6 @@ int sys_write_test(){
 void launch_tests()
 {
 	// TEST_OUTPUT("sys_open_close_test",sys_open_close_test());
-	TEST_OUTPUT("sys_read_test",sys_read_test());
-	// TEST_OUTPUT("sys_write_test",sys_write_test());
+	// TEST_OUTPUT("sys_read_test",sys_read_test());
+	TEST_OUTPUT("sys_write_test",sys_write_test());
 }
