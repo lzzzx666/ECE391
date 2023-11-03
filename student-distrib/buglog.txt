@@ -43,3 +43,20 @@ MP3.2
         fix takes: 5 min
         how to fix: the data blocks of a file is not consecutive, I have to get every data block's  
                     index when I finishes reading one data block
+
+MP3.3
+    BUG1 
+        description: When I go to user mode, the iret does not work properly, and it generates page fault.
+        find takes: 5min
+        fix takes: 20min
+        how to fix: I want to push the parameters used by iret using a c funtion, however, I ignore that
+                    the c funtion will also push other things like return address. So I push these parameters
+                    inside the C function.
+
+    BUG2
+        description: when enter user program, like hello, the screen freeze and it dose not work as expected.
+        find takes: 10 min
+        fix takes: 30 min
+        how to fix: I misregard system call number starts at 0. Actually, it starts at 1, so I add a 0
+                    at the beginning of the handler jump table.
+    
