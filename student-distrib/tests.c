@@ -464,7 +464,10 @@ int sys_read_test(){
 	read(stdin,buf,SAMPLE_NUMBER);
 	printf("print the context readed from stdin:\n");
 	printf("%s\n",buf);
-
+	close(file);
+	close(dir);
+	close(rtc);
+	delete_pcb();
 	return result;
 }
 int sys_write_test(){
@@ -522,6 +525,10 @@ int sys_write_test(){
 	memset(buf,'\0',BUF_SIZE);
 	write(rtc,"any message",sizeof(int32_t)); 
 
+	close(file);
+	close(dir);
+	close(rtc);
+	delete_pcb();
 	return result;
 }
 /* Checkpoint 4 tests */
