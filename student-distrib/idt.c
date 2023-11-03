@@ -154,7 +154,7 @@ void exc_ir_handler(enum idt_type type)
     default:
         break;
     }
-    while(1);
+    // while(1);
     /*then go to the shell*/
     if(cur_pcb->pid==0){
         return;
@@ -174,10 +174,10 @@ void exc_ir_handler(enum idt_type type)
     tss.ss0 = KERNEL_DS;
     tss.esp0 = KERNAL_BOTTOM - cur_pcb->parent_pid * TASK_STACK_SIZE - 4;
     delete_pcb();
+    retVal=256;
     sti();
     asm volatile("movl %0, %%ebp \n\t"
                  "movl %1, %%esp \n\t"
-                 "movl $256, %%eax \n\t"
                  "leave          \n\t"
                  "ret"
                  : /* no output */

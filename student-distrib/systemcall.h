@@ -26,6 +26,8 @@
 #include "pcb.h"
 #include "x86_desc.h"
 #include "fs.h"
+/*the return value*/
+extern int32_t retVal;
 
 /*halt a program*/
 extern int32_t halt(uint8_t status);
