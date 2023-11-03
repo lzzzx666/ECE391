@@ -251,6 +251,9 @@ int page_test(int vec)
 }
 
 /* Checkpoint 2 tests */
+/* test_terminal
+ *  test the functionality of the terminal
+ */
 void test_terminal()
 {
 	char buffer[128];
@@ -270,6 +273,10 @@ void test_terminal()
 	// return -1;
 }
 
+/* filesys_terminal
+ *  test all file system functions
+ * input vec: it determines the file name and the function
+ */
 int filesys_test(int vec)
 {
 	TEST_HEADER;
@@ -310,6 +317,12 @@ int filesys_test(int vec)
 }
 
 /* Checkpoint 3 tests */
+
+/* sys_open_close_test
+ *  test open all kinds of files and close them, including garbage input
+ * input:none
+ * output:none
+ */
 int sys_open_close_test(){
 	TEST_HEADER;
 	int result=PASS;
@@ -410,6 +423,12 @@ int sys_open_close_test(){
 	return result;
 
 }
+
+/* sys_read_test
+ *  test read all kinds of files and some garbage inputs
+ * input:none
+ * output:none
+ */
 int sys_read_test(){
 	TEST_HEADER;
 	int result=PASS;
@@ -470,6 +489,12 @@ int sys_read_test(){
 	delete_pcb();
 	return result;
 }
+
+/* sys_write_test
+ *  test write to all kinds of files and some garbage inputs
+ * input:none
+ * output:none
+ */
 int sys_write_test(){
 	TEST_HEADER;
 	int result=PASS;
