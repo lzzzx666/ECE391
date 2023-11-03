@@ -430,14 +430,14 @@ int sys_read_test(){
 	/*test the regular file read*/
 	printf("regular file read test:\n");
 	memset(buf,'\0',BUF_SIZE);
-	read(file,buf,SAMPLE_NUMBER); //just read first 10 bytes
-	printf("the first 10 bytes of the file:\n");
+	read(file,buf,2*SAMPLE_NUMBER); //just read first 20 bytes
+	printf("the first 20 bytes of the file:\n");
 	printf("\n%s\n",buf);
 
 	/*test the regular file read*/
 	printf("continue file read test:\n");
-	read(file,buf,SAMPLE_NUMBER); //just read first 10 bytes
-	printf("the second 10 bytes of the file:\n");
+	read(file,buf,2*SAMPLE_NUMBER); //just read first 20 bytes
+	printf("the second 20 bytes of the file:\n");
 	printf("\n%s\n",buf);
 
 	/*the dir read test*/
@@ -548,6 +548,6 @@ int sys_write_test(){
 void launch_tests()
 {
 	// TEST_OUTPUT("sys_open_close_test",sys_open_close_test());
-	// TEST_OUTPUT("sys_read_test",sys_read_test());
-	TEST_OUTPUT("sys_write_test",sys_write_test());
+	TEST_OUTPUT("sys_read_test",sys_read_test());
+	// TEST_OUTPUT("sys_write_test",sys_write_test());
 }

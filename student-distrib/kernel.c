@@ -175,8 +175,6 @@ void entry(unsigned long magic, unsigned long addr)
 
     /* Run tests */
     // launch_tests();
-    execute((const uint8_t*)"shell");
-
 #if RUN_TESTS
         /* Run tests */
     launch_tests();
