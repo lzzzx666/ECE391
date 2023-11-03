@@ -10,7 +10,6 @@ inode_t *inodesArr;
 dataBlock_t *dataBlock;
 uint32_t directoryIdx;
 
-
 /**
  * int32_t filesys_init(uint32_t filesys_img)
  *
@@ -115,9 +114,9 @@ int32_t read_data(uint32_t inodeIdx, uint32_t offset, uint8_t *buf, uint32_t len
         return FS_FAIL;
     }
 
-    if (length == 0 || offset>=inodesArr[inodeIdx].size) // sanity check
+    if (length == 0 || offset >= inodesArr[inodeIdx].size) // sanity check
         return FS_SUCCEED;
-    uint32_t readLen = length < (inodesArr[inodeIdx].size-offset) ? length : (inodesArr[inodeIdx].size-offset);
+    uint32_t readLen = length < (inodesArr[inodeIdx].size - offset) ? length : (inodesArr[inodeIdx].size - offset);
     // uint8_t data[readLen];                    // data buffer to store the data
     uint32_t startBlock = offset >> 12;       // equivalent ot offset / 4096
     uint32_t startOffset = (offset & 0x0FFF); // equivalent ot offset % 4096
@@ -225,21 +224,19 @@ int32_t file_close(int32_t fd)
  */
 int32_t file_read(int32_t fd, void *buf, uint32_t nbytes)
 {
-    dentry_t dentry;
     uint32_t fileSize;
     uint32_t readBytes;
     pcb_t *pcbPtr;
     pcbPtr = get_current_pcb();
     uint32_t inodeIdx = pcbPtr->file_obj_table[fd].inode;
     uint32_t offset = pcbPtr->file_obj_table[fd].f_position;
-    if (read_dentry_by_index(inodeIdx, &dentry) == FS_FAIL) // sanity check
-        return 0;
     fileSize = inodesArr[inodeIdx].size;
-    if(offset>=fileSize){
+    if (offset >= fileSize)
+    {
         return 0;
     }
-    readBytes = (fileSize-offset) < nbytes ? (fileSize-offset) : nbytes;                 // get the max bytes could be read or need to be read
-    if (read_data(dentry.inodeIdx, offset, buf, readBytes) == FS_FAIL) // sanity check and read data
+    readBytes = read_data(inodeIdx, offset, buf, nbytes); // get the max bytes could be read or need to be read
+    if (readBytes == FS_FAIL)                             // sanity check and read data
         return 0;
     return readBytes;
 }
@@ -364,8 +361,7 @@ int32_t directory_read_test()
         fileType = dentry.fileType;
         fileSize = inodesArr[dentry.inodeIdx].size;
         read_dentry_by_index(i, &dentry); // get file name
-        fileNameLen = strlen((const int8_t *)dentry.fileName) < FILE_NAME_MAX ?
-         strlen((const int8_t *)dentry.fileName) : FILE_NAME_MAX;
+        fileNameLen = strlen((const int8_t *)dentry.fileName) < FILE_NAME_MAX ? strlen((const int8_t *)dentry.fileName) : FILE_NAME_MAX;
 
         /*print entry*/
         printf("file_name: ");

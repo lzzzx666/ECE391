@@ -13,22 +13,6 @@ pageDirectory[1] is the table for kernel code, 4mb per page without redirection 
 */
 PD_t pageDirectory __attribute__((aligned(1024 * 4)));
 
-/**
- * set_pte
- *
- * Sets the attributes and address for a specified Page Table Entry (PTE)
- * at the given index within a page table.
- *
- * @param baseAddr - Pointer to the base address of the page table.
- * @param idx - Index of the page table entry to be modified.
- * @param us - User/Supervisor flag (0 for supervisor, 1 for user).
- * @param addr - Physical address to be associated with the PTE.
- *
- * @return 0 on success. If the index is out of bounds, it returns INV_PT_IDX and
- * prints an error message.
- *
- * @note this function will not initialize the entry in the PD!!!
- */
 int set_pte(PT_t *baseAddr, int idx, uint8_t us, uint32_t addr)
 {
     if (idx >= PAGE_TABLE_ENTRY_NUM) // sanity check
@@ -45,22 +29,6 @@ int set_pte(PT_t *baseAddr, int idx, uint8_t us, uint32_t addr)
     return 0;
 }
 
-/**
- * set_pde
- *
- * Sets the attributes and address for a specified Page Directory Entry (PDE)
- * at the given index within a page directory.
- *
- * @param baseAddr - Pointer to the base address of the page directory.
- * @param idx - Index of the page directory entry to be modified.
- * @param us - User/Supervisor flag (0 for supervisor, 1 for user).
- * @param g - Global page flag (0 for not global, 1 for global).
- * @param ps - Page size flag (0 for 4KB, 1 for 4MB page size).
- * @param addr - Physical address or page table base address to be associated with the PDE.
- *
- * @return 0 on success. If the index is out of bounds, it returns INV_PD_IDX and
- * prints an error message.
- */
 int set_pde(PD_t *baseAddr, int idx, uint8_t us, uint8_t g, uint8_t ps, uint32_t addr)
 {
     if (idx >= PAGE_DIR_ENTRY_NUM) // sanity check
@@ -79,14 +47,6 @@ int set_pde(PD_t *baseAddr, int idx, uint8_t us, uint8_t g, uint8_t ps, uint32_t
     return 0;
 }
 
-/**
- * Initialize the page tables and enable paging.
- *
- * This function initializes page tables and page directories, sets up the necessary page table
- * entries (PTEs) for video memory, and configures the control registers to enable paging.
- *
- * @return 0 on success.
- */
 int page_init()
 {
     int i; // loop counter
@@ -119,18 +79,22 @@ int page_init()
     return 0;
 }
 
-void update_cr3()
-{
-    get_cr();
-    set_cr();
+void update_cr3() {
+    get_cr();  // Get the current CR3 value.
+    set_cr();  // Set the new CR3 value.
 }
 
-/**/
-int32_t set_paging(int32_t fd)
-{
+
+int32_t set_paging(int32_t fd) {
     int32_t program_address = fd * ONE_PROGRAM_SIZE + PROGRAM_START_ADDRESS;
+    
+    // Set up the Page Directory Entry (PDE) to map the program's memory.
     set_pde(&pageDirectory, PROGRAM_IMAGE >> 22, 1, 0, 1, program_address >> 12);
+
+    // Update the control register CR3.
     update_cr3();
-    return 0;
+
+    return 0; // Return 0 on success.
 }
+
 

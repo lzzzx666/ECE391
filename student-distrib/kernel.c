@@ -19,7 +19,6 @@
 /* Check if the bit BIT in FLAGS is set. */
 #define CHECK_FLAG(flags, bit) ((flags) & (1 << (bit)))
 
-
 /* Check if MAGIC is valid and print the Multiboot information structure
    pointed by ADDR. */
 void entry(unsigned long magic, unsigned long addr)
@@ -74,7 +73,6 @@ void entry(unsigned long magic, unsigned long addr)
             mod_count++;
             mod++;
         }
-
     }
     /* Bits 4 and 5 are mutually exclusive! */
     if (CHECK_FLAG(mbi->flags, 4) && CHECK_FLAG(mbi->flags, 5))
@@ -172,14 +170,13 @@ void entry(unsigned long magic, unsigned long addr)
      * without showing you any output */
     // printf("Enabling Interrupts\n");
 
-
     clear();
     /*run the shell*/
 
-        /* Run tests */
+    /* Run tests */
     // launch_tests();
     execute((const uint8_t*)"shell");
-    printf("halt");
+
     //     /* Execute the first program ("shell") ... */
 
     //     /* Spin (nicely, so we don't chew up cycles) */

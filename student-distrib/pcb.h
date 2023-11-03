@@ -71,5 +71,13 @@ extern void update_current_pid();
 
 extern int32_t put_file_to_pcb(file_object_t *file_object);
 
+/**
+ * @brief Get the Process Control Block (PCB) of the current process.
+ *
+ * This function returns a pointer to the Process Control Block (PCB) of the currently executing process.
+ * It first updates the current process ID (PID) using the function `update_current_pid`.
+ *
+ * @return A pointer to the PCB of the current process.
+ */
 extern pcb_t* get_current_pcb();
 #endif

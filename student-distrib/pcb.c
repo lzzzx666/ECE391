@@ -193,7 +193,6 @@ int32_t put_file_to_pcb(file_object_t *file_object)
  * @param cur_pid - the global variable that stores the active pid
  * output:none
  */
-
 void update_current_pid()
 {
     int32_t temp_pid;
@@ -212,8 +211,8 @@ void update_current_pid()
     current_pid = temp_pid;
 }
 
-pcb_t *get_current_pcb()
-{
-    update_current_pid();
-    return pcb_array[current_pid];
+pcb_t *get_current_pcb() {
+    update_current_pid(); // Update the current PID if necessary.
+    return pcb_array[current_pid]; // Return the PCB of the current process.
 }
+

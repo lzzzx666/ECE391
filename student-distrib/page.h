@@ -186,21 +186,73 @@ typedef PDE_t PD_t[PAGE_DIR_ENTRY_NUM];
  */
 typedef PTE_t PT_t[PAGE_TABLE_ENTRY_NUM];
 
+/**
+ * set_pte
+ *
+ * Sets the attributes and address for a specified Page Table Entry (PTE)
+ * at the given index within a page table.
+ *
+ * @param baseAddr - Pointer to the base address of the page table.
+ * @param idx - Index of the page table entry to be modified.
+ * @param us - User/Supervisor flag (0 for supervisor, 1 for user).
+ * @param addr - Physical address to be associated with the PTE.
+ *
+ * @return 0 on success. If the index is out of bounds, it returns INV_PT_IDX and
+ * prints an error message.
+ *
+ * @note this function will not initialize the entry in the PD!!!
+ */
 extern int set_pte(PT_t *baseAddr, int idx, uint8_t us, uint32_t addr);
+
+/**
+ * set_pde
+ *
+ * Sets the attributes and address for a specified Page Directory Entry (PDE)
+ * at the given index within a page directory.
+ *
+ * @param baseAddr - Pointer to the base address of the page directory.
+ * @param idx - Index of the page directory entry to be modified.
+ * @param us - User/Supervisor flag (0 for supervisor, 1 for user).
+ * @param g - Global page flag (0 for not global, 1 for global).
+ * @param ps - Page size flag (0 for 4KB, 1 for 4MB page size).
+ * @param addr - Physical address or page table base address to be associated with the PDE.
+ *
+ * @return 0 on success. If the index is out of bounds, it returns INV_PD_IDX and
+ * prints an error message.
+ */
 extern int set_pde(PD_t *baseAddr, int idx, uint8_t us, uint8_t g, uint8_t ps, uint32_t addr);
+
+/**
+ * Initialize the page tables and enable paging.
+ *
+ * This function initializes page tables and page directories, sets up the necessary page table
+ * entries (PTEs) for video memory, and configures the control registers to enable paging.
+ *
+ * @return 0 on success.
+ */
+extern int page_init();
+
+/**
+ * @brief Update the Control Register CR3.
+ *
+ * This function updates the Control Register CR3 with the current Page Directory's physical address.
+ * It involves calling the functions `get_cr` to obtain the CR3 value and `set_cr` to set the new CR3 value.
+ * The update is necessary for enabling the changes in the page directory to take effect.
+ */
+extern void update_cr3();
+
+/**
+ * @brief Set up paging for a program in memory.
+ *
+ * This function configures paging to allow access to a program in memory.
+ *
+ * @param fd The program's file descriptor.
+ *
+ * @return 0 on success. This function sets up a Page Directory Entry (PDE) to map the program's memory into the virtual address space.
+ */
+extern int32_t set_paging(int32_t fd);
 
 extern void set_cr();
 extern void get_cr();
 
-extern int page_init();
-extern void update_cr3();
-
-
-extern int32_t set_paging(int32_t fd);
-// #define SET_PDE()
 #endif
-
-
-
-
-

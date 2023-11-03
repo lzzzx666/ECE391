@@ -154,7 +154,7 @@ void exc_ir_handler(enum idt_type type)
     default:
         break;
     }
-    while(1);
+    // while(1);
     /*then go to the shell*/
     if(cur_pcb->pid==0){
         return;
