@@ -122,7 +122,7 @@ int32_t execute(const uint8_t *command)
     {
         i++;
     }//now i points to the first non-space char after exe name
-    int32_t j;
+    int32_t j = 0;
     while(i < strlen((int8_t*) command) && command[i] != '\0')
     {
         argv[j++] = command[i++]; //copy the content between [arg1, arg2]
