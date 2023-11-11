@@ -87,7 +87,7 @@ int32_t execute(const uint8_t *command)
     uint8_t test_buf[EXECUTABLE_MAGIC_NUMBER_SIZE];
     dentry_t dentry;
     int32_t pcb_index;
-    int32_t argvLen;
+    //int32_t argvLen;
     pcb_t *cur_pcb = NULL;
     pcb_t *new_pcb = NULL;
     int32_t eip, eflags, esp;
@@ -118,12 +118,12 @@ int32_t execute(const uint8_t *command)
         }
     } //now i points to the first space char
     memset(argv, '\0', MAX_BUF);
-    while(i < strlen(command) && command[i] != '\0' && command[i] == ' ')
+    while(i < strlen((int8_t*) command) && command[i] != '\0' && command[i] == ' ')
     {
         i++;
     }//now i points to the first non-space char after exe name
     int32_t j;
-    while(i < strlen(command) && command[i] != '\0')
+    while(i < strlen((int8_t*) command) && command[i] != '\0')
     {
         argv[j++] = command[i++]; //copy the content between [arg1, arg2]
     }
