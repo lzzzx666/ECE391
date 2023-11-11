@@ -102,7 +102,7 @@ int32_t set_paging(int32_t fd) {
 
 int32_t set_vidmap_paging(uint8_t** screen_start)
 {
-    set_pde(&pageDirectory, VID_ADDRESS >> 22, 1, 0, 1, (uint32_t)video_pageTable >> 12);
+    set_pde(&pageDirectory, VID_ADDRESS >> 22, 1, 0, 0, (uint32_t)video_pageTable >> 12);
     update_cr3();
     *screen_start = (uint8_t *)VID_ADDRESS;
 }
