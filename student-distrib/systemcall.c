@@ -116,9 +116,17 @@ int32_t execute(const uint8_t *command)
         {
             return -1; // File name is too long.
         }
+    } //now i points to the first space char
+    memset(argv, '\0', MAX_BUF);
+    while(i < strlen(command) && command[i] != '\0' && command[i] == ' ')
+    {
+        i++;
+    }//now i points to the first non-space char after exe name
+    int32_t j;
+    while(i < strlen(command) && command[i] != '\0')
+    {
+        argv[j++] = command[i++]; //copy the content between [arg1, arg2]
     }
-    i++;
-    argvLen = MAX_BUF - i;
     // Check if the file exists.
     if (read_dentry_by_name(name_buf, &dentry) == FS_FAIL)
     {
@@ -138,8 +146,6 @@ int32_t execute(const uint8_t *command)
     }
 
     // Get other arguments from the command.
-    memset(argv, '\0', MAX_BUF);
-    memcpy(argv, &(command[i]), argvLen);
 
     // Check if a new PCB can be created.
     pcb_index = create_pcb();
@@ -412,7 +418,14 @@ int32_t getargs(uint8_t *buf, int32_t nbytes)
 int32_t getargs(uint8_t *buf, int32_t nbytes)
 {
     pcb_t *curPcb = get_current_pcb();
-    memcpy(buf, curPcb->arguments, nbytes);
+    if (buf == NULL || curPcb->arguments[0] == '\0' || nbytes <= 0)
+    {
+        return -1; 
+        //sanity check
+    }
+    //if nbytes bigger than buf length, we just copy the first max_buf content
+    if(nbytes >= MAX_BUF)   memcpy(buf, curPcb->arguments, MAX_BUF); 
+    else memcpy(buf, curPcb->arguments, nbytes);
     return 0;
 }
 #endif

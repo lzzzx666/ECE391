@@ -118,6 +118,7 @@ void initialize_new_pcb(pcb_t *pcb, int32_t pid)
     {
         pcb->file_obj_table[i].exist = 0;
     }
+    memset(pcb, 0, MAX_BUF);
 }
 
 /**
