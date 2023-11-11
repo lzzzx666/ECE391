@@ -60,3 +60,16 @@ MP3.3
         how to fix: I misregard system call number starts at 0. Actually, it starts at 1, so I add a 0
                     at the beginning of the handler jump table.
     
+
+MP3.4
+    BUG1
+        description: Genereate a Page Fault when running fish
+        find takes: 30min
+        fix takes: 20min
+        how to fix: Set PTE after setting PDE in set_vidmap_paging.
+
+    BUG2
+        description: User programs did not recieve parameters
+        find takes: 5min
+        fix takes: 5min
+        how to fix: Initialize index pointer j to 0 in execute systemcall.c
