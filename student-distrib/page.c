@@ -1,12 +1,15 @@
 #include "page.h"
 #include "lib.h"
 
+
+
 /*the starting address of kernel code, which is 4MB*/
 #define KERNEL_START_ADDR (4 * 1024 * 1024) // 4MB = 4 * 2^10 * 2^10 = 4*1024*1024
-
+#define ADDR_single4MB 0x400000
+#define VID_ADDRESS 0x8000000 + 3 * ADDR_single4MB
 /*page table for the video memory (first entry in page directory), 4kb size per page*/
 PT_t pageTable __attribute__((aligned(1024 * 4))); // 4KB = 4 * 2^10 = 4*1024
-
+PT_t video_pageTable __attribute__((aligned(1024 * 4))); 
 /*page directory,
 pageDirectory[0] is the table for video memory, 4kb per page.
 pageDirectory[1] is the table for kernel code, 4mb per page without redirection to pageTable.
@@ -95,6 +98,13 @@ int32_t set_paging(int32_t fd) {
     update_cr3();
 
     return 0; // Return 0 on success.
+}
+
+int32_t set_vidmap_paging(uint8_t** screen_start)
+{
+    set_pde(&pageDirectory, VID_ADDRESS >> 22, 1, 0, 1, (uint32_t)video_pageTable >> 12);
+    update_cr3();
+    *screen_start = (uint8_t *)VID_ADDRESS;
 }
 
 

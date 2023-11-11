@@ -251,7 +251,7 @@ extern void update_cr3();
  * @return 0 on success. This function sets up a Page Directory Entry (PDE) to map the program's memory into the virtual address space.
  */
 extern int32_t set_paging(int32_t fd);
-
+extern int32_t set_vidmap_paging(uint8_t** screen_start);
 extern void set_cr();
 extern void get_cr();
 

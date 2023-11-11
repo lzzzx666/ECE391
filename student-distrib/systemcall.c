@@ -4,9 +4,9 @@
 #include "keyboard.h"
 
 #define EXCEPTION_TEST 0
-
+#define ADDR_128MB 0x8000000
 #define DEBUG 0
-
+#define ADDR_4MB 0x400000
 /*those are numbers used for executable file*/
 const int8_t executableMagicStr[4] = {0x7f, 0x45, 0x4c, 0x46};
 
@@ -437,7 +437,10 @@ int32_t getargs(uint8_t *buf, int32_t nbytes)
  */
 int32_t vidmap(uint8_t **screen_start)
 {
-    printf("sys_vidmap!\n");
+
+    if ((unsigned int)screen_start <= ADDR_128MB || (unsigned int)screen_start >= ADDR_128MB + ADDR_4MB || screen_start == NULL)
+        return -1;
+    set_vidmap_paging(screen_start);
     return 0;
 }
 
