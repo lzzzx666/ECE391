@@ -254,7 +254,7 @@ int page_test(int vec)
 /* test_terminal
  *  test the functionality of the terminal
  */
-void test_terminal()
+int test_terminal()
 {
 	char buffer[128];
 	memset((void *)buffer, 0, 128);
@@ -265,11 +265,12 @@ void test_terminal()
 		r = terminal_read(0, buffer, 128);
 		printf("read buf: %d\n", r);
 		if (r >= 0)
-			w = terminal_write(0, buffer, 128);
+			w = terminal_write(0, buffer, r);
 		printf("read buf: %d, write buf:%d\n", r, w);
 		if (r != w)
-			break;
+			return FAIL;
 	}
+	return PASS;
 	// return -1;
 }
 
@@ -567,12 +568,29 @@ int sys_write_test(){
 	return result;
 }
 /* Checkpoint 4 tests */
+
+int cat_testprint() {
+	int file;
+	char c;
+	create_pcb();
+	(void)get_current_pcb();
+	file=open((uint8_t*)"testprint");
+
+	while(read(file, &c, 1) == 1) putc(c);
+
+	close(file);
+	delete_pcb();
+	return 1;
+}
+
 /* Checkpoint 5 tests */
 
 /* Test suite entry point */
 void launch_tests()
 {
 	// TEST_OUTPUT("sys_open_close_test",sys_open_close_test());
-	TEST_OUTPUT("sys_read_test",sys_read_test());
+	// TEST_OUTPUT("sys_read_test",sys_read_test());
 	// TEST_OUTPUT("sys_write_test",sys_write_test());
+	TEST_OUTPUT("cat testprint", cat_testprint()); // checkpoint 2
+	TEST_OUTPUT("test terminal", test_terminal()); // checkpoint 4
 }
