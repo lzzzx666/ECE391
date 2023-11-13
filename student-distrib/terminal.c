@@ -89,8 +89,8 @@ int32_t terminal_write(int32_t fd, void *buf, int32_t nbytes)
     int i = 0, ret_count = 0;
     for (i = 0; i < nbytes; i++)
     {
-        // if (((char *)buf)[i] == '\0')
-        //     break;
+        if (((char *)buf)[i] == '\0')
+            continue;
         ret_count++;
         putc(((char *)buf)[i]);
     }
