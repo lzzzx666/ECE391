@@ -8,7 +8,7 @@ handlers:
    .long invalid_opcode,device_not_available,double_fault,coprocessor_segment_overrun,invalid_tss
    .long segment_not_present,stack_segment_fault,general_protection,page_fault,intel_reserved
    .long floating_point_error,alignment_check,machine_check,simd_floating_point_exception
-   .long keyboard,real_time_clock,syscall_linkage,pit
+   .long keyboard,real_time_clock,syscall_linkage
 syscall:
     .long 0,halt,execute,read,write,open
     .long close,getargs,vidmap,set_handler,sigreturn
@@ -31,14 +31,10 @@ ex_ir_linkage:
     #execute the exception handler
     movl 44(%esp),%esi  #44 can be used to locate the vector number
     cmpl $0x21,%esi
-    jne pit_h
+    jne rtc
     call keyboard_handler
     jmp exc_ir_tear_down
-pit_h:
-    cmpl $0x20,%esi
-    jne rtc
-    call pit_handler
-    jmp exc_ir_tear_down
+
 rtc:
     cmpl $0x28,%esi
     jne exception
@@ -185,8 +181,3 @@ keyboard:
 real_time_clock:
     pushl $0x28     #0x28 is the vector number for RTC interrupt
     jmp ex_ir_linkage
-pit:
-    pushl $0x20     #0x20 is the vector number for RTC interrupt
-    jmp ex_ir_linkage
-
-

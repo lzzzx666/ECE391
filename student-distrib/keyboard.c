@@ -51,8 +51,10 @@ void init_keyboard()
 // Side Effects: Reads a byte from the KEYBOARD_DATA_PORT.
 // If the scan code corresponds to an alphanumeric character (a-z, 0-9), the character will be printed to the screen.
 
-void keyboard_handler(terminal_t *terminal, terminal_t *prev)
+void keyboard_handler()
 {
+    terminal_t *terminal = &main_terminal[current_terminal];
+    terminal_t *prev = &prev_terminal[current_terminal];
     cli();
     unsigned char scan_code = inb(KEYBOARD_DATA_PORT);
     char ascii;
