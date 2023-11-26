@@ -13,6 +13,7 @@
 #include "rtc.h"
 #include "page.h"
 #include "fs.h"
+#include "terminal.h"
 #define RUN_TESTS 0
 
 /* Macros. */
@@ -158,6 +159,11 @@ void entry(unsigned long magic, unsigned long addr)
 
     /* Initialize RTC periodic interrupt */
     rtc_init();
+
+    // @@
+    int i;
+    for(i = 0; i < TERMINAL_NUM; i++)
+        initialize_terminal(i);
 
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */

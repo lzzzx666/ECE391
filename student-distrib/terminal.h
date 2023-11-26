@@ -8,6 +8,8 @@
 #define MAX_TERMINAL_SIZE 128
 #define TERMINAL_NUM 3
 
+#define VIDEOMEM_SIZE (NUM_COLS * NUM_ROWS * 2)
+
 typedef struct terminal_t
 {
     uint16_t cursor_x;
@@ -15,6 +17,7 @@ typedef struct terminal_t
     uint8_t count;
     volatile uint8_t enter_pressed;
     volatile unsigned char terminal_buf[MAX_TERMINAL_SIZE];
+    uint8_t *video_mem_backup;
 } terminal_t;
 
 void initialize_terminal();

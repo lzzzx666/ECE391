@@ -9,8 +9,6 @@ static int capslock_pressed = 0;
 static int alt_pressed = 0;
 static int ctrl_pressed = 0;
 
-extern terminal_t main_terminal[3], prev_terminal[3];
-
 char scan_code_set[NUM_SCANCODES] = {
     '\0', '\0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '\0', '\0',
     'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\0', '\0', 'a', 's',
