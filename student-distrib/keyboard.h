@@ -27,6 +27,11 @@
 #define F2  0x3C
 #define F3  0x3D
 
+#define TERMINAL_HK1 alt_pressed
+#define TERMINAL1_HK2 F1
+#define TERMINAL2_HK2 F2
+#define TERMINAL3_HK2 F3
+
 void init_keyboard();
 extern void keyboard_handler();
 

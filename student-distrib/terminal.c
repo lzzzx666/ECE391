@@ -1,7 +1,9 @@
 #include "terminal.h"
 #include "lib.h"
 
-terminal_t main_terminal, prev_terminal;
+terminal_t main_terminal[TERMINAL_NUM];
+terminal_t prev_terminal[TERMINAL_NUM];
+int current_terminal = 0;
 
 // void initialize_terminal()
 // initializes the main terminal with default values.
@@ -10,9 +12,10 @@ terminal_t main_terminal, prev_terminal;
 // side effect:init the main_terminal and enable the cursor
 void initialize_terminal()
 {
-    main_terminal.count = main_terminal.enter_pressed = 0;
-    main_terminal.cursor_x = main_terminal.cursor_y = 0;
-    memset((void *)main_terminal.terminal_buf, '\0', MAX_TERMINAL_SIZE);
+    terminal_t *terminal = &main_terminal[current_terminal];
+    terminal->count = terminal->enter_pressed = 0;
+    terminal->cursor_x = terminal->cursor_y = 0;
+    memset((void *)terminal->terminal_buf, '\0', MAX_TERMINAL_SIZE);
     enable_cursor(14, 15); // set cursor shape
     update_cursor(0, 0);   // set cursor position
 }
@@ -23,10 +26,12 @@ void initialize_terminal()
 // side effect:Closes the terminal
 int32_t terminal_close(int32_t fd)
 {
-    memset((void *)main_terminal.terminal_buf, '\0', MAX_TERMINAL_SIZE);
-    main_terminal.count = 0;
-    prev_terminal.count = 0;
-    main_terminal.enter_pressed = 0;
+    terminal_t *terminal = &main_terminal[current_terminal];
+    terminal_t *prev = &prev_terminal[current_terminal];
+    memset((void *)terminal->terminal_buf, '\0', MAX_TERMINAL_SIZE);
+    terminal->count = 0;
+    prev->count = 0;
+    terminal->enter_pressed = 0;
     return 0;
 }
 // int32_t terminal_open(int32_t fd)
@@ -53,18 +58,20 @@ int32_t terminal_open(const uint8_t *filename)
 // - int32_t: Total number of bytes read or -1 on error.
 int32_t terminal_read(int32_t fd, void *buf, int32_t nbytes)
 {
+    terminal_t *terminal = &main_terminal[current_terminal];
+    terminal_t *prev = &prev_terminal[current_terminal];
     if ((!buf) || (nbytes <= 0))
         return -1; // sanity check
     int i = 0, ret_count = 0;
-    main_terminal.enter_pressed = 0;
-    while (!main_terminal.enter_pressed)
+    terminal->enter_pressed = 0;
+    while (!terminal->enter_pressed)
     {
     }
-    for (i = 0; i < nbytes && i < READ_MAX_SIZE && prev_terminal.terminal_buf[i] != '\0'; i++)
+    for (i = 0; i < nbytes && i < READ_MAX_SIZE && prev->terminal_buf[i] != '\0'; i++)
     {
-        ((char *)buf)[i] = prev_terminal.terminal_buf[i]; // read from previous buffer to the terminal buffer
+        ((char *)buf)[i] = prev->terminal_buf[i]; // read from previous buffer to the terminal buffer
         ret_count++;
-        if (prev_terminal.terminal_buf[i] == '\n')
+        if (prev->terminal_buf[i] == '\n')
             break; // when meeting \n, return
     }
     ((char *)buf)[ret_count] = '\0';
@@ -109,7 +116,16 @@ int32_t terminal_write(int32_t fd, void *buf, int32_t nbytes)
 // - Void.
 void terminal_clear()
 {
+    terminal_t *terminal = &main_terminal[current_terminal];
     clear();
-    main_terminal.count = main_terminal.enter_pressed = 0; // restore some state
-    memset((void *)main_terminal.terminal_buf, '\0', MAX_TERMINAL_SIZE);
+    terminal->count = terminal->enter_pressed = 0; // restore some state
+    memset((void *)terminal->terminal_buf, '\0', MAX_TERMINAL_SIZE);
+}
+
+// @@
+int32_t switch_terminal(int32_t terminal_num) {
+    if(terminal_num < 0 || terminal_num >= TERMINAL_NUM) return -1;
+    if(terminal_num == current_terminal) return 0;
+    current_terminal = terminal_num;
+    return 1;
 }

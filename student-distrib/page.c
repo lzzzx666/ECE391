@@ -110,4 +110,3 @@ int32_t set_vidmap_paging(uint8_t** screen_start)
     return 0;
 }
 
-

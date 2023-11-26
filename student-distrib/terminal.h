@@ -6,6 +6,8 @@
 #include "keyboard.h"
 
 #define MAX_TERMINAL_SIZE 128
+#define TERMINAL_NUM 3
+
 typedef struct terminal_t
 {
     uint16_t cursor_x;
@@ -21,4 +23,12 @@ int32_t terminal_write(int32_t fd, void *buf, int32_t nbytes);
 int32_t terminal_open(const uint8_t *filename);
 int32_t terminal_close(int32_t fd);
 void terminal_clear();
+
+// @@Y
+int32_t switch_terminal(int32_t terminal_num);
+extern int32_t current_terminal;
+
+extern terminal_t main_terminal[TERMINAL_NUM];
+extern terminal_t prev_terminal[TERMINAL_NUM];
+
 #endif

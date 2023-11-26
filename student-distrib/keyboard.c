@@ -9,7 +9,7 @@ static int capslock_pressed = 0;
 static int alt_pressed = 0;
 static int ctrl_pressed = 0;
 
-extern terminal_t main_terminal, prev_terminal;
+extern terminal_t main_terminal[3], prev_terminal[3];
 
 char scan_code_set[NUM_SCANCODES] = {
     '\0', '\0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '\0', '\0',
@@ -51,7 +51,7 @@ void init_keyboard()
 // Side Effects: Reads a byte from the KEYBOARD_DATA_PORT.
 // If the scan code corresponds to an alphanumeric character (a-z, 0-9), the character will be printed to the screen.
 
-void keyboard_handler()
+void keyboard_handler(terminal_t *terminal, terminal_t *prev)
 {
     cli();
     unsigned char scan_code = inb(KEYBOARD_DATA_PORT);
@@ -60,21 +60,21 @@ void keyboard_handler()
     pcb_t *cur_pcb;
     switch (scan_code)
     {
-    case TAB:
+    case TEST_RTC_HOTKEY:
         break;
     case BACKSPACE:
-        if (main_terminal.count > 0)
+        if (terminal->count > 0)
         {
-            main_terminal.terminal_buf[--main_terminal.count] = '\0'; // overwrite the original content with '\0'
+            terminal->terminal_buf[--terminal->count] = '\0'; // overwrite the original content with '\0'
             backspace();                                              // change screen x and y
         }
         break;
     case ENTER:
-        main_terminal.terminal_buf[main_terminal.count++] = '\n';   // add a \n at the end
-        main_terminal.enter_pressed = 1;                            // notify the main_terminal
-        prev_terminal = main_terminal;                              // store the previous terminal
-        main_terminal.terminal_buf[main_terminal.count = 0] = '\0'; // restore count
-        memset((void *)main_terminal.terminal_buf, '\0', MAX_TERMINAL_SIZE);
+        terminal->terminal_buf[terminal->count++] = '\n';   // add a \n at the end
+        terminal->enter_pressed = 1;                            // notify the main_terminal
+        *prev = *main_terminal;                              // store the previous terminal
+        terminal->terminal_buf[terminal->count = 0] = '\0'; // restore count
+        memset((void *)terminal->terminal_buf, '\0', MAX_TERMINAL_SIZE);
         putc('\n');
         break;
     case CAPS_LOCK:
@@ -104,11 +104,14 @@ void keyboard_handler()
     case ALT_BREAK:
         alt_pressed = 0;
         break;
-    case F1:
+    case TERMINAL1_HK2:
+        if(TERMINAL_HK1) switch_terminal(0);
         break;
-    case F2:
+    case TERMINAL2_HK2:
+        if(TERMINAL_HK1) switch_terminal(1);
         break;
-    case F3:
+    case TERMINAL3_HK2:
+        if(TERMINAL_HK1) switch_terminal(2);
         break;
     default:
         if (scan_code >= NUM_SCANCODES)
@@ -121,7 +124,6 @@ void keyboard_handler()
             ascii = scan_code_set_caps[scan_code];
         else
             ascii = scan_code_set[scan_code];
-
         if (ascii == '\0')
             break;
         else if (ctrl_pressed && (ascii == 'L' || ascii == 'l')) // clear the screen
@@ -136,9 +138,9 @@ void keyboard_handler()
         }
         else
         {
-            if (main_terminal.count < READ_MAX_SIZE - 1)
+            if (terminal->count < READ_MAX_SIZE - 1)
             {
-                main_terminal.terminal_buf[main_terminal.count++] = ascii; // default condition
+                terminal->terminal_buf[terminal->count++] = ascii; // default condition
                 putc(ascii);
             }
         }

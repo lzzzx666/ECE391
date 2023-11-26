@@ -4,21 +4,23 @@
 #include "lib.h"
 #include "terminal.h"
 
+
 static char *video_mem = (char *)VIDEO;
-extern terminal_t main_terminal;
+
 /* void clear(void);
  * Inputs: void
  * Return Value: none
  * Function: Clears video memory */
 void clear(void)
 {
+    terminal_t *terminal = &main_terminal[current_terminal];
     int32_t i;
     for (i = 0; i < NUM_ROWS * NUM_COLS; i++)
     {
         *(uint8_t *)(video_mem + (i << 1)) = ' ';
         *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB;
     }
-    main_terminal.cursor_x = main_terminal.cursor_y = 0;
+    terminal->cursor_x = terminal->cursor_y = 0;
     update_cursor(0, 0);
 }
 
@@ -175,6 +177,7 @@ int32_t puts(int8_t *s)
 
 void scroll_up()
 {
+    terminal_t *terminal = &main_terminal[current_terminal];
     int x, y;
     for (y = 0; y < NUM_ROWS - 1; y++) // fill up the screen except the last row
     {
@@ -184,7 +187,7 @@ void scroll_up()
             *(uint8_t *)(video_mem + (((y * NUM_COLS + x) << 1) + 1)) = ATTRIB;
         }
     }
-    main_terminal.cursor_y--;
+    terminal->cursor_y--;
     for (x = 0; x < NUM_COLS; x++) // fill up the last row of screen
     {
         *(uint8_t *)(video_mem + ((NUM_COLS * (NUM_ROWS - 1) + x) << 1)) = ' ';
@@ -197,48 +200,50 @@ void scroll_up()
  *  Function: Output a character to the console */
 void putc(uint8_t c)
 {
+    terminal_t *terminal = &main_terminal[current_terminal];
     cli();
     if (c == '\n' || c == '\r')
     {
-        main_terminal.cursor_y++;
-        main_terminal.cursor_x = 0;
-        if (main_terminal.cursor_y >= NUM_ROWS)
+        terminal->cursor_y++;
+        terminal->cursor_x = 0;
+        if (terminal->cursor_y >= NUM_ROWS)
         {
             scroll_up();
         }
-        update_cursor(main_terminal.cursor_x, main_terminal.cursor_y);
+        update_cursor(terminal->cursor_x, terminal->cursor_y);
     }
     else
     {
-        *(uint8_t *)(video_mem + ((NUM_COLS * main_terminal.cursor_y + main_terminal.cursor_x) << 1)) = c;
-        *(uint8_t *)(video_mem + ((NUM_COLS * main_terminal.cursor_y + main_terminal.cursor_x) << 1) + 1) = ATTRIB;
-        main_terminal.cursor_x++;
-        if (main_terminal.cursor_x == NUM_COLS) // user input more than 80 characters
+        *(uint8_t *)(video_mem + ((NUM_COLS * terminal->cursor_y + terminal->cursor_x) << 1)) = c;
+        *(uint8_t *)(video_mem + ((NUM_COLS * terminal->cursor_y + terminal->cursor_x) << 1) + 1) = ATTRIB;
+        terminal->cursor_x++;
+        if (terminal->cursor_x == NUM_COLS) // user input more than 80 characters
         {
-            main_terminal.cursor_y++;
-            main_terminal.cursor_x = 0;
-            if (main_terminal.cursor_y >= NUM_ROWS)
+            terminal->cursor_y++;
+            terminal->cursor_x = 0;
+            if (terminal->cursor_y >= NUM_ROWS)
             {
                 scroll_up(); // now we can implement scrolling in putc
             }
-            update_cursor(main_terminal.cursor_x, main_terminal.cursor_y);
+            update_cursor(terminal->cursor_x, terminal->cursor_y);
         }
-        update_cursor(main_terminal.cursor_x, main_terminal.cursor_y);
+        update_cursor(terminal->cursor_x, terminal->cursor_y);
     }
     sti();
 }
 void backspace(void)
 {
-    if (main_terminal.cursor_x == 0) // when backspace to last line
+    terminal_t *terminal = &main_terminal[current_terminal];
+    if (terminal->cursor_x == 0) // when backspace to last line
     {
-        main_terminal.cursor_y--;
-        main_terminal.cursor_x = NUM_COLS - 1;
+        terminal->cursor_y--;
+        terminal->cursor_x = NUM_COLS - 1;
     }
     else
-        main_terminal.cursor_x--;
-    *(uint8_t *)(video_mem + ((NUM_COLS * main_terminal.cursor_y + main_terminal.cursor_x) << 1)) = ' ';
-    *(uint8_t *)(video_mem + ((NUM_COLS * main_terminal.cursor_y + main_terminal.cursor_x) << 1) + 1) = ATTRIB;
-    update_cursor(main_terminal.cursor_x, main_terminal.cursor_y);
+        terminal->cursor_x--;
+    *(uint8_t *)(video_mem + ((NUM_COLS * terminal->cursor_y + terminal->cursor_x) << 1)) = ' ';
+    *(uint8_t *)(video_mem + ((NUM_COLS * terminal->cursor_y + terminal->cursor_x) << 1) + 1) = ATTRIB;
+    update_cursor(terminal->cursor_x, terminal->cursor_y);
 }
 
 void enable_cursor(uint8_t cursor_start, uint8_t cursor_end)
