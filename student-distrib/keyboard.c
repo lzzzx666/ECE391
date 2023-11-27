@@ -4,12 +4,10 @@
 #include "lib.h"
 #include "systemcall.h"
 
-static int shift_pressed = 0; // 0 stands for not pushing
-static int capslock_pressed = 0;
-static int alt_pressed = 0;
-static int ctrl_pressed = 0;
-
-extern terminal_t main_terminal[3], prev_terminal[3];
+static uint8_t shift_pressed = 0; // 0 stands for not pushing
+static uint8_t capslock_pressed = 0;
+static uint8_t alt_pressed = 0;
+static uint8_t ctrl_pressed = 0;
 
 char scan_code_set[NUM_SCANCODES] = {
     '\0', '\0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '\0', '\0',
@@ -62,7 +60,12 @@ void keyboard_handler()
     pcb_t *cur_pcb;
     switch (scan_code)
     {
-    case TEST_RTC_HOTKEY:
+    case TAB:
+        terminal->terminal_buf[terminal->count++] = '\t';
+        terminal->tab_pressed = 1;
+        *prev = *terminal;
+        terminal->terminal_buf[terminal->count = 0] = '\0';
+        memset((void *)terminal->terminal_buf, '\0', MAX_TERMINAL_SIZE);
         break;
     case BACKSPACE:
         if (terminal->count > 0)
@@ -73,8 +76,8 @@ void keyboard_handler()
         break;
     case ENTER:
         terminal->terminal_buf[terminal->count++] = '\n';   // add a \n at the end
-        terminal->enter_pressed = 1;                        // notify the main_terminal
-        *prev = *main_terminal;                             // store the previous terminal
+        terminal->enter_pressed = 1;                            // notify the main_terminal
+        *prev = *terminal;                              // store the previous terminal
         terminal->terminal_buf[terminal->count = 0] = '\0'; // restore count
         memset((void *)terminal->terminal_buf, '\0', MAX_TERMINAL_SIZE);
         putc('\n');

@@ -1,23 +1,30 @@
 #include "terminal.h"
 #include "lib.h"
+#include "systemcall.h"
 
 terminal_t main_terminal[TERMINAL_NUM];
 terminal_t prev_terminal[TERMINAL_NUM];
+uint8_t video_mem[TERMINAL_NUM][VIDEOMEM_SIZE];
 int current_terminal = 0;
+
+uint8_t *shared_user_vid_mem = NULL;
 
 // void initialize_terminal()
 // initializes the main terminal with default values.
 // input:none.
 // return:none
 // side effect:init the main_terminal and enable the cursor
-void initialize_terminal()
+void initialize_terminal(int32_t terminal_num)
 {
-    terminal_t *terminal = &main_terminal[current_terminal];
-    terminal->count = terminal->enter_pressed = 0;
+    terminal_t *terminal = &main_terminal[terminal_num];
+    terminal->count = terminal->enter_pressed = terminal->tab_pressed = 0;
     terminal->cursor_x = terminal->cursor_y = 0;
     memset((void *)terminal->terminal_buf, '\0', MAX_TERMINAL_SIZE);
     enable_cursor(14, 15); // set cursor shape
     update_cursor(0, 0);   // set cursor position
+    // @@
+    vidmap(&shared_user_vid_mem);
+    terminal->video_mem_backup = video_mem[terminal_num];
 }
 // int32_t terminal_close(int32_t fd)
 //.Closes the terminal.
@@ -63,12 +70,10 @@ int32_t terminal_read(int32_t fd, void *buf, int32_t nbytes)
     if ((!buf) || (nbytes <= 0))
         return -1; // sanity check
     int i = 0, ret_count = 0;
-    terminal->enter_pressed = 0;
+    terminal->enter_pressed = terminal->tab_pressed = 0;
     terminal->up_pressed = 0;
     terminal->down_pressed = 0;
-    while (!(terminal->enter_pressed || terminal->up_pressed || terminal->down_pressed))
-    {
-    }
+    while (!(terminal->enter_pressed || terminal->up_pressed || terminal->down_pressed || terminal->tab_pressed));
     if (terminal->up_pressed)
     {
         while (terminal->cursor_x > 7)
@@ -145,12 +150,15 @@ void terminal_clear()
 }
 
 // @@
-int32_t switch_terminal(int32_t terminal_num)
-{
-    if (terminal_num < 0 || terminal_num >= TERMINAL_NUM)
-        return -1;
-    if (terminal_num == current_terminal)
-        return 0;
-    current_terminal = terminal_num;
+int32_t switch_terminal(int32_t terminal_num) {
+    if(terminal_num < 0 || terminal_num >= TERMINAL_NUM) return -1; // invalid `terminal_num`
+    if(shared_user_vid_mem == NULL) return -1;  // vidmap error
+    if(terminal_num == current_terminal) return 0;  // no action needed
+    
+    memcpy(main_terminal[current_terminal].video_mem_backup, shared_user_vid_mem, VIDEOMEM_SIZE);   // backup video mem of old terminal
+    memcpy(shared_user_vid_mem, main_terminal[terminal_num].video_mem_backup, VIDEOMEM_SIZE);   // restore video mem backup form new terminal
+    current_terminal = terminal_num;    // update `current_terminal`
+    update_cursor(main_terminal[current_terminal].cursor_x, main_terminal[current_terminal].cursor_y);  // update curosor position in new terminal
+
     return 1;
 }
