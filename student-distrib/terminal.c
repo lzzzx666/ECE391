@@ -17,7 +17,7 @@ uint8_t *shared_user_vid_mem = NULL;
 void initialize_terminal(int32_t terminal_num)
 {
     terminal_t *terminal = &main_terminal[terminal_num];
-    terminal->count = terminal->enter_pressed = 0;
+    terminal->count = terminal->enter_pressed = terminal->tab_pressed = 0;
     terminal->cursor_x = terminal->cursor_y = 0;
     memset((void *)terminal->terminal_buf, '\0', MAX_TERMINAL_SIZE);
     enable_cursor(14, 15); // set cursor shape
@@ -70,8 +70,8 @@ int32_t terminal_read(int32_t fd, void *buf, int32_t nbytes)
     if ((!buf) || (nbytes <= 0))
         return -1; // sanity check
     int i = 0, ret_count = 0;
-    terminal->enter_pressed = 0;
-    while (!terminal->enter_pressed);
+    terminal->enter_pressed = terminal->tab_pressed = 0;
+    while (!terminal->enter_pressed && !terminal->tab_pressed);
     for (i = 0; i < nbytes && i < READ_MAX_SIZE && prev->terminal_buf[i] != '\0'; i++)
     {
         ((char *)buf)[i] = prev->terminal_buf[i]; // read from previous buffer to the terminal buffer
