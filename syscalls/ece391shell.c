@@ -62,10 +62,10 @@ void do_tab(const uint8_t *cmd, uint32_t len) {
 		return;
 	}
  	else if(num_match > 1) {
-		ece391_fdputs(1, "\n");
+		ece391_fdputs(1, (uint8_t*)"\n");
 		for(i = 0; i < num_match; i++) {
 			ece391_fdputs(1, matches[i]);
-			ece391_fdputs(1, "  ");
+			ece391_fdputs(1, (uint8_t*)"  ");
 		}
 		restore_last = 1;
 		last_pos = len;
@@ -73,7 +73,7 @@ void do_tab(const uint8_t *cmd, uint32_t len) {
 	else {	// no match
 		last_pos = 0;
 	}
-	ece391_fdputs(1, "\n");
+	ece391_fdputs(1, (uint8_t*)"\n");
 }
 
 
@@ -186,7 +186,8 @@ int main ()
 			goto end;
 		}
 	rval = ece391_execute (buf);
-
+	end:
+		hasPrev = 0;
 	if (-1 == rval) {
 	    ece391_fdputs (1, buf);
 	    ece391_fdputs (1, (uint8_t*)": no such command\n");
