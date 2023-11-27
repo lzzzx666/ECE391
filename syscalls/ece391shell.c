@@ -22,7 +22,6 @@ uint8_t is_prefix(const uint8_t *str, const uint8_t *prefix, uint32_t prefix_len
 }
 
 uint8_t matches[MAX_MATCH][SBUFSIZE];
-uint8_t buf[BUFSIZE];
 uint8_t last_pos = 0;
 uint8_t restore_last = 0;
 
@@ -57,8 +56,8 @@ void do_tab(const uint8_t *cmd, uint32_t len) {
     uint32_t i;
     if (num_match == 1) {
         ece391_fdputs(1, matches[0] + len);
-        ece391_strcpy(buf, matches[0]);
-        last_pos = ece391_strlen(buf);
+        ece391_strcpy(cmd, matches[0]);
+        last_pos = ece391_strlen(cmd);
         return;
     } else if (num_match > 1) {
         ece391_fdputs(1, (uint8_t *)"\n");
@@ -117,38 +116,40 @@ int main() {
         }
         cnt += last_pos;
         if (cnt == 0) continue;
-
-        if (UP == buf[cnt - 1]) {
-            if ((cmdQueue.curIdx == cmdQueue.head) ||
-                (cmdQueue.curIdx == (cmdQueue.head + 1) % QUEUESIZE)) {
+        if (!(last_pos || restore_last)) {
+            if (UP == buf[cnt - 1]) {
+                if ((cmdQueue.curIdx == cmdQueue.head) ||
+                    (cmdQueue.curIdx == (cmdQueue.head + 1) % QUEUESIZE)) {
+                    ece391_fdputs(1, prev);
+                    goto next;
+                }
+                cmdQueue.curIdx = (cmdQueue.curIdx - 1 + QUEUESIZE) % QUEUESIZE;
+                ece391_strcpy(prev, (const uint8_t *)cmdQueue.cmd[cmdQueue.curIdx]);
                 ece391_fdputs(1, prev);
+                hasPrev = 1;
                 goto next;
             }
-            cmdQueue.curIdx = (cmdQueue.curIdx - 1 + QUEUESIZE) % QUEUESIZE;
-            ece391_strcpy(prev, (const uint8_t *)cmdQueue.cmd[cmdQueue.curIdx]);
-            ece391_fdputs(1, prev);
-            hasPrev = 1;
-            goto next;
-        }
-        if (DOWN == buf[cnt - 1]) {
-            if ((cmdQueue.curIdx == (cmdQueue.tail - 1 + QUEUESIZE) % QUEUESIZE) ||
-                (cmdQueue.curIdx == cmdQueue.tail)) {
+            if (DOWN == buf[cnt - 1]) {
+                if ((cmdQueue.curIdx == (cmdQueue.tail - 1 + QUEUESIZE) % QUEUESIZE) ||
+                    (cmdQueue.curIdx == cmdQueue.tail)) {
+                    ece391_fdputs(1, prev);
+                    goto next;
+                }
+                cmdQueue.curIdx = (cmdQueue.curIdx + 1) % QUEUESIZE;
+                ece391_strcpy(prev, (const uint8_t *)cmdQueue.cmd[cmdQueue.curIdx]);
                 ece391_fdputs(1, prev);
+                hasPrev = 1;
                 goto next;
             }
-            cmdQueue.curIdx = (cmdQueue.curIdx + 1) % QUEUESIZE;
-            ece391_strcpy(prev, (const uint8_t *)cmdQueue.cmd[cmdQueue.curIdx]);
-            ece391_fdputs(1, prev);
-            hasPrev = 1;
-            goto next;
         }
-
         if (buf[cnt - 1] == '\t') {
             cnt--;
             buf[cnt] = '\0';
             do_tab(buf, cnt);
             continue;
-        } else if (cnt > 0 && '\n' == buf[cnt - 1]) {
+        }
+        last_pos = restore_last = 0;
+        if (cnt > 0 && '\n' == buf[cnt - 1]) {
             if (cnt > 1) {
                 buf[cnt - 1] = '\0';
                 if (hasPrev == 0) push(buf);
