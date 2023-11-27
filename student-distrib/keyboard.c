@@ -71,7 +71,7 @@ void keyboard_handler()
         if (terminal->count > 0)
         {
             terminal->terminal_buf[--terminal->count] = '\0'; // overwrite the original content with '\0'
-            backspace();                                              // change screen x and y
+            backspace();                                      // change screen x and y
         }
         break;
     case ENTER:
@@ -110,13 +110,22 @@ void keyboard_handler()
         alt_pressed = 0;
         break;
     case TERMINAL1_HK2:
-        if(TERMINAL_HK1) switch_terminal(0);
+        if (TERMINAL_HK1)
+            switch_terminal(0);
         break;
     case TERMINAL2_HK2:
-        if(TERMINAL_HK1) switch_terminal(1);
+        if (TERMINAL_HK1)
+            switch_terminal(1);
         break;
     case TERMINAL3_HK2:
-        if(TERMINAL_HK1) switch_terminal(2);
+        if (TERMINAL_HK1)
+            switch_terminal(2);
+        break;
+    case UP:
+        terminal->up_pressed = 1;                        // notify the main_terminal
+        break;
+    case DOWN:
+        terminal->down_pressed = 1;
         break;
     default:
         if (scan_code >= NUM_SCANCODES)
@@ -163,4 +172,3 @@ void keyboard_handler()
         }
     }
 }
-

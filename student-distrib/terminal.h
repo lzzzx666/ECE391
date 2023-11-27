@@ -17,6 +17,8 @@ typedef struct terminal_t
     uint8_t count;
     volatile uint8_t enter_pressed;
     volatile uint8_t tab_pressed;
+    volatile uint8_t up_pressed;
+    volatile uint8_t down_pressed;
     volatile unsigned char terminal_buf[MAX_TERMINAL_SIZE];
     uint8_t *video_mem_backup;
 } terminal_t;
