@@ -50,15 +50,6 @@ uint32_t get_match_list(const uint8_t *cmd, uint32_t len) {
 }
 
 void do_tab(const uint8_t *cmd, uint32_t len) {
-
-	// char *sss = " ";
-	// ece391_fdputs(1, "<");
-	// ece391_fdputs(1, cmd);
-	// ece391_fdputs(1, ">");
-	// sss[0] = '0' + len;
-	// ece391_fdputs(1, sss);
-
-
 	restore_last = 0;
 	uint32_t num_match = get_match_list(cmd, len);
 	uint32_t i;
@@ -96,24 +87,7 @@ int main ()
 	    ece391_fdputs (1, (uint8_t*)"read from keyboard failed\n");
 	    return 3;
 	}
-
-
-
-	// char *sss = "(0)";
-	// sss[1] = '0' + last_pos;
-	// ece391_fdputs(1, sss);
-	// sss[1] = '0' + cnt;
-	// ece391_fdputs(1, sss);
-	// ece391_fdputs(1, buf + last_pos);
-	// ece391_fdputs(1, "|");
-
-
-
-
-
 	cnt += last_pos;
-	// cnt = ece391_strlen(buf);
-
 	if(cnt == 0) continue;
 	if(buf[cnt - 1] == '\t') {
 		cnt--;
