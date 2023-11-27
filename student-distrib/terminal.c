@@ -64,14 +64,36 @@ int32_t terminal_read(int32_t fd, void *buf, int32_t nbytes)
         return -1; // sanity check
     int i = 0, ret_count = 0;
     terminal->enter_pressed = 0;
-    while (!terminal->enter_pressed)
+    terminal->up_pressed = 0;
+    terminal->down_pressed = 0;
+    while (!(terminal->enter_pressed || terminal->up_pressed || terminal->down_pressed))
     {
+    }
+    if (terminal->up_pressed)
+    {
+        while (terminal->cursor_x > 7)
+        {
+            backspace();
+        }
+        ((char *)buf)[0] = UPASCII;
+        ((char *)buf)[1] = '\0';
+        return 1;
+    }
+    if (terminal->down_pressed)
+    {
+        while (terminal->cursor_x > 7)
+        {
+            backspace();
+        }
+        ((char *)buf)[0] = DOWNASCII;
+        ((char *)buf)[1] = '\0';
+        return 1;
     }
     for (i = 0; i < nbytes && i < READ_MAX_SIZE && prev->terminal_buf[i] != '\0'; i++)
     {
         ((char *)buf)[i] = prev->terminal_buf[i]; // read from previous buffer to the terminal buffer
         ret_count++;
-        if (prev->terminal_buf[i] == '\n')
+        if ((prev->terminal_buf[i] == '\n'))
             break; // when meeting \n, return
     }
     ((char *)buf)[ret_count] = '\0';
@@ -123,9 +145,12 @@ void terminal_clear()
 }
 
 // @@
-int32_t switch_terminal(int32_t terminal_num) {
-    if(terminal_num < 0 || terminal_num >= TERMINAL_NUM) return -1;
-    if(terminal_num == current_terminal) return 0;
+int32_t switch_terminal(int32_t terminal_num)
+{
+    if (terminal_num < 0 || terminal_num >= TERMINAL_NUM)
+        return -1;
+    if (terminal_num == current_terminal)
+        return 0;
     current_terminal = terminal_num;
     return 1;
 }
