@@ -1,3 +1,12 @@
+/*
+
+**to build user programs, run `gen.sh` in `/syscalls`.**
+
+to-do list
+- [x] empty command
+- [x] UP+TAB
+- Ctrl+L
+*/
 #include <stdint.h>
 
 #include "ece391support.h"
@@ -25,6 +34,13 @@ uint8_t matches[MAX_MATCH][SBUFSIZE];
 uint8_t last_pos = 0;
 uint8_t restore_last = 0;
 
+int32_t last_space_pos(const uint8_t *str, uint32_t len) {
+    int32_t i;
+    for (i = len - 1; i >= 0; i--)
+        if (str[i] == ' ') return i;
+    return -1;
+}
+
 uint32_t get_match_list(const uint8_t *cmd, uint32_t len) {
     int32_t fd, cnt;
     static uint8_t buffer[SBUFSIZE];
@@ -42,8 +58,11 @@ uint32_t get_match_list(const uint8_t *cmd, uint32_t len) {
             break;
         }
         buffer[cnt] = '\0';
-        if (is_prefix(cmd, buffer, len)) {
-            ece391_strcpy(matches[ret++], buffer);
+        uint32_t match_from = last_space_pos(cmd, len) + 1;
+        if (is_prefix(cmd + match_from, buffer, len - match_from)) {
+            ece391_strcpy(matches[ret], cmd);
+            ece391_strcpy(matches[ret] + match_from, buffer);
+            ret++;
         }
     }
     ece391_close(fd);
@@ -116,32 +135,40 @@ int main() {
         }
         cnt += last_pos;
         if (cnt == 0) continue;
-        if (!(last_pos || restore_last)) {
-            if (UP == buf[cnt - 1]) {
-                if ((cmdQueue.curIdx == cmdQueue.head) ||
-                    (cmdQueue.curIdx == (cmdQueue.head + 1) % QUEUESIZE)) {
-                    ece391_fdputs(1, prev);
-                    goto next;
-                }
-                cmdQueue.curIdx = (cmdQueue.curIdx - 1 + QUEUESIZE) % QUEUESIZE;
-                ece391_strcpy(prev, (const uint8_t *)cmdQueue.cmd[cmdQueue.curIdx]);
+        // if (!last_pos) {
+        if (UP == buf[cnt - 1]) {
+            if ((cmdQueue.curIdx == cmdQueue.head) ||
+                (cmdQueue.curIdx == (cmdQueue.head + 1) % QUEUESIZE)) {
                 ece391_fdputs(1, prev);
-                hasPrev = 1;
+                ece391_strcpy(buf, prev);
+                last_pos = cnt = ece391_strlen(prev);
                 goto next;
             }
-            if (DOWN == buf[cnt - 1]) {
-                if ((cmdQueue.curIdx == (cmdQueue.tail - 1 + QUEUESIZE) % QUEUESIZE) ||
-                    (cmdQueue.curIdx == cmdQueue.tail)) {
-                    ece391_fdputs(1, prev);
-                    goto next;
-                }
-                cmdQueue.curIdx = (cmdQueue.curIdx + 1) % QUEUESIZE;
-                ece391_strcpy(prev, (const uint8_t *)cmdQueue.cmd[cmdQueue.curIdx]);
-                ece391_fdputs(1, prev);
-                hasPrev = 1;
-                goto next;
-            }
+            cmdQueue.curIdx = (cmdQueue.curIdx - 1 + QUEUESIZE) % QUEUESIZE;
+            ece391_strcpy(prev, (const uint8_t *)cmdQueue.cmd[cmdQueue.curIdx]);
+            ece391_fdputs(1, prev);
+            ece391_strcpy(buf, prev);
+            last_pos = cnt = ece391_strlen(prev);
+            hasPrev = 1;
+            goto next;
         }
+        if (DOWN == buf[cnt - 1]) {
+            if ((cmdQueue.curIdx == (cmdQueue.tail - 1 + QUEUESIZE) % QUEUESIZE) ||
+                (cmdQueue.curIdx == cmdQueue.tail)) {
+                ece391_fdputs(1, prev);
+                ece391_strcpy(buf, prev);
+                last_pos = cnt = ece391_strlen(prev);
+                goto next;
+            }
+            cmdQueue.curIdx = (cmdQueue.curIdx + 1) % QUEUESIZE;
+            ece391_strcpy(prev, (const uint8_t *)cmdQueue.cmd[cmdQueue.curIdx]);
+            ece391_fdputs(1, prev);
+            ece391_strcpy(buf, prev);
+            last_pos = cnt = ece391_strlen(prev);
+            hasPrev = 1;
+            goto next;
+        }
+        // }
         if (buf[cnt - 1] == '\t') {
             cnt--;
             buf[cnt] = '\0';
@@ -150,8 +177,8 @@ int main() {
         }
         last_pos = restore_last = 0;
         if (cnt > 0 && '\n' == buf[cnt - 1]) {
+            buf[cnt - 1] = '\0';
             if (cnt > 1) {
-                buf[cnt - 1] = '\0';
                 if (hasPrev == 0) push(buf);
             }
             cnt--;
