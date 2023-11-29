@@ -114,6 +114,8 @@ extern int32_t set_handler(int32_t signum, void *handler);
 /*sys_sigretur*/
 extern int32_t sigreturn(void);
 
+extern int32_t simulate_keyboard(void);
+
 /**
  * @brief Switch the processor to user mode.
  * This function changes the processor's state to user mode by modifying the

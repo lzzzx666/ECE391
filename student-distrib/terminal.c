@@ -25,6 +25,7 @@ void initialize_terminal(int32_t terminal_num)
     // @@
     vidmap(&shared_user_vid_mem);
     terminal->video_mem_backup = video_mem[terminal_num];
+    terminal->simulateKeyboard = 0;
 }
 // int32_t terminal_close(int32_t fd)
 //.Closes the terminal.
@@ -39,6 +40,7 @@ int32_t terminal_close(int32_t fd)
     terminal->count = 0;
     prev->count = 0;
     terminal->enter_pressed = 0;
+    terminal->simulateKeyboard = 0;
     return 0;
 }
 // int32_t terminal_open(int32_t fd)
@@ -73,35 +75,38 @@ int32_t terminal_read(int32_t fd, void *buf, int32_t nbytes)
     terminal->enter_pressed = terminal->tab_pressed = 0;
     terminal->up_pressed = 0;
     terminal->down_pressed = 0;
-    while (!(terminal->enter_pressed || terminal->up_pressed || terminal->down_pressed || terminal->tab_pressed));
+    while (!(terminal->enter_pressed || terminal->up_pressed || terminal->down_pressed || terminal->tab_pressed))
+        ;
     if (terminal->up_pressed)
     {
-        while (terminal->cursor_x > 7)
-        {
+        while (terminal->count > 0)
             backspace();
-        }
-        ((char *)buf)[0] = UPASCII;
-        ((char *)buf)[1] = '\0';
-        return 1;
+        strcpy(buf, "^[[A");
+        return 4;
     }
-    if (terminal->down_pressed)
+    else if (terminal->down_pressed)
     {
-        while (terminal->cursor_x > 7)
-        {
+        while (terminal->count > 0)
             backspace();
-        }
-        ((char *)buf)[0] = DOWNASCII;
-        ((char *)buf)[1] = '\0';
-        return 1;
+        strcpy(buf, "^[[B");
+        return 4;
+    }
+    else if (terminal->tab_pressed)
+    {
+        while (terminal->count > 0)
+            backspace();
     }
     for (i = 0; i < nbytes && i < READ_MAX_SIZE && prev->terminal_buf[i] != '\0'; i++)
     {
         ((char *)buf)[i] = prev->terminal_buf[i]; // read from previous buffer to the terminal buffer
         ret_count++;
-        if ((prev->terminal_buf[i] == '\n'))
+        if ((prev->terminal_buf[i] == '\n') || (prev->terminal_buf[i] == '\t'))
             break; // when meeting \n, return
     }
     ((char *)buf)[ret_count] = '\0';
+    terminal->count = 0;
+    memset((void *)terminal->terminal_buf, '\0', MAX_TERMINAL_SIZE);
+
     return ret_count; // return total byte we read
 }
 // int32_t terminal_write(int32_t fd, void *buf, int32_t nbytes)
@@ -118,16 +123,39 @@ int32_t terminal_read(int32_t fd, void *buf, int32_t nbytes)
 // - int32_t: Total number of bytes written or -1 on error.
 int32_t terminal_write(int32_t fd, void *buf, int32_t nbytes)
 {
+    uint8_t curCnt = main_terminal[current_terminal].count;
     if ((!buf) || (nbytes <= 0))
-        return -1; // sanity check
-    int i = 0, ret_count = 0;
-    for (i = 0; i < nbytes; i++)
     {
-        if (((char *)buf)[i] == '\0')
-            continue;
-        ret_count++;
-        putc(((char *)buf)[i]);
+        main_terminal[current_terminal].simulateKeyboard = 0;
+        return -1; // sanity check
     }
+
+    int i = 0, ret_count = 0;
+    if (main_terminal[current_terminal].simulateKeyboard == 0)
+    {
+        for (i = 0; i < nbytes; i++)
+        {
+            if (((char *)buf)[i] == '\0')
+                continue;
+            ret_count++;
+            putc(((char *)buf)[i]);
+        }
+    }
+    else
+    {
+        ret_count = 0;
+        for (i = curCnt; i < 127; i++)
+        {
+            if (ret_count > nbytes || ((char *)buf)[ret_count] == '\0')
+                break;
+            main_terminal[current_terminal].terminal_buf[i] = ((char *)buf)[ret_count];
+            putc(((char *)buf)[ret_count]);
+            ret_count++;
+        }
+        main_terminal[current_terminal].count += ret_count;
+        main_terminal[current_terminal].terminal_buf[main_terminal[current_terminal].count] = '\0';
+    }
+    main_terminal[current_terminal].simulateKeyboard = 0;
     return ret_count; // return total byte we write
 }
 // void terminal_clear()
@@ -150,15 +178,19 @@ void terminal_clear()
 }
 
 // @@
-int32_t switch_terminal(int32_t terminal_num) {
-    if(terminal_num < 0 || terminal_num >= TERMINAL_NUM) return -1; // invalid `terminal_num`
-    if(shared_user_vid_mem == NULL) return -1;  // vidmap error
-    if(terminal_num == current_terminal) return 0;  // no action needed
-    
-    memcpy(main_terminal[current_terminal].video_mem_backup, shared_user_vid_mem, VIDEOMEM_SIZE);   // backup video mem of old terminal
-    memcpy(shared_user_vid_mem, main_terminal[terminal_num].video_mem_backup, VIDEOMEM_SIZE);   // restore video mem backup form new terminal
-    current_terminal = terminal_num;    // update `current_terminal`
-    update_cursor(main_terminal[current_terminal].cursor_x, main_terminal[current_terminal].cursor_y);  // update curosor position in new terminal
+int32_t switch_terminal(int32_t terminal_num)
+{
+    if (terminal_num < 0 || terminal_num >= TERMINAL_NUM)
+        return -1; // invalid `terminal_num`
+    if (shared_user_vid_mem == NULL)
+        return -1; // vidmap error
+    if (terminal_num == current_terminal)
+        return 0; // no action needed
+
+    memcpy(main_terminal[current_terminal].video_mem_backup, shared_user_vid_mem, VIDEOMEM_SIZE);      // backup video mem of old terminal
+    memcpy(shared_user_vid_mem, main_terminal[terminal_num].video_mem_backup, VIDEOMEM_SIZE);          // restore video mem backup form new terminal
+    current_terminal = terminal_num;                                                                   // update `current_terminal`
+    update_cursor(main_terminal[current_terminal].cursor_x, main_terminal[current_terminal].cursor_y); // update curosor position in new terminal
 
     return 1;
 }

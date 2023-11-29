@@ -11,7 +11,7 @@ handlers:
    .long keyboard,real_time_clock,syscall_linkage
 syscall:
     .long 0,halt,execute,read,write,open
-    .long close,getargs,vidmap,set_handler,sigreturn
+    .long close,getargs,vidmap,set_handler,sigreturn,simulate_keyboard
 #the commom assembly linkage for exception/interrupt
 ex_ir_linkage:
     
@@ -80,7 +80,7 @@ syscall_linkage:
     pushfl
 
     #execute the system call
-    cmpl $10,%eax #sanity check
+    cmpl $11,%eax #sanity check
     ja non_exist
     cmpl $1,%eax
     jb non_exist

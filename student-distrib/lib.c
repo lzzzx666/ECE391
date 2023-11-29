@@ -4,7 +4,6 @@
 #include "lib.h"
 #include "terminal.h"
 
-
 static char *video_mem = (char *)VIDEO;
 
 /* void clear(void);
@@ -233,6 +232,8 @@ void putc(uint8_t c)
 }
 void backspace(void)
 {
+    if (main_terminal[current_terminal].count <= 0)
+        return;
     terminal_t *terminal = &main_terminal[current_terminal];
     if (terminal->cursor_x == 0) // when backspace to last line
     {
@@ -243,6 +244,8 @@ void backspace(void)
         terminal->cursor_x--;
     *(uint8_t *)(video_mem + ((NUM_COLS * terminal->cursor_y + terminal->cursor_x) << 1)) = ' ';
     *(uint8_t *)(video_mem + ((NUM_COLS * terminal->cursor_y + terminal->cursor_x) << 1) + 1) = ATTRIB;
+    main_terminal[current_terminal].count--;
+    main_terminal[current_terminal].terminal_buf[main_terminal[current_terminal].count] = '\0';
     update_cursor(terminal->cursor_x, terminal->cursor_y);
 }
 

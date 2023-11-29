@@ -61,25 +61,19 @@ void keyboard_handler()
     switch (scan_code)
     {
     case TAB:
-        terminal->terminal_buf[terminal->count++] = '\t';
+        terminal->terminal_buf[terminal->count] = '\t';
         terminal->tab_pressed = 1;
         *prev = *terminal;
-        terminal->terminal_buf[terminal->count = 0] = '\0';
-        memset((void *)terminal->terminal_buf, '\0', MAX_TERMINAL_SIZE);
         break;
     case BACKSPACE:
         if (terminal->count > 0)
-        {
-            terminal->terminal_buf[--terminal->count] = '\0'; // overwrite the original content with '\0'
-            backspace();                                      // change screen x and y
-        }
+            backspace(); // change screen x and y
         break;
     case ENTER:
         terminal->terminal_buf[terminal->count++] = '\n';   // add a \n at the end
-        terminal->enter_pressed = 1;                            // notify the main_terminal
-        *prev = *terminal;                              // store the previous terminal
+        terminal->enter_pressed = 1;                        // notify the main_terminal
+        *prev = *terminal;                                  // store the previous terminal
         terminal->terminal_buf[terminal->count = 0] = '\0'; // restore count
-        memset((void *)terminal->terminal_buf, '\0', MAX_TERMINAL_SIZE);
         putc('\n');
         break;
     case CAPS_LOCK:
@@ -122,7 +116,7 @@ void keyboard_handler()
             switch_terminal(2);
         break;
     case UP:
-        terminal->up_pressed = 1;                        // notify the main_terminal
+        terminal->up_pressed = 1; // notify the main_terminal
         break;
     case DOWN:
         terminal->down_pressed = 1;
