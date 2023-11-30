@@ -7,7 +7,7 @@ terminal_t prev_terminal[TERMINAL_NUM];
 uint8_t* video_mem[TERMINAL_NUMBER]={VIDEO_TERMINAL1,VIDEO_TERMINAL2,VIDEO_TERMINAL3};
 int current_terminal = 0;
 
-uint8_t *shared_user_vid_mem = VIDEO;
+uint8_t *shared_user_vid_mem = (char*)VIDEO;
 
 // void initialize_terminal()
 // initializes the main terminal with default values.
@@ -137,6 +137,5 @@ int32_t switch_terminal(int32_t terminal_num) {
     memcpy(shared_user_vid_mem, main_terminal[terminal_num].video_mem_backup, VIDEOMEM_SIZE);   // restore video mem backup form new terminal
     current_terminal = terminal_num;    // update `current_terminal`
     update_cursor(main_terminal[current_terminal].cursor_x, main_terminal[current_terminal].cursor_y);  // update curosor position in new terminal
-
     return 1;
 }
