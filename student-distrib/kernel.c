@@ -163,7 +163,7 @@ void entry(unsigned long magic, unsigned long addr)
 
     // @@
     int i;
-    for(i = 0; i < TERMINAL_NUM; i++)
+    for(i = 0; i < TERMINAL_NUMBER; i++)
         initialize_terminal(i);
 
     /* Initialize devices, memory, filesystem, enable device interrupts on the

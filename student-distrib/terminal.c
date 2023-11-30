@@ -2,12 +2,12 @@
 #include "lib.h"
 #include "systemcall.h"
 
-terminal_t main_terminal[TERMINAL_NUM];
-terminal_t prev_terminal[TERMINAL_NUM];
-uint8_t* video_mem[TERMINAL_NUMBER]={VIDEO_TERMINAL1,VIDEO_TERMINAL2,VIDEO_TERMINAL3};
+terminal_t main_terminal[TERMINAL_NUMBER];
+terminal_t prev_terminal[TERMINAL_NUMBER];
+const uint8_t* video_mem[TERMINAL_NUMBER]={VIDEO_TERMINAL1,VIDEO_TERMINAL2,VIDEO_TERMINAL3};
 int current_terminal = 0;
 
-uint8_t *shared_user_vid_mem = (char*)VIDEO;
+const uint8_t *shared_user_vid_mem = (char*)VIDEO;
 
 // void initialize_terminal()
 // initializes the main terminal with default values.
@@ -23,7 +23,6 @@ void initialize_terminal(int32_t terminal_num)
     enable_cursor(14, 15); // set cursor shape
     update_cursor(0, 0);   // set cursor position
     // @@
-    vidmap(&shared_user_vid_mem);
     terminal->video_mem_backup = video_mem[terminal_num];
 }
 // int32_t terminal_close(int32_t fd)
@@ -129,7 +128,7 @@ void terminal_clear()
 
 // @@
 int32_t switch_terminal(int32_t terminal_num) {
-    if(terminal_num < 0 || terminal_num >= TERMINAL_NUM) return -1; // invalid `terminal_num`
+    if(terminal_num < 0 || terminal_num >= TERMINAL_NUMBER) return -1; // invalid `terminal_num`
     if(shared_user_vid_mem == NULL) return -1;  // vidmap error
     if(terminal_num == current_terminal) return 0;  // no action needed
     

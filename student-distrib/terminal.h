@@ -5,8 +5,10 @@
 #include "lib.h"
 #include "keyboard.h"
 
+#include "pcb.h"
+
 #define MAX_TERMINAL_SIZE 128
-#define TERMINAL_NUM 3
+#define TERMINAL_NUMBER 3
 
 #define VIDEOMEM_SIZE (NUM_COLS * NUM_ROWS * 2)
 
@@ -31,7 +33,7 @@ void terminal_clear();
 int32_t switch_terminal(int32_t terminal_num);
 extern int32_t current_terminal;
 
-extern terminal_t main_terminal[TERMINAL_NUM];
-extern terminal_t prev_terminal[TERMINAL_NUM];
+extern terminal_t main_terminal[TERMINAL_NUMBER];
+extern terminal_t prev_terminal[TERMINAL_NUMBER];
 
 #endif
