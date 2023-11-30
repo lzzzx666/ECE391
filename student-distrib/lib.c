@@ -187,7 +187,7 @@ void scroll_up() {
 void _scroll_up(int32_t use_terminal)
 {
     terminal_t *terminal = &main_terminal[use_terminal];
-    char* up_mem=(use_terminal==current_terminal)? video_mem:terminal->video_mem_backup;
+    uint8_t* up_mem=(use_terminal==current_terminal)? (uint8_t*) video_mem:terminal->video_mem_backup;
     int x, y;
     for (y = 0; y < NUM_ROWS - 1; y++) // fill up the screen except the last row
     {
@@ -219,7 +219,7 @@ void _putc(uint8_t c, uint8_t use_current_terminal)
     // ASSERT(sche_index == current_terminal);
     uint32_t use_terminal = use_current_terminal ? current_terminal : sche_index;
     terminal_t *terminal = &main_terminal[use_terminal];
-    char* putc_mem=(use_terminal==current_terminal)? video_mem:terminal->video_mem_backup;
+    uint8_t* putc_mem=(use_terminal==current_terminal)? (uint8_t*) video_mem:terminal->video_mem_backup;
     if (c == '\n' || c == '\r')
     {
         terminal->cursor_y++;
@@ -260,7 +260,7 @@ void _backspace(uint8_t use_current_terminal)
 {
     uint32_t use_terminal = use_current_terminal ? current_terminal : sche_index;
     terminal_t *terminal = &main_terminal[use_terminal];
-    char* bs_mem=(use_terminal==current_terminal)? video_mem:terminal->video_mem_backup;
+    uint8_t * bs_mem=(use_terminal==current_terminal)? (uint8_t *)video_mem:terminal->video_mem_backup;
     if (terminal->cursor_x == 0) // when backspace to last line
     {
         terminal->cursor_y--;

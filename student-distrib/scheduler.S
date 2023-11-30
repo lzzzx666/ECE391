@@ -100,4 +100,3 @@ normal_context_change:
     movl ebp_array(,%eax,4),%ebp
     leave
     ret
-    

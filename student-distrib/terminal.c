@@ -7,10 +7,10 @@
 
 terminal_t main_terminal[TERMINAL_NUMBER];
 terminal_t prev_terminal[TERMINAL_NUMBER];
-const uint8_t* video_mem[TERMINAL_NUMBER]={VIDEO_TERMINAL1,VIDEO_TERMINAL2,VIDEO_TERMINAL3};
+uint8_t* video_mem[TERMINAL_NUMBER]={(uint8_t *)VIDEO_TERMINAL1,(uint8_t *)VIDEO_TERMINAL2,(uint8_t *)VIDEO_TERMINAL3};
 volatile int32_t current_terminal = 0;
 
-const uint8_t *shared_user_vid_mem = (char*)VIDEO;
+uint8_t *shared_user_vid_mem = (uint8_t*)VIDEO;
 
 // void initialize_terminal()
 // initializes the main terminal with default values.

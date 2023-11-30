@@ -25,6 +25,7 @@ void pit_init();
 void set_frequency(int16_t frequency);
 
 extern void pit_handler();
+extern void schedule();
 
 #endif
 #endif
