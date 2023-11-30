@@ -158,8 +158,8 @@ void exc_ir_handler(enum idt_type type)
         break;
     }
     // while(1);
-    /*then go to the shell*/
-    if(cur_pcb->pid==0){
+    /*then go to the shell(shell are 0,1 and 2)*/
+    if(cur_pcb->pid<=2){
         return;
     }
     /* Close all file descriptors */

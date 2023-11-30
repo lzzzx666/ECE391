@@ -80,7 +80,8 @@ int32_t delete_pcb()
 {
     /*update the current pid based on the esp(the active process)*/
     update_current_pid();
-
+    /*change the pid in scheduler array*/
+    sche_array[sche_index] = pcb_array[current_pid]->parent_pid;
     /*clear the pcb array and the bitmap*/
     pcb_array[current_pid] = NULL;
     pcb_bitmap = pcb_bitmap & ~(0x1 << (7 - current_pid));//7-current_pid is the corresponding bit in the bitmap
