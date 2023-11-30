@@ -8,12 +8,9 @@
 terminal_t main_terminal[TERMINAL_NUMBER];
 terminal_t prev_terminal[TERMINAL_NUMBER];
 uint8_t* video_mem[TERMINAL_NUMBER]={(uint8_t *)VIDEO_TERMINAL1,(uint8_t *)VIDEO_TERMINAL2,(uint8_t *)VIDEO_TERMINAL3};
-volatile uint8_t video_mem[TERMINAL_NUM][VIDEOMEM_SIZE];
-int32_t current_terminal = 0;
+volatile int32_t current_terminal = 0;
 
 uint8_t *shared_user_vid_mem = (uint8_t*)VIDEO;
-
-uint8_t *shared_user_vid_mem = NULL;
 
 // void initialize_terminal()
 // initializes the main terminal with default values.
@@ -187,7 +184,7 @@ void terminal_clear()
 // @@
 int32_t switch_terminal(int32_t terminal_num)
 {
-    if (terminal_num < 0 || terminal_num >= TERMINAL_NUM)
+    if (terminal_num < 0 || terminal_num >= TERMINAL_NUMBER)
         return -1; // invalid `terminal_num`
     if (shared_user_vid_mem == NULL)
         return -1; // vidmap error

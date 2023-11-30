@@ -51,8 +51,6 @@ void init_keyboard()
 
 void keyboard_handler()
 {
-    terminal_t *terminal = &main_terminal[current_terminal];
-    terminal_t *prev = &prev_terminal[current_terminal];
     cli();
     terminal_t *terminal = &main_terminal[current_terminal];
     terminal_t *prev = &prev_terminal[current_terminal];
