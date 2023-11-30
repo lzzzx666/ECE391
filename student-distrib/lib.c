@@ -184,9 +184,8 @@ void scroll_up() {
     _scroll_up(0);
 }
 
-void _scroll_up(uint8_t use_current_terminal)
+void _scroll_up(int32_t use_terminal)
 {
-    uint32_t use_terminal = use_current_terminal ? current_terminal : sche_index;
     terminal_t *terminal = &main_terminal[use_terminal];
     char* up_mem=(use_terminal==current_terminal)? video_mem:terminal->video_mem_backup;
     int x, y;
@@ -227,10 +226,10 @@ void _putc(uint8_t c, uint8_t use_current_terminal)
         terminal->cursor_x = 0;
         if (terminal->cursor_y >= NUM_ROWS)
         {
-            scroll_up();
+            _scroll_up(use_terminal);
         }
-        if(use_terminal == current_terminal)
-            update_cursor(terminal->cursor_x, terminal->cursor_y);
+        // if(use_terminal == current_terminal)
+        //     update_cursor(terminal->cursor_x, terminal->cursor_y);
     }
     else
     {
@@ -243,14 +242,14 @@ void _putc(uint8_t c, uint8_t use_current_terminal)
             terminal->cursor_x = 0;
             if (terminal->cursor_y >= NUM_ROWS)
             {
-                scroll_up(); // now we can implement scrolling in putc
+                            _scroll_up(use_terminal);  // now we can implement scrolling in putc
             }
-            if(use_terminal == current_terminal)
-                update_cursor(terminal->cursor_x, terminal->cursor_y);
+            // if(use_terminal == current_terminal)
+            //     update_cursor(terminal->cursor_x, terminal->cursor_y);
         }
+    }
         if(use_terminal == current_terminal)
             update_cursor(terminal->cursor_x, terminal->cursor_y);
-    }
 }
 
 void backspace() {

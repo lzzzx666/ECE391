@@ -30,7 +30,7 @@ int8_t *strrev(int8_t *s);
 uint32_t strlen(const int8_t *s);
 void clear(void);
 void scroll_up(void);
-void _scroll_up(uint8_t use_current_terminal);
+void _scroll_up(int32_t use_terminal);
 void enable_cursor(uint8_t cursor_start, uint8_t cursor_end);
 void disable_cursor();
 void update_cursor(int x, int y);
