@@ -27,7 +27,7 @@ extern close_func close_o[];
 extern read_func read_o[];
 extern write_func write_o[];
 extern int32_t sche_array[];
-extern int32_t sche_index;
+extern volatile int32_t sche_index;
 
 
 /**

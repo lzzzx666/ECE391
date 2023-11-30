@@ -31,7 +31,7 @@ void terminal_clear();
 
 // @@Y
 int32_t switch_terminal(int32_t terminal_num);
-extern int32_t current_terminal;
+extern volatile int32_t current_terminal;
 
 extern terminal_t main_terminal[TERMINAL_NUMBER];
 extern terminal_t prev_terminal[TERMINAL_NUMBER];

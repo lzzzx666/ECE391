@@ -2,10 +2,13 @@
 #include "lib.h"
 #include "systemcall.h"
 
+#define DEBUG
+#include "debug.h"
+
 terminal_t main_terminal[TERMINAL_NUMBER];
 terminal_t prev_terminal[TERMINAL_NUMBER];
 const uint8_t* video_mem[TERMINAL_NUMBER]={VIDEO_TERMINAL1,VIDEO_TERMINAL2,VIDEO_TERMINAL3};
-int current_terminal = 0;
+volatile int32_t current_terminal = 0;
 
 const uint8_t *shared_user_vid_mem = (char*)VIDEO;
 
@@ -64,6 +67,8 @@ int32_t terminal_open(const uint8_t *filename)
 // - int32_t: Total number of bytes read or -1 on error.
 int32_t terminal_read(int32_t fd, void *buf, int32_t nbytes)
 {
+
+    while(current_terminal != sche_index);
     terminal_t *terminal = &main_terminal[current_terminal];
     terminal_t *prev = &prev_terminal[current_terminal];
     if ((!buf) || (nbytes <= 0))
@@ -71,6 +76,13 @@ int32_t terminal_read(int32_t fd, void *buf, int32_t nbytes)
     int i = 0, ret_count = 0;
     terminal->enter_pressed = 0;
     while (!terminal->enter_pressed);
+
+
+    // ((uint8_t *)buf)[0] = 'T';
+    // ((uint8_t *)buf)[1] = '\0';
+    // return 1;
+
+
     for (i = 0; i < nbytes && i < READ_MAX_SIZE && prev->terminal_buf[i] != '\0'; i++)
     {
         ((char *)buf)[i] = prev->terminal_buf[i]; // read from previous buffer to the terminal buffer
@@ -79,6 +91,7 @@ int32_t terminal_read(int32_t fd, void *buf, int32_t nbytes)
             break; // when meeting \n, return
     }
     ((char *)buf)[ret_count] = '\0';
+    // ASSERT(current_terminal == sche_index);
     return ret_count; // return total byte we read
 }
 // int32_t terminal_write(int32_t fd, void *buf, int32_t nbytes)

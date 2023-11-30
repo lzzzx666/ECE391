@@ -5,6 +5,8 @@
 
 #define BUFSIZE 1024
 
+int CC = 0;
+
 int main ()
 {
     int32_t cnt, rval;
@@ -13,6 +15,7 @@ int main ()
 
     while (1) {
         ece391_fdputs (1, (uint8_t*)"391OS> ");
+
 	if (-1 == (cnt = ece391_read (0, buf, BUFSIZE-1))) {
 	    ece391_fdputs (1, (uint8_t*)"read from keyboard failed\n");
 	    return 3;

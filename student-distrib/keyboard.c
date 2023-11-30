@@ -51,10 +51,10 @@ void init_keyboard()
 
 void keyboard_handler()
 {
+    cli();
     terminal_t *terminal = &main_terminal[current_terminal];
     terminal_t *prev = &prev_terminal[current_terminal];
     int32_t temp_sche_index;
-    cli();
     unsigned char scan_code = inb(KEYBOARD_DATA_PORT);
     char ascii;
     uint8_t user_interrupt = 0;
@@ -67,16 +67,17 @@ void keyboard_handler()
         if (terminal->count > 0)
         {
             terminal->terminal_buf[--terminal->count] = '\0'; // overwrite the original content with '\0'
-            backspace();                                              // change screen x and y
+            _backspace(1);                                              // change screen x and y
         }
         break;
     case ENTER:
         terminal->terminal_buf[terminal->count++] = '\n';   // add a \n at the end
         terminal->enter_pressed = 1;                            // notify the main_terminal
-        *prev = *main_terminal;                              // store the previous terminal
+        *prev = *terminal;                              // store the previous terminal
         terminal->terminal_buf[terminal->count = 0] = '\0'; // restore count
         memset((void *)terminal->terminal_buf, '\0', MAX_TERMINAL_SIZE);
-        putc('\n');
+        _putc('\n', 1);
+        cli();
         break;
     case CAPS_LOCK:
         capslock_pressed = 1 - capslock_pressed;
@@ -144,7 +145,7 @@ void keyboard_handler()
                 terminal->terminal_buf[terminal->count++] = ascii; // default condition
                 temp_sche_index=sche_index;
                 sche_index=current_terminal;
-                putc(ascii);
+                _putc(ascii, 1);
                 sche_index=temp_sche_index;
             }
         }

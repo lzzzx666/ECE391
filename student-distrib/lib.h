@@ -23,16 +23,19 @@
 int32_t printf(int8_t *format, ...);
 int32_t putc_rep(uint8_t *string, uint32_t n);
 void putc(uint8_t c);
+void _putc(uint8_t c, uint8_t use_current_terminal);
 int32_t puts(int8_t *s);
 int8_t *itoa(uint32_t value, int8_t *buf, int32_t radix);
 int8_t *strrev(int8_t *s);
 uint32_t strlen(const int8_t *s);
 void clear(void);
 void scroll_up(void);
+void _scroll_up(uint8_t use_current_terminal);
 void enable_cursor(uint8_t cursor_start, uint8_t cursor_end);
 void disable_cursor();
 void update_cursor(int x, int y);
 void backspace(void);
+void _backspace(uint8_t use_current_terminal);
 void *memset(void *s, int32_t c, uint32_t n);
 void *memset_word(void *s, int32_t c, uint32_t n);
 void *memset_dword(void *s, int32_t c, uint32_t n);
@@ -46,7 +49,7 @@ int8_t *strncpy(int8_t *dest, const int8_t *src, uint32_t n);
 int32_t bad_userspace_addr(const void *addr, int32_t len);
 int32_t safe_strncpy(int8_t *dest, const int8_t *src, int32_t n);
 void test_interrupts(void);
-extern int32_t sche_index;
+extern volatile int32_t sche_index;
 /* Port read functions */
 /* Inb reads a byte and returns its value as a zero-extended 32-bit
  * unsigned int */

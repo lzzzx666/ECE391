@@ -4,6 +4,11 @@
 #include "lib.h"
 #include "terminal.h"
 
+#define DEBUG
+#include "debug.h"
+
+// #define putc(...) putc(__VA_ARGS__, (0))
+// #define scroll_up(...) scroll_up(__VA_ARGS__, (0))
 
 static char *video_mem = (char *)VIDEO;
 
@@ -175,10 +180,15 @@ int32_t puts(int8_t *s)
     return index;
 }
 
-void scroll_up()
+void scroll_up() {
+    _scroll_up(0);
+}
+
+void _scroll_up(uint8_t use_current_terminal)
 {
-    terminal_t *terminal = &main_terminal[sche_index];
-    char* up_mem=(sche_index==current_terminal)? video_mem:terminal->video_mem_backup;
+    uint32_t use_terminal = use_current_terminal ? current_terminal : sche_index;
+    terminal_t *terminal = &main_terminal[use_terminal];
+    char* up_mem=(use_terminal==current_terminal)? video_mem:terminal->video_mem_backup;
     int x, y;
     for (y = 0; y < NUM_ROWS - 1; y++) // fill up the screen except the last row
     {
@@ -199,11 +209,18 @@ void scroll_up()
  * Inputs: uint_8* c = character to print
  * Return Value: void
  *  Function: Output a character to the console */
-void putc(uint8_t c)
+
+void putc(uint8_t c) {
+    _putc(c, 0);
+}
+
+void _putc(uint8_t c, uint8_t use_current_terminal)
 {
-    terminal_t *terminal = &main_terminal[sche_index];
-    char* putc_mem=(sche_index==current_terminal)? video_mem:terminal->video_mem_backup;
     cli();
+    // ASSERT(sche_index == current_terminal);
+    uint32_t use_terminal = use_current_terminal ? current_terminal : sche_index;
+    terminal_t *terminal = &main_terminal[use_terminal];
+    char* putc_mem=(use_terminal==current_terminal)? video_mem:terminal->video_mem_backup;
     if (c == '\n' || c == '\r')
     {
         terminal->cursor_y++;
@@ -212,7 +229,8 @@ void putc(uint8_t c)
         {
             scroll_up();
         }
-        update_cursor(terminal->cursor_x, terminal->cursor_y);
+        if(use_terminal == current_terminal)
+            update_cursor(terminal->cursor_x, terminal->cursor_y);
     }
     else
     {
@@ -227,16 +245,23 @@ void putc(uint8_t c)
             {
                 scroll_up(); // now we can implement scrolling in putc
             }
-            update_cursor(terminal->cursor_x, terminal->cursor_y);
+            if(use_terminal == current_terminal)
+                update_cursor(terminal->cursor_x, terminal->cursor_y);
         }
-        update_cursor(terminal->cursor_x, terminal->cursor_y);
+        if(use_terminal == current_terminal)
+            update_cursor(terminal->cursor_x, terminal->cursor_y);
     }
-    sti();
 }
 
-void backspace(void)
+void backspace() {
+    _backspace(0);
+}
+
+void _backspace(uint8_t use_current_terminal)
 {
-    terminal_t *terminal = &main_terminal[current_terminal];
+    uint32_t use_terminal = use_current_terminal ? current_terminal : sche_index;
+    terminal_t *terminal = &main_terminal[use_terminal];
+    char* bs_mem=(use_terminal==current_terminal)? video_mem:terminal->video_mem_backup;
     if (terminal->cursor_x == 0) // when backspace to last line
     {
         terminal->cursor_y--;
@@ -244,9 +269,10 @@ void backspace(void)
     }
     else
         terminal->cursor_x--;
-    *(uint8_t *)(video_mem + ((NUM_COLS * terminal->cursor_y + terminal->cursor_x) << 1)) = ' ';
-    *(uint8_t *)(video_mem + ((NUM_COLS * terminal->cursor_y + terminal->cursor_x) << 1) + 1) = ATTRIB;
-    update_cursor(terminal->cursor_x, terminal->cursor_y);
+    *(uint8_t *)(bs_mem + ((NUM_COLS * terminal->cursor_y + terminal->cursor_x) << 1)) = ' ';
+    *(uint8_t *)(bs_mem + ((NUM_COLS * terminal->cursor_y + terminal->cursor_x) << 1) + 1) = ATTRIB;
+    if(use_terminal == current_terminal)
+        update_cursor(terminal->cursor_x, terminal->cursor_y);
 }
 
 void enable_cursor(uint8_t cursor_start, uint8_t cursor_end)
