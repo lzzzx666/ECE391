@@ -4,6 +4,9 @@
 #include "lib.h"
 #include "terminal.h"
 
+#include "colors.h"
+
+
 static char *video_mem = (char *)VIDEO;
 
 /* void clear(void);
@@ -183,7 +186,7 @@ void scroll_up()
         for (x = 0; x < NUM_COLS; x++)
         {
             *(uint8_t *)(video_mem + ((y * NUM_COLS + x) << 1)) = *(uint8_t *)(video_mem + (((y + 1) * NUM_COLS + x) << 1));
-            *(uint8_t *)(video_mem + (((y * NUM_COLS + x) << 1) + 1)) = ATTRIB;
+            *(uint8_t *)(video_mem + (((y * NUM_COLS + x) << 1) + 1)) = *(uint8_t *)(video_mem + (((y + 1) * NUM_COLS + x) << 1) + 1);
         }
     }
     terminal->cursor_y--;
@@ -200,7 +203,18 @@ void scroll_up()
 void putc(uint8_t c)
 {
     terminal_t *terminal = &main_terminal[current_terminal];
+    static uint8_t attr = ATTRIB;
+    static uint8_t next_is_attr_byte = 0;
     cli();
+    if(next_is_attr_byte) {
+        next_is_attr_byte = 0;
+        attr = c;
+        return;
+    }
+    if (c == CLR_CONTROL_BYTE) {        // ESC
+        next_is_attr_byte = 1;
+        return;
+    }
     if (c == '\n' || c == '\r')
     {
         terminal->cursor_y++;
@@ -214,7 +228,7 @@ void putc(uint8_t c)
     else
     {
         *(uint8_t *)(video_mem + ((NUM_COLS * terminal->cursor_y + terminal->cursor_x) << 1)) = c;
-        *(uint8_t *)(video_mem + ((NUM_COLS * terminal->cursor_y + terminal->cursor_x) << 1) + 1) = ATTRIB;
+        *(uint8_t *)(video_mem + ((NUM_COLS * terminal->cursor_y + terminal->cursor_x) << 1) + 1) = attr;
         terminal->cursor_x++;
         if (terminal->cursor_x == NUM_COLS) // user input more than 80 characters
         {
