@@ -87,7 +87,7 @@ int32_t execute(const uint8_t *command)
     uint8_t test_buf[EXECUTABLE_MAGIC_NUMBER_SIZE];
     dentry_t dentry;
     int32_t pcb_index;
-    //int32_t argvLen;
+    // int32_t argvLen;
     pcb_t *cur_pcb = NULL;
     pcb_t *new_pcb = NULL;
     int32_t eip, eflags, esp;
@@ -116,16 +116,16 @@ int32_t execute(const uint8_t *command)
         {
             return -1; // File name is too long.
         }
-    } //now i points to the first space char
+    } // now i points to the first space char
     memset(argv, '\0', MAX_BUF);
-    while(i < strlen((int8_t*) command) && command[i] != '\0' && command[i] == ' ')
+    while (i < strlen((int8_t *)command) && command[i] != '\0' && command[i] == ' ')
     {
         i++;
-    }//now i points to the first non-space char after exe name
+    } // now i points to the first non-space char after exe name
     int32_t j = 0;
-    while(i < strlen((int8_t*) command) && command[i] != '\0')
+    while (i < strlen((int8_t *)command) && command[i] != '\0')
     {
-        argv[j++] = command[i++]; //copy the content between [arg1, arg2]
+        argv[j++] = command[i++]; // copy the content between [arg1, arg2]
     }
     // Check if the file exists.
     if (read_dentry_by_name(name_buf, &dentry) == FS_FAIL)
@@ -423,12 +423,14 @@ int32_t getargs(uint8_t *buf, int32_t nbytes)
     pcb_t *curPcb = get_current_pcb();
     if (buf == NULL || curPcb->arguments[0] == '\0' || nbytes <= 0)
     {
-        return -1; 
-        //sanity check
+        return -1;
+        // sanity check
     }
-    //if nbytes bigger than buf length, we just copy the first max_buf content
-    if(nbytes >= MAX_BUF)   memcpy(buf, curPcb->arguments, MAX_BUF); 
-    else memcpy(buf, curPcb->arguments, nbytes);
+    // if nbytes bigger than buf length, we just copy the first max_buf content
+    if (nbytes >= MAX_BUF)
+        memcpy(buf, curPcb->arguments, MAX_BUF);
+    else
+        memcpy(buf, curPcb->arguments, nbytes);
     return 0;
 }
 #endif
@@ -441,7 +443,7 @@ int32_t getargs(uint8_t *buf, int32_t nbytes)
 int32_t vidmap(uint8_t **screen_start)
 {
 
-    if ((unsigned int)screen_start <= ADDR_128MB || (unsigned int)screen_start >= ADDR_128MB + ADDR_4MB || screen_start == NULL)
+    if (/*(unsigned int)screen_start <= ADDR_128MB || (unsigned int)screen_start >= ADDR_128MB + ADDR_4MB || */ screen_start == NULL)
         return -1;
     return set_vidmap_paging(screen_start);
 }
@@ -468,3 +470,13 @@ int32_t sigreturn(void)
     return 0;
 }
 
+/**
+ *  simulate_keyboard
+ * INPUT: temporarily unkown
+ * OUTPUT: make next terminal write same as using keyboard
+ */
+int32_t simulate_keyboard(void)
+{
+    main_terminal[current_terminal].simulateKeyboard = 1;
+    return 0;
+}

@@ -4,6 +4,8 @@
 #include "lib.h"
 #include "terminal.h"
 
+#include "colors.h"
+
 #define DEBUG
 #include "debug.h"
 
@@ -194,7 +196,7 @@ void _scroll_up(int32_t use_terminal)
         for (x = 0; x < NUM_COLS; x++)
         {
             *(uint8_t *)(up_mem + ((y * NUM_COLS + x) << 1)) = *(uint8_t *)(up_mem + (((y + 1) * NUM_COLS + x) << 1));
-            *(uint8_t *)(up_mem + (((y * NUM_COLS + x) << 1) + 1)) = ATTRIB;
+            *(uint8_t *)(up_mem + (((y * NUM_COLS + x) << 1) + 1)) = *(uint8_t *)(up_mem + (((y + 1) * NUM_COLS + x) << 1) + 1);
         }
     }
     terminal->cursor_y--;
@@ -216,10 +218,21 @@ void putc(uint8_t c) {
 void _putc(uint8_t c, uint8_t use_current_terminal)
 {
     cli();
+    static uint8_t attr = ATTRIB;
+    static uint8_t next_is_attr_byte = 0;
     // ASSERT(sche_index == current_terminal);
     uint32_t use_terminal = use_current_terminal ? current_terminal : sche_index;
     terminal_t *terminal = &main_terminal[use_terminal];
     uint8_t* putc_mem=(use_terminal==current_terminal)? (uint8_t*) video_mem:terminal->video_mem_backup;
+    if(next_is_attr_byte) {
+        next_is_attr_byte = 0;
+        attr = c;
+        return;
+    }
+    if (c == CLR_CONTROL_BYTE) {        // ESC
+        next_is_attr_byte = 1;
+        return;
+    }
     if (c == '\n' || c == '\r')
     {
         terminal->cursor_y++;
@@ -234,7 +247,7 @@ void _putc(uint8_t c, uint8_t use_current_terminal)
     else
     {
         *(uint8_t *)(putc_mem + ((NUM_COLS * terminal->cursor_y + terminal->cursor_x) << 1)) = c;
-        *(uint8_t *)(putc_mem + ((NUM_COLS * terminal->cursor_y + terminal->cursor_x) << 1) + 1) = ATTRIB;
+        *(uint8_t *)(putc_mem + ((NUM_COLS * terminal->cursor_y + terminal->cursor_x) << 1) + 1) = attr;
         terminal->cursor_x++;
         if (terminal->cursor_x == NUM_COLS) // user input more than 80 characters
         {
@@ -259,6 +272,8 @@ void backspace() {
 void _backspace(uint8_t use_current_terminal)
 {
     uint32_t use_terminal = use_current_terminal ? current_terminal : sche_index;
+    if (main_terminal[use_terminal].count <= 0)
+        return;
     terminal_t *terminal = &main_terminal[use_terminal];
     uint8_t * bs_mem=(use_terminal==current_terminal)? (uint8_t *)video_mem:terminal->video_mem_backup;
     if (terminal->cursor_x == 0) // when backspace to last line
@@ -270,6 +285,8 @@ void _backspace(uint8_t use_current_terminal)
         terminal->cursor_x--;
     *(uint8_t *)(bs_mem + ((NUM_COLS * terminal->cursor_y + terminal->cursor_x) << 1)) = ' ';
     *(uint8_t *)(bs_mem + ((NUM_COLS * terminal->cursor_y + terminal->cursor_x) << 1) + 1) = ATTRIB;
+    main_terminal[current_terminal].count--;
+    main_terminal[current_terminal].terminal_buf[main_terminal[current_terminal].count] = '\0';
     if(use_terminal == current_terminal)
         update_cursor(terminal->cursor_x, terminal->cursor_y);
 }

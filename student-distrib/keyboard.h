@@ -23,6 +23,8 @@
 #define CTRL_BREAK 0x9D
 #define ALT_MAKE 0x38
 #define ALT_BREAK  0xB8
+#define UP 0x48
+#define DOWN 0x50
 #define F1  0x3B
 #define F2  0x3C
 #define F3  0x3D
