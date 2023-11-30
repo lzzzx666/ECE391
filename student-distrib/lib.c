@@ -177,21 +177,22 @@ int32_t puts(int8_t *s)
 
 void scroll_up()
 {
-    terminal_t *terminal = &main_terminal[current_terminal];
+    terminal_t *terminal = &main_terminal[sche_index];
+    char* up_mem=(sche_index==current_terminal)? video_mem:terminal->video_mem_backup;
     int x, y;
     for (y = 0; y < NUM_ROWS - 1; y++) // fill up the screen except the last row
     {
         for (x = 0; x < NUM_COLS; x++)
         {
-            *(uint8_t *)(video_mem + ((y * NUM_COLS + x) << 1)) = *(uint8_t *)(video_mem + (((y + 1) * NUM_COLS + x) << 1));
-            *(uint8_t *)(video_mem + (((y * NUM_COLS + x) << 1) + 1)) = ATTRIB;
+            *(uint8_t *)(up_mem + ((y * NUM_COLS + x) << 1)) = *(uint8_t *)(up_mem + (((y + 1) * NUM_COLS + x) << 1));
+            *(uint8_t *)(up_mem + (((y * NUM_COLS + x) << 1) + 1)) = ATTRIB;
         }
     }
     terminal->cursor_y--;
     for (x = 0; x < NUM_COLS; x++) // fill up the last row of screen
     {
-        *(uint8_t *)(video_mem + ((NUM_COLS * (NUM_ROWS - 1) + x) << 1)) = ' ';
-        *(uint8_t *)(video_mem + (((NUM_COLS * (NUM_ROWS - 1) + x) << 1) + 1)) = ATTRIB;
+        *(uint8_t *)(up_mem + ((NUM_COLS * (NUM_ROWS - 1) + x) << 1)) = ' ';
+        *(uint8_t *)(up_mem + (((NUM_COLS * (NUM_ROWS - 1) + x) << 1) + 1)) = ATTRIB;
     }
 }
 /* void putc(uint8_t c);
@@ -200,7 +201,8 @@ void scroll_up()
  *  Function: Output a character to the console */
 void putc(uint8_t c)
 {
-    terminal_t *terminal = &main_terminal[current_terminal];
+    terminal_t *terminal = &main_terminal[sche_index];
+    char* putc_mem=(sche_index==current_terminal)? video_mem:terminal->video_mem_backup;
     cli();
     if (c == '\n' || c == '\r')
     {
@@ -214,8 +216,8 @@ void putc(uint8_t c)
     }
     else
     {
-        *(uint8_t *)(video_mem + ((NUM_COLS * terminal->cursor_y + terminal->cursor_x) << 1)) = c;
-        *(uint8_t *)(video_mem + ((NUM_COLS * terminal->cursor_y + terminal->cursor_x) << 1) + 1) = ATTRIB;
+        *(uint8_t *)(putc_mem + ((NUM_COLS * terminal->cursor_y + terminal->cursor_x) << 1)) = c;
+        *(uint8_t *)(putc_mem + ((NUM_COLS * terminal->cursor_y + terminal->cursor_x) << 1) + 1) = ATTRIB;
         terminal->cursor_x++;
         if (terminal->cursor_x == NUM_COLS) // user input more than 80 characters
         {
@@ -231,6 +233,7 @@ void putc(uint8_t c)
     }
     sti();
 }
+
 void backspace(void)
 {
     terminal_t *terminal = &main_terminal[current_terminal];

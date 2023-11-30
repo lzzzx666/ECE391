@@ -9,8 +9,6 @@ static int capslock_pressed = 0;
 static int alt_pressed = 0;
 static int ctrl_pressed = 0;
 
-extern terminal_t main_terminal[3], prev_terminal[3];
-
 char scan_code_set[NUM_SCANCODES] = {
     '\0', '\0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '\0', '\0',
     'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\0', '\0', 'a', 's',
@@ -51,8 +49,11 @@ void init_keyboard()
 // Side Effects: Reads a byte from the KEYBOARD_DATA_PORT.
 // If the scan code corresponds to an alphanumeric character (a-z, 0-9), the character will be printed to the screen.
 
-void keyboard_handler(terminal_t *terminal, terminal_t *prev)
+void keyboard_handler()
 {
+    terminal_t *terminal = &main_terminal[current_terminal];
+    terminal_t *prev = &prev_terminal[current_terminal];
+    int32_t temp_sche_index;
     cli();
     unsigned char scan_code = inb(KEYBOARD_DATA_PORT);
     char ascii;
@@ -141,7 +142,10 @@ void keyboard_handler(terminal_t *terminal, terminal_t *prev)
             if (terminal->count < READ_MAX_SIZE - 1)
             {
                 terminal->terminal_buf[terminal->count++] = ascii; // default condition
+                temp_sche_index=sche_index;
+                sche_index=current_terminal;
                 putc(ascii);
+                sche_index=temp_sche_index;
             }
         }
     }
@@ -158,4 +162,3 @@ void keyboard_handler(terminal_t *terminal, terminal_t *prev)
         }
     }
 }
-

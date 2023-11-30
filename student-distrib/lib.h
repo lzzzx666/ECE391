@@ -13,6 +13,9 @@
 #include "types.h"
 
 #define VIDEO 0xB8000
+#define VIDEO_TERMINAL1 0xB9000
+#define VIDEO_TERMINAL2 0xBA000
+#define VIDEO_TERMINAL3 0xBB000
 #define NUM_COLS 80
 #define NUM_ROWS 25
 #define ATTRIB 0x7
@@ -43,7 +46,7 @@ int8_t *strncpy(int8_t *dest, const int8_t *src, uint32_t n);
 int32_t bad_userspace_addr(const void *addr, int32_t len);
 int32_t safe_strncpy(int8_t *dest, const int8_t *src, int32_t n);
 void test_interrupts(void);
-
+extern int32_t sche_index;
 /* Port read functions */
 /* Inb reads a byte and returns its value as a zero-extended 32-bit
  * unsigned int */

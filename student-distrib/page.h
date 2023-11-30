@@ -252,6 +252,7 @@ extern void update_cr3();
  */
 extern int32_t set_paging(int32_t fd);
 extern int32_t set_vidmap_paging(uint8_t** screen_start);
+extern void update_vidmap(int32_t tid);
 extern void set_cr();
 extern void get_cr();
 

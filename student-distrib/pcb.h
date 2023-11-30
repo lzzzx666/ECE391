@@ -13,6 +13,8 @@
 #define TASK_STACK_SIZE 0x2000 // This is the 8KB task stack
 #define TERMINAL 3              //3 is the index of terminal functions int the function table
 #define MAX_FILE_NUM 8          //one process can open 8 files at the same time(including stdin and stdout)
+#define TERMINAL_NUMBER 3
+#define UNINITIALIZED -2
 
 /*define some function pointer types for open close read and wtite*/
 typedef int32_t (*open_func)(const uint8_t *filename);
@@ -25,6 +27,9 @@ extern open_func open_o[];
 extern close_func close_o[];
 extern read_func read_o[];
 extern write_func write_o[];
+extern int32_t sche_array[];
+extern int32_t sche_index;
+
 
 /**
  * file_operation_t

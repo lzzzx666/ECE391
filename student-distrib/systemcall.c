@@ -213,12 +213,15 @@ void to_user_mode(int32_t eip, int32_t eflags, int32_t esp, int32_t pid)
     // Update the parent stack and base pointers in the PCB.
     pcb_array[current_pid]->parent_esp = cur_esp;
     pcb_array[current_pid]->parent_ebp = cur_ebp;
-
+    sti();
     // Switch to user mode by pushing the necessary values onto the stack and executing IRET.
     asm volatile(
         "pushl %3\n\t"
         "pushl %2\n\t"
         "pushfl\n\t"
+        "popl %%eax\n\t"
+        "orl $0x200,%%eax\n\t" 
+        "pushl %%eax\n\t"
         "pushl %1\n\t"
         "pushl %0\n\t"
         "iret" ::"r"(eip),
@@ -438,7 +441,7 @@ int32_t getargs(uint8_t *buf, int32_t nbytes)
 int32_t vidmap(uint8_t **screen_start)
 {
 
-    if ((unsigned int)screen_start <= ADDR_128MB || (unsigned int)screen_start >= ADDR_128MB + ADDR_4MB || screen_start == NULL)
+    if (/*(unsigned int)screen_start <= ADDR_128MB || (unsigned int)screen_start >= ADDR_128MB + ADDR_4MB || */screen_start == NULL)
         return -1;
     set_vidmap_paging(screen_start);
     return 0;
@@ -465,3 +468,4 @@ int32_t sigreturn(void)
     printf("sys_sigreturn!\n");
     return 0;
 }
+

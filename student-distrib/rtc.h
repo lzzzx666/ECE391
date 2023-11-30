@@ -39,7 +39,7 @@
 #define INTERRUPT_FREQ_HI (32768 >> (INTERRUPT_RATE_HI - 1))
 /* interrupt frequency is (32768 >> (INTERRUPT_RATE - 1)) */
 
-// #define RTC_VIRTUALIZE
+#define RTC_VIRTUALIZE
 
 #ifndef RTC_VIRTUALIZE
 #define RTC_VALID_FREQ(x) ((x) >= 2 && (x) <= INTERRUPT_FREQ_HI && (!((x) & ((x)-1))))

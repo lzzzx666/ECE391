@@ -13,6 +13,8 @@
 #include "rtc.h"
 #include "page.h"
 #include "fs.h"
+#include "terminal.h"
+#include "pit.h"
 #define RUN_TESTS 0
 
 /* Macros. */
@@ -159,6 +161,11 @@ void entry(unsigned long magic, unsigned long addr)
     /* Initialize RTC periodic interrupt */
     rtc_init();
 
+    // @@
+    int i;
+    for(i = 0; i < TERMINAL_NUM; i++)
+        initialize_terminal(i);
+
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */
     init_keyboard();
@@ -180,7 +187,10 @@ void entry(unsigned long magic, unsigned long addr)
     launch_tests();
 #else
     //     /* Execute the first program ("shell") ... */
-    execute((const uint8_t*)"shell");
+    // execute((const uint8_t*)"shell");
+    pit_init();
+    sti();
+
 #endif
     //     /* Spin (nicely, so we don't chew up cycles) */
     //     asm volatile (".1: hlt; jmp .1;");

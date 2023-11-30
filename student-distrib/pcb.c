@@ -16,7 +16,9 @@ int8_t pcb_bitmap = 0x00;
 /*it records the active process id*/
 
 int32_t current_pid;
-
+extern int32_t sche_array[];
+/*the scheduler array*/
+// int32_t sche_array[TERMINAL_NUMBER]={UNINITIALIZED,UNINITIALIZED,UNINITIALIZED};
 /**
  * create_pcb
  * it will find a empty position in the pcb_array and create a new pcb ,initialize it,
@@ -49,6 +51,7 @@ int32_t create_pcb()
         return -1;
     }
 
+
     /*initialize the new task*/
     new_pcb = (void *)(KERNAL_BOTTOM - TASK_STACK_SIZE * (pcb_index + 1));
     initialize_new_pcb((pcb_t *)new_pcb, pcb_index);
@@ -59,6 +62,10 @@ int32_t create_pcb()
     /*add the new pcb to the array*/
     pcb_array[pcb_index] = new_pcb;
     pcb_bitmap = pcb_bitmap | (0x1 << (7 - pcb_index));//7-pcb_index is the corresponding bit in the bitmap
+
+    /*change the pid in scheduler array*/
+    sche_array[sche_index]=pcb_index;
+    
 
     return pcb_index;
 }
