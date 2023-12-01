@@ -452,7 +452,7 @@ int32_t getargs(uint8_t *buf, int32_t nbytes)
 int32_t vidmap(uint8_t **screen_start)
 {
 
-    if (/*(unsigned int)screen_start <= ADDR_128MB || (unsigned int)screen_start >= ADDR_128MB + ADDR_4MB || */ screen_start == NULL)
+    if ((unsigned int)screen_start <= ADDR_128MB || (unsigned int)screen_start >= ADDR_128MB + ADDR_4MB || screen_start == NULL)
         return -1;
     return set_vidmap_paging(screen_start);
 }
