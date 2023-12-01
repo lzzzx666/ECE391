@@ -152,7 +152,7 @@ void keyboard_handler()
             if (terminal->count < READ_MAX_SIZE - 1)
             {
                 terminal->terminal_buf[terminal->count++] = ascii; // default condition
-                temp_sche_index=sche_index;
+                int32_t temp_sche_index=sche_index;
                 sche_index=current_terminal;
                 _putc(ascii, 1);
                 sche_index=temp_sche_index;
