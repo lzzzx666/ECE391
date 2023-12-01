@@ -170,7 +170,7 @@ void entry(unsigned long magic, unsigned long addr)
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */
     init_keyboard();
-    // mouse_init();
+    mouse_init();
     /* Enable interrupts */
 
     filesys_init(filesys_img_addr);
