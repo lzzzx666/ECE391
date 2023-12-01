@@ -5,6 +5,7 @@
 #define KERNEL_START_ADDR (4 * 1024 * 1024) // 4MB = 4 * 2^10 * 2^10 = 4*1024*1024
 #define ADDR_single4MB 0x400000
 #define VID_ADDRESS (0x8000000 + 3 * ADDR_single4MB)
+
 /*page table for the video memory (first entry in page directory), 4kb size per page*/
 PT_t pageTable __attribute__((aligned(1024 * 4))); // 4KB = 4 * 2^10 = 4*1024
 PT_t video_pageTable __attribute__((aligned(1024 * 4)));

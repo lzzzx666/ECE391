@@ -14,7 +14,12 @@
 // file types
 #define REGULAR_FILE 2
 #define DIRECTORY 1
-#define RTC_DEVICE 0
+#define RTC 0
+#define MODEX 4
+
+// ioctl number
+#define FILE_TYPE 1
+#define FILE_SIZE 2
 
 /** define global variables storing the file system information*/
 uint32_t dentryNum;    // number of dentries
@@ -89,6 +94,7 @@ extern int32_t file_open(const uint8_t *fname);
 extern int32_t file_close(int32_t fd);
 extern int32_t file_read(int32_t fd, void *buf, uint32_t nbytes);
 extern int32_t file_write(int32_t fd, const void *buf, int32_t nbytes);
+extern int32_t file_ioctl(int32_t fd, int32_t request, void *buf);
 
 // fs system call interfaces for direcotry operations
 
@@ -96,6 +102,7 @@ extern int32_t directory_open(const uint8_t *fname);
 extern int32_t directory_close(int32_t fd);
 extern int32_t directory_read(int32_t fd, uint8_t *buf, int32_t padding);
 extern int32_t directory_write(int32_t fd, const void *buf, int32_t nbytes);
+extern int32_t directory_ioctl(int32_t fd, int32_t request, void *buf);
 
 // tests utilities
 

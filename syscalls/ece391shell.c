@@ -7,10 +7,14 @@ to-do list
 - [x] UP+TAB
 - Ctrl+L
 */
+
+/**/
+
 #include <stdint.h>
 
 #include "ece391support.h"
 #include "ece391syscall.h"
+#include "ece391sysnum.h"
 
 #define BUFSIZE 1024
 #define QUEUESIZE 16
@@ -22,6 +26,9 @@ uint8_t matches[MAX_MATCH][SBUFSIZE];
 uint8_t noMatches = 0;
 uint8_t restore_last = 0;
 int32_t last_pos = -1;
+void *garbage = 0x0;
+uint8_t firstCmd[128];
+uint8_t buf[BUFSIZE];
 
 int32_t last_space_pos(const uint8_t *str, uint32_t len)
 {
@@ -32,7 +39,7 @@ int32_t last_space_pos(const uint8_t *str, uint32_t len)
     return -1;
 }
 
-uint32_t get_match_list(const uint8_t *cmd, uint32_t len)
+uint32_t get_match_list(const uint8_t *cmd)
 {
     int32_t fd, cnt;
     static uint8_t buffer[SBUFSIZE];
@@ -62,21 +69,32 @@ uint32_t get_match_list(const uint8_t *cmd, uint32_t len)
     return ret;
 }
 
-void do_tab(uint8_t *cmd, uint32_t len)
+/*if there is only one match,directly resoter with the match*/
+/*if there are more than one options, print original and print all options*/
+/*if no match, restore original*/
+void do_tab(uint8_t *cmd)
 {
     restore_last = 0;
     noMatches = 0;
-    uint32_t num_match = get_match_list(cmd, len);
+    uint32_t num_match = get_match_list(cmd);
     uint32_t i;
     if (num_match == 1)
     {
-        ece391_simulate_keyboard();
-        ece391_fdputs(1, matches[0]);
+        if (last_pos != -1)
+            ece391_ioctl(1, SIMKB, firstCmd);
+        
+        ece391_ioctl(1, SIMKB, matches[0]);
+
         return;
     }
     else if (num_match > 1)
     {
-        ece391_fdputs(1, cmd);
+        if (last_pos != -1)
+            ece391_fdputs(1, buf);
+
+        else
+            ece391_fdputs(1, cmd);
+
         ece391_fdputs(1, (uint8_t *)"\n");
         for (i = 0; i < num_match; i++)
         {
@@ -89,8 +107,7 @@ void do_tab(uint8_t *cmd, uint32_t len)
     else
     {
         noMatches = 1;
-        ece391_simulate_keyboard();
-        ece391_fdputs(1, cmd);
+        ece391_ioctl(1, SIMKB, cmd);
     }
 }
 
@@ -119,8 +136,6 @@ int main()
 {
     int32_t cnt, rval, i;
 
-    uint8_t buf[BUFSIZE];
-    uint8_t firstCmd[128];
     cmdQueue.head = 0;
     cmdQueue.tail = 0;
     cmdQueue.curIdx = 0;
@@ -131,10 +146,10 @@ int main()
         ece391_fdputs(1, (uint8_t *)"391OS> ");
     next:
         last_pos = -1;
-        if (restore_last)
+        if (restore_last == 1)
         {
-            ece391_simulate_keyboard();
-            ece391_fdputs(1, buf);
+            ece391_ioctl(1, SIMKB, buf);
+            restore_last = 0;
         }
         if (-1 == (cnt = ece391_read(0, buf, BUFSIZE - 1)))
         {
@@ -150,8 +165,7 @@ int main()
                 cmdQueue.curIdx = (cmdQueue.curIdx - 1 + QUEUESIZE) % QUEUESIZE;
             if (cmdQueue.head == 0 && cmdQueue.tail == 0)
                 goto next;
-            ece391_simulate_keyboard();
-            ece391_fdputs(1, cmdQueue.cmd[cmdQueue.curIdx]);
+            ece391_ioctl(1, SIMKB, cmdQueue.cmd[cmdQueue.curIdx]);
             goto next;
         }
         if (ece391_strcmp((const uint8_t *)buf, (const uint8_t *)"^[[B") == 0)
@@ -160,8 +174,7 @@ int main()
                 cmdQueue.curIdx = (cmdQueue.curIdx + 1) % QUEUESIZE;
             if (cmdQueue.head == 0 && cmdQueue.tail == 0)
                 goto next;
-            ece391_simulate_keyboard();
-            ece391_fdputs(1, cmdQueue.cmd[cmdQueue.curIdx]);
+            ece391_ioctl(1, SIMKB, cmdQueue.cmd[cmdQueue.curIdx]);
             goto next;
         }
 
@@ -174,13 +187,12 @@ int main()
             {
                 ece391_strcpy(firstCmd, buf);
                 firstCmd[last_pos + 1] = '\0';
-                ece391_simulate_keyboard();
-                ece391_fdputs(1, firstCmd);
-                do_tab(&(buf[last_pos + 1]), cnt - last_pos);
+
+                do_tab(&(buf[last_pos + 1]));
             }
             else
-                do_tab(buf, cnt);
-            if (cnt == 0 || noMatches)
+                do_tab(buf);
+            if (cnt == 0 || noMatches == 1)
                 restore_last = 0;
             if (cnt == 0 || restore_last == 1)
                 continue;

@@ -54,8 +54,8 @@ void keyboard_handler()
 {
     cli();
     terminal_t *terminal = &main_terminal[current_terminal];
-    terminal_t *prev = &prev_terminal[current_terminal];
-    int32_t temp_sche_index;
+    // terminal_t *prev = &prev_terminal[current_terminal];
+
     unsigned char scan_code = inb(KEYBOARD_DATA_PORT);
     char ascii;
     // uint8_t user_interrupt = 0;
@@ -65,7 +65,7 @@ void keyboard_handler()
     case TAB:
         terminal->terminal_buf[terminal->count] = '\t';
         terminal->tab_pressed = 1;
-        *prev = *terminal;
+        // *prev = *terminal;
         break;
     case BACKSPACE:
         if (terminal->count > 0)
@@ -74,8 +74,8 @@ void keyboard_handler()
     case ENTER:
         terminal->terminal_buf[terminal->count++] = '\n';   // add a \n at the end
         terminal->enter_pressed = 1;                            // notify the main_terminal
-        *prev = *terminal;                              // store the previous terminal
-        terminal->terminal_buf[terminal->count = 0] = '\0'; // restore count
+        // *prev = *terminal;                              // store the previous terminal
+        // terminal->terminal_buf[terminal->count = 0] = '\0'; // restore count
         _putc('\n', 1);
         cli();
         break;
