@@ -34,21 +34,22 @@ int32_t halt(uint8_t status)
     if (current_pid < TERMINAL_NUMBER)
     {
         delete_pcb();
-        printf("This terminal becomes inactive.\n");
-        if (active_terminal == 1)
-        {
-            active_terminal = 0;
-            for (i = 0; i < TERMINAL_NUMBER; i++)
-            {
-                sche_array[i] = TERMINAL_UNINIT;
-            }
-        }
-        else
-        {
-            sche_array[current_terminal] = TERMINAL_CLOSE;
-            active_terminal--;
-        }
-        schedule();
+        execute((char*)"shell");
+        // printf("This terminal becomes inactive.\n"); //now the terminal don't have inactive status
+        // if (active_terminal == 1)
+        // {
+        //     active_terminal = 0;
+        //     for (i = 0; i < TERMINAL_NUMBER; i++)
+        //     {
+        //         sche_array[i] = TERMINAL_UNINIT;
+        //     }
+        // }
+        // else
+        // {
+        //     sche_array[current_terminal] = TERMINAL_CLOSE;
+        //     active_terminal--;
+        // }
+        // schedule();
     }
 
     // Close all file descriptors associated with the current process.
