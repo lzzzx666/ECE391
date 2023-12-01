@@ -31,10 +31,24 @@ int32_t halt(uint8_t status)
     int32_t parent_ebp = cur_pcb->parent_ebp;
     int32_t parent_esp = cur_pcb->parent_esp;
     // If the current process is the initial shell (PID 0), restart the shell.
-    if (current_pid <=2)
+    if (current_pid < TERMINAL_NUMBER)
     {
-        delete_pcb();                      // Clean up the current PCB.
-        execute((const uint8_t *)"shell"); // Restart the shell.
+        delete_pcb();
+        printf("This terminal becomes inactive.\n");
+        if (active_terminal == 1)
+        {
+            active_terminal = 0;
+            for (i = 0; i < TERMINAL_NUMBER; i++)
+            {
+                sche_array[i] = TERMINAL_UNINIT;
+            }
+        }
+        else
+        {
+            sche_array[current_terminal] = TERMINAL_CLOSE;
+            active_terminal--;
+        }
+        schedule();
     }
 
     // Close all file descriptors associated with the current process.
@@ -87,7 +101,7 @@ int32_t execute(const uint8_t *command)
     uint8_t test_buf[EXECUTABLE_MAGIC_NUMBER_SIZE];
     dentry_t dentry;
     int32_t pcb_index;
-    //int32_t argvLen;
+    // int32_t argvLen;
     pcb_t *cur_pcb = NULL;
     pcb_t *new_pcb = NULL;
     int32_t eip, eflags, esp;
@@ -116,16 +130,16 @@ int32_t execute(const uint8_t *command)
         {
             return -1; // File name is too long.
         }
-    } //now i points to the first space char
+    } // now i points to the first space char
     memset(argv, '\0', MAX_BUF);
-    while(i < strlen((int8_t*) command) && command[i] != '\0' && command[i] == ' ')
+    while (i < strlen((int8_t *)command) && command[i] != '\0' && command[i] == ' ')
     {
         i++;
-    }//now i points to the first non-space char after exe name
+    } // now i points to the first non-space char after exe name
     int32_t j = 0;
-    while(i < strlen((int8_t*) command) && command[i] != '\0')
+    while (i < strlen((int8_t *)command) && command[i] != '\0')
     {
-        argv[j++] = command[i++]; //copy the content between [arg1, arg2]
+        argv[j++] = command[i++]; // copy the content between [arg1, arg2]
     }
     // Check if the file exists.
     if (read_dentry_by_name(name_buf, &dentry) == FS_FAIL)
@@ -148,7 +162,12 @@ int32_t execute(const uint8_t *command)
     // Get other arguments from the command.
 
     // Check if a new PCB can be created.
-    pcb_index = create_pcb();
+    if(strncmp(name_buf,"shell",MAX_FILE_NAME)==0){
+            pcb_index = create_pcb(1); //1 indicates that it is shell
+    }else{
+        pcb_index = create_pcb(0); //0 indicates it is not a shell
+    }
+
     if (pcb_index == -1)
     {
         return -1; // PCB creation failed.
@@ -220,7 +239,7 @@ void to_user_mode(int32_t eip, int32_t eflags, int32_t esp, int32_t pid)
         "pushl %2\n\t"
         "pushfl\n\t"
         "popl %%eax\n\t"
-        "orl $0x200,%%eax\n\t" 
+        "orl $0x200,%%eax\n\t"
         "pushl %%eax\n\t"
         "pushl %1\n\t"
         "pushl %0\n\t"
@@ -423,12 +442,14 @@ int32_t getargs(uint8_t *buf, int32_t nbytes)
     pcb_t *curPcb = get_current_pcb();
     if (buf == NULL || curPcb->arguments[0] == '\0' || nbytes <= 0)
     {
-        return -1; 
-        //sanity check
+        return -1;
+        // sanity check
     }
-    //if nbytes bigger than buf length, we just copy the first max_buf content
-    if(nbytes >= MAX_BUF)   memcpy(buf, curPcb->arguments, MAX_BUF); 
-    else memcpy(buf, curPcb->arguments, nbytes);
+    // if nbytes bigger than buf length, we just copy the first max_buf content
+    if (nbytes >= MAX_BUF)
+        memcpy(buf, curPcb->arguments, MAX_BUF);
+    else
+        memcpy(buf, curPcb->arguments, nbytes);
     return 0;
 }
 #endif
@@ -467,4 +488,3 @@ int32_t sigreturn(void)
     printf("sys_sigreturn!\n");
     return 0;
 }
-

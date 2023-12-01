@@ -83,7 +83,7 @@ extern pcb_t *pcb_array[];
 extern int8_t pcb_bitmap;
 
 /*create a new pcb*/
-int32_t create_pcb();
+int32_t create_pcb(int32_t isshell);
 
 /*delete the active pcb*/
 int32_t delete_pcb();

@@ -1,17 +1,19 @@
 .data
 .text
+.global active_terminal
+.global sche_index
+.global	sche_array
+
     not_init: .long -2
-    not_use: .long -1
+    not_active: .long -1
     shell: .string "shell"
     ss0: .long 8
     esp0: .long 4
     kernel_ds: .word 0x18
     kernel_bottom: .long 0x800000
     task_stack_size: .long 0x2000
+    active_terminal: .long 0
 
-
-.global sche_index
-.global	sche_array
 .align 4
 sche_index:
     .long 0     #the index of the scheduler array
@@ -34,6 +36,7 @@ schedule:
     movl %ebp,ebp_array(,%eax,4)
 
     #get the next task information
+increase_sche_index:
     movl sche_index,%eax
     incl %eax
 
@@ -54,6 +57,9 @@ check_pid:
 
 
     je open_shell
+    movl not_active,%ebx
+    cmpl %ebx,%eax
+    je increase_sche_index
     jmp normal_context_change
 
 open_shell:
@@ -64,6 +70,9 @@ open_shell:
     addl $4,%esp
 
     #open shell
+    movl active_terminal,%eax
+    incl %eax
+    movl %eax,active_terminal
     movl $shell,%eax
     pushl %eax
     call execute
