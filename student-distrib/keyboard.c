@@ -4,10 +4,11 @@
 #include "lib.h"
 #include "systemcall.h"
 
-static int shift_pressed = 0; // 0 stands for not pushing
-static int capslock_pressed = 0;
-static int alt_pressed = 0;
-static int ctrl_pressed = 0;
+static uint8_t shift_pressed = 0; // 0 stands for not pushing
+static uint8_t capslock_pressed = 0;
+static uint8_t alt_pressed = 0;
+static uint8_t ctrl_pressed = 0;
+extern volatile uint8_t user_exit[TERMINAL_NUMBER];
 
 char scan_code_set[NUM_SCANCODES] = {
     '\0', '\0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '\0', '\0',
@@ -53,28 +54,28 @@ void keyboard_handler()
 {
     cli();
     terminal_t *terminal = &main_terminal[current_terminal];
-    terminal_t *prev = &prev_terminal[current_terminal];
-    int32_t temp_sche_index;
+    // terminal_t *prev = &prev_terminal[current_terminal];
+
     unsigned char scan_code = inb(KEYBOARD_DATA_PORT);
     char ascii;
+    // uint8_t user_interrupt = 0;
     pcb_t *cur_pcb;
     switch (scan_code)
     {
-    case TEST_RTC_HOTKEY:
+    case TAB:
+        terminal->terminal_buf[terminal->count] = '\t';
+        terminal->tab_pressed = 1;
+        // *prev = *terminal;
         break;
     case BACKSPACE:
         if (terminal->count > 0)
-        {
-            terminal->terminal_buf[--terminal->count] = '\0'; // overwrite the original content with '\0'
-            _backspace(1);                                    // change screen x and y
-        }
+            _backspace(1); // change screen x and y
         break;
     case ENTER:
         terminal->terminal_buf[terminal->count++] = '\n';   // add a \n at the end
-        terminal->enter_pressed = 1;                        // notify the main_terminal
-        *prev = *terminal;                                  // store the previous terminal
-        terminal->terminal_buf[terminal->count = 0] = '\0'; // restore count
-        memset((void *)terminal->terminal_buf, '\0', MAX_TERMINAL_SIZE);
+        terminal->enter_pressed = 1;                            // notify the main_terminal
+        // *prev = *terminal;                              // store the previous terminal
+        // terminal->terminal_buf[terminal->count = 0] = '\0'; // restore count
         _putc('\n', 1);
         cli();
         break;
@@ -117,6 +118,12 @@ void keyboard_handler()
         if (TERMINAL_HK1)
             switch_terminal(2);
         break;
+    case UP:
+        terminal->up_pressed = 1; // notify the main_terminal
+        break;
+    case DOWN:
+        terminal->down_pressed = 1;
+        break;
     default:
         if (scan_code >= NUM_SCANCODES)
             break;
@@ -137,9 +144,7 @@ void keyboard_handler()
         }
         else if (ctrl_pressed && (ascii == 'C' || ascii == 'c')) // clear the screen
         {
-            send_eoi(KEYBOARD_IRQ);
-            ctrlc_exit_program();
-            return;
+            user_exit[current_terminal] = 1;
             break;
         }
         else
@@ -147,8 +152,8 @@ void keyboard_handler()
             if (terminal->count < READ_MAX_SIZE - 1)
             {
                 terminal->terminal_buf[terminal->count++] = ascii; // default condition
-                temp_sche_index = sche_index;
-                sche_index = current_terminal;
+                int32_t temp_sche_index=sche_index;
+                sche_index=current_terminal;
                 _putc(ascii, 1);
                 sche_index = temp_sche_index;
             }
@@ -158,6 +163,14 @@ void keyboard_handler()
     send_eoi(KEYBOARD_IRQ);
 
     sti();
+    // if (user_interrupt)
+    // {
+    //     cur_pcb = get_current_pcb();
+    //     if (cur_pcb->pid != 0)
+    //     {
+    //         halt(1);
+    //     }
+    // }
 }
 void ctrlc_exit_program()
 {

@@ -425,6 +425,15 @@ int32_t close(int32_t fd)
     return SYSCALL_SUCCESS; // Return SYSCALL_SUCCESS on successful closure.
 }
 
+int32_t ioctl(int32_t fd, int32_t request, void *buf)
+{
+    pcb_t *curPcb = get_current_pcb();
+    if (fd > MAX_FD || fd < 0)
+        return SYSCALL_FAIL;
+    curPcb->file_obj_table[fd].f_operation.ioctl(fd, request, buf);
+    return SYSCALL_SUCCESS;
+}
+
 /*-----------these functions are not used now, please ignore them------------------------------*/
 /**
  * sys_getargs
