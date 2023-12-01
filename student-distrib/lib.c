@@ -631,3 +631,8 @@ int32_t putc_rep(uint8_t *string, uint32_t n)
     }
     return 0;
 }
+
+
+void change_color(int32_t x, int32_t y, char color){
+    *(uint8_t *)(video_mem + ((NUM_COLS * y + x) << 1) + 1) = color;
+}

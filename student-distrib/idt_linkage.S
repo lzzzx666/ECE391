@@ -8,7 +8,7 @@ handlers:
    .long invalid_opcode,device_not_available,double_fault,coprocessor_segment_overrun,invalid_tss
    .long segment_not_present,stack_segment_fault,general_protection,page_fault,intel_reserved
    .long floating_point_error,alignment_check,machine_check,simd_floating_point_exception
-   .long keyboard,real_time_clock,syscall_linkage,pit
+   .long keyboard,real_time_clock,syscall_linkage,pit,mouse
 syscall:
     .long 0,halt,execute,read,write,open
     .long close,getargs,vidmap,set_handler,sigreturn
@@ -187,6 +187,9 @@ real_time_clock:
     jmp ex_ir_linkage
 pit:
     pushl $0x20     #0x20 is the vector number for RTC interrupt
+    jmp ex_ir_linkage
+mouse:
+    pushl $0x2C #mouse
     jmp ex_ir_linkage
 
 
