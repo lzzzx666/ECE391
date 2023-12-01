@@ -25,6 +25,7 @@ sche_array:
     .long -2
     .long -2
     .long -2
+    
 .text
 .global	schedule
 schedule:

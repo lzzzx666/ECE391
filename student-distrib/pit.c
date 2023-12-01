@@ -1,8 +1,12 @@
 #include "pit.h"
 #include "systemcall.h"
+#include "terminal.h"
+
 /*file variable*/
 uint8_t mode_register;
 uint32_t pit_cnt = 0;
+
+volatile uint8_t user_exit[TERMINAL_NUMBER] = {0};
 
 void pit_init()
 {
@@ -35,9 +39,15 @@ void pit_handler() {
     // execute("shell");
     // putc("s");
     // printf("%d\n",pit_cnt);
-    schedule();
     // sti();
+
+    // puts("[%d]\n", sche_index);
+    if(user_exit[sche_index]) {
+        pcb_t *cur_pcb = get_current_pcb();
+        if (cur_pcb->pid != 0 && cur_pcb->pid >= TERMINAL_NUMBER)
+            halt(1);
+    }
+    user_exit[sche_index] = 0;
     
-
-
+    schedule();
 }

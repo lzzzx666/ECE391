@@ -4,6 +4,7 @@
 #include "types.h"
 #include "lib.h"
 #include "i8259.h"
+#include "terminal.h"
 /*PIT Port*/
 
 #define PIT_8254_CHANNEL_0 0x40
@@ -26,6 +27,8 @@ void set_frequency(int16_t frequency);
 
 extern void pit_handler();
 extern void schedule();
+
+extern volatile uint8_t user_exit[TERMINAL_NUMBER];
 
 #endif
 #endif
