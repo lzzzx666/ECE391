@@ -115,11 +115,11 @@ void update_vidmap(int32_t tid)
     if(tid<0 || tid>=TERMINAL_NUMBER) return;
     if (current_terminal == tid)
     {
-       set_pte(&video_pageTable,( VID_ADDRESS >> 12) &0x3ff, 0, VIDEO>>12);
+       set_pte(&video_pageTable,( VID_ADDRESS >> 12) &0x3ff, 1, VIDEO>>12);
     }
     else
     {
-        set_pte(&video_pageTable, (VID_ADDRESS >> 12)&0x3ff , 0, ((uint32_t)(main_terminal[tid].video_mem_backup))>>12);
+        set_pte(&video_pageTable, (VID_ADDRESS >> 12)&0x3ff , 1, ((uint32_t)(main_terminal[tid].video_mem_backup))>>12);
     }
     update_cr3();
 }

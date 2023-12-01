@@ -81,7 +81,6 @@ syscall_linkage:
     pushl %edx
     pushl %ecx
     pushl %ebx
-    pushfl
 
     #execute the system call
     cmpl $10,%eax #sanity check
@@ -103,7 +102,6 @@ non_exist:
 tear_down:
 
     #restore all registers
-    popfl
     popl %ebx
     popl %ecx
     popl %edx

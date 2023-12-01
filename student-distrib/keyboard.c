@@ -57,7 +57,6 @@ void keyboard_handler()
     int32_t temp_sche_index;
     unsigned char scan_code = inb(KEYBOARD_DATA_PORT);
     char ascii;
-    uint8_t user_interrupt = 0;
     pcb_t *cur_pcb;
     switch (scan_code)
     {
@@ -67,13 +66,13 @@ void keyboard_handler()
         if (terminal->count > 0)
         {
             terminal->terminal_buf[--terminal->count] = '\0'; // overwrite the original content with '\0'
-            _backspace(1);                                              // change screen x and y
+            _backspace(1);                                    // change screen x and y
         }
         break;
     case ENTER:
         terminal->terminal_buf[terminal->count++] = '\n';   // add a \n at the end
-        terminal->enter_pressed = 1;                            // notify the main_terminal
-        *prev = *terminal;                              // store the previous terminal
+        terminal->enter_pressed = 1;                        // notify the main_terminal
+        *prev = *terminal;                                  // store the previous terminal
         terminal->terminal_buf[terminal->count = 0] = '\0'; // restore count
         memset((void *)terminal->terminal_buf, '\0', MAX_TERMINAL_SIZE);
         _putc('\n', 1);
@@ -107,13 +106,16 @@ void keyboard_handler()
         alt_pressed = 0;
         break;
     case TERMINAL1_HK2:
-        if(TERMINAL_HK1) switch_terminal(0);
+        if (TERMINAL_HK1)
+            switch_terminal(0);
         break;
     case TERMINAL2_HK2:
-        if(TERMINAL_HK1) switch_terminal(1);
+        if (TERMINAL_HK1)
+            switch_terminal(1);
         break;
     case TERMINAL3_HK2:
-        if(TERMINAL_HK1) switch_terminal(2);
+        if (TERMINAL_HK1)
+            switch_terminal(2);
         break;
     default:
         if (scan_code >= NUM_SCANCODES)
@@ -135,7 +137,9 @@ void keyboard_handler()
         }
         else if (ctrl_pressed && (ascii == 'C' || ascii == 'c')) // clear the screen
         {
-            user_interrupt = 1;
+            send_eoi(KEYBOARD_IRQ);
+            ctrlc_exit_program();
+            return;
             break;
         }
         else
@@ -143,10 +147,10 @@ void keyboard_handler()
             if (terminal->count < READ_MAX_SIZE - 1)
             {
                 terminal->terminal_buf[terminal->count++] = ascii; // default condition
-                temp_sche_index=sche_index;
-                sche_index=current_terminal;
+                temp_sche_index = sche_index;
+                sche_index = current_terminal;
                 _putc(ascii, 1);
-                sche_index=temp_sche_index;
+                sche_index = temp_sche_index;
             }
         }
     }
@@ -154,12 +158,13 @@ void keyboard_handler()
     send_eoi(KEYBOARD_IRQ);
 
     sti();
-    if (user_interrupt)
+}
+void ctrlc_exit_program()
+{
+    while (current_terminal != sche_index);
+    int32_t pid = sche_array[current_terminal];
+    if (pid >= TERMINAL_NUMBER)
     {
-        cur_pcb = get_current_pcb();
-        if (cur_pcb->pid != 0)
-        {
-            halt(1);
-        }
+        halt(1);
     }
 }

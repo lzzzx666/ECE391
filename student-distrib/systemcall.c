@@ -31,7 +31,7 @@ int32_t halt(uint8_t status)
     int32_t parent_ebp = cur_pcb->parent_ebp;
     int32_t parent_esp = cur_pcb->parent_esp;
     // If the current process is the initial shell (PID 0), restart the shell.
-    if (current_pid == 0)
+    if (current_pid <=2)
     {
         delete_pcb();                      // Clean up the current PCB.
         execute((const uint8_t *)"shell"); // Restart the shell.
