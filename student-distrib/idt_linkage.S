@@ -11,7 +11,7 @@ handlers:
    .long keyboard,real_time_clock,syscall_linkage
 syscall:
     .long 0,halt,execute,read,write,open
-    .long close,getargs,vidmap,set_handler,sigreturn,simulate_keyboard
+    .long close,getargs,vidmap,set_handler,sigreturn,ioctl
 #the commom assembly linkage for exception/interrupt
 ex_ir_linkage:
     
@@ -181,3 +181,4 @@ keyboard:
 real_time_clock:
     pushl $0x28     #0x28 is the vector number for RTC interrupt
     jmp ex_ir_linkage
+

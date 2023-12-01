@@ -3,7 +3,7 @@
 #include "systemcall.h"
 
 terminal_t main_terminal[TERMINAL_NUM];
-terminal_t prev_terminal[TERMINAL_NUM];
+// terminal_t prev_terminal[TERMINAL_NUM];
 uint8_t video_mem[TERMINAL_NUM][VIDEOMEM_SIZE];
 int current_terminal = 0;
 
@@ -35,10 +35,10 @@ void initialize_terminal(int32_t terminal_num)
 int32_t terminal_close(int32_t fd)
 {
     terminal_t *terminal = &main_terminal[current_terminal];
-    terminal_t *prev = &prev_terminal[current_terminal];
+    // terminal_t *prev = &prev_terminal[current_terminal];
     memset((void *)terminal->terminal_buf, '\0', MAX_TERMINAL_SIZE);
     terminal->count = 0;
-    prev->count = 0;
+    // prev->count = 0;
     terminal->enter_pressed = 0;
     terminal->simulateKeyboard = 0;
     return 0;
@@ -67,8 +67,9 @@ int32_t terminal_open(const uint8_t *filename)
 // - int32_t: Total number of bytes read or -1 on error.
 int32_t terminal_read(int32_t fd, void *buf, int32_t nbytes)
 {
+
     terminal_t *terminal = &main_terminal[current_terminal];
-    terminal_t *prev = &prev_terminal[current_terminal];
+    // terminal_t *prev = &prev_terminal[current_terminal];
     if ((!buf) || (nbytes <= 0))
         return -1; // sanity check
     int i = 0, ret_count = 0;
@@ -91,24 +92,28 @@ int32_t terminal_read(int32_t fd, void *buf, int32_t nbytes)
         strcpy(buf, "^[[B");
         return 4;
     }
-    else if (terminal->tab_pressed)
+
+    for (i = 0; i < nbytes && i < READ_MAX_SIZE && terminal->terminal_buf[i] != '\0'; i++)
+    {
+        ((char *)buf)[i] = terminal->terminal_buf[i]; // read from previous buffer to the terminal buffer
+        ret_count++;
+        if ((terminal->terminal_buf[i] == '\n') || (terminal->terminal_buf[i] == '\t'))
+            break; // when meeting \n, return
+    }
+
+    if (terminal->tab_pressed)
     {
         while (terminal->count > 0)
             backspace();
     }
-    for (i = 0; i < nbytes && i < READ_MAX_SIZE && prev->terminal_buf[i] != '\0'; i++)
-    {
-        ((char *)buf)[i] = prev->terminal_buf[i]; // read from previous buffer to the terminal buffer
-        ret_count++;
-        if ((prev->terminal_buf[i] == '\n') || (prev->terminal_buf[i] == '\t'))
-            break; // when meeting \n, return
-    }
+
     ((char *)buf)[ret_count] = '\0';
     terminal->count = 0;
     memset((void *)terminal->terminal_buf, '\0', MAX_TERMINAL_SIZE);
 
     return ret_count; // return total byte we read
 }
+
 // int32_t terminal_write(int32_t fd, void *buf, int32_t nbytes)
 // Description:
 // Writes to the terminal from the given buffer up to a specified
@@ -157,6 +162,22 @@ int32_t terminal_write(int32_t fd, void *buf, int32_t nbytes)
     }
     main_terminal[current_terminal].simulateKeyboard = 0;
     return ret_count; // return total byte we write
+}
+
+// TODO comment & switch terminal & simulate keyboard
+int32_t terminal_ioctl(int32_t fd, int32_t request, void *buf)
+{
+    switch (request)
+    {
+    case SIMKB:
+        main_terminal[current_terminal].simulateKeyboard = 1;
+        int32_t len = strlen((const int8_t *)buf);
+        terminal_write(fd, buf, len);
+        break;
+    default:
+        break;
+    }
+    return 0;
 }
 // void terminal_clear()
 // Description:

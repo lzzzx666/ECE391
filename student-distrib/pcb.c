@@ -1,11 +1,13 @@
 #include "pcb.h"
 /*those are function tables, used for initializing file operations*/
-open_func open_o[4] = {rtc_open, directory_open, file_open, terminal_open};
-close_func close_o[4] = {rtc_close, directory_close, file_close, terminal_close};
-read_func read_o[4] = {(read_func)rtc_read, (read_func)directory_read,
-                       (read_func)file_read, (read_func)terminal_read};
-write_func write_o[4] = {(write_func)rtc_write, (write_func)directory_write,
-                         (write_func)file_write, (write_func)terminal_write};
+open_func open_o[5] = {rtc_open, directory_open, file_open, terminal_open, modex_open};
+close_func close_o[5] = {rtc_close, directory_close, file_close, terminal_close, modex_close};
+read_func read_o[5] = {(read_func)rtc_read, (read_func)directory_read,
+                       (read_func)file_read, (read_func)terminal_read, (read_func)modex_read};
+write_func write_o[5] = {(write_func)rtc_write, (write_func)directory_write,
+                         (write_func)file_write, (write_func)terminal_write, (write_func)modex_write};
+ioctl_func ioctl_o[5] = {(ioctl_func)rtc_ioctl, (ioctl_func)directory_ioctl,
+                         (ioctl_func)file_ioctl, (ioctl_func)terminal_ioctl, (ioctl_func)modex_ioctl};
 
 /*it stores the pcbs of all processes*/
 pcb_t *pcb_array[MAX_TASK];
@@ -34,8 +36,8 @@ int32_t create_pcb()
 
     /*get a empty pid*/
     while (1)
-    {   
-        //7-pcb_index is the corresponding bit in the bitmap
+    {
+        // 7-pcb_index is the corresponding bit in the bitmap
         if (((pcb_bitmap >> (7 - pcb_index)) & 0x1) == TASK_NONEXIST || pcb_index >= MAX_TASK)
         {
             break;
@@ -58,7 +60,7 @@ int32_t create_pcb()
 
     /*add the new pcb to the array*/
     pcb_array[pcb_index] = new_pcb;
-    pcb_bitmap = pcb_bitmap | (0x1 << (7 - pcb_index));//7-pcb_index is the corresponding bit in the bitmap
+    pcb_bitmap = pcb_bitmap | (0x1 << (7 - pcb_index)); // 7-pcb_index is the corresponding bit in the bitmap
 
     return pcb_index;
 }
@@ -76,7 +78,7 @@ int32_t delete_pcb()
 
     /*clear the pcb array and the bitmap*/
     pcb_array[current_pid] = NULL;
-    pcb_bitmap = pcb_bitmap & ~(0x1 << (7 - current_pid));//7-current_pid is the corresponding bit in the bitmap
+    pcb_bitmap = pcb_bitmap & ~(0x1 << (7 - current_pid)); // 7-current_pid is the corresponding bit in the bitmap
     return 0;
 }
 
@@ -103,7 +105,7 @@ void initialize_new_pcb(pcb_t *pcb, int32_t pid)
     pcb->f_number = 0;
 
     /*store the parent pcb information*/
-    if (((pcb_bitmap >> (7 - current_pid)) & 1))//7-current_pid is the corresponding bit in the bitmap
+    if (((pcb_bitmap >> (7 - current_pid)) & 1)) // 7-current_pid is the corresponding bit in the bitmap
     {
         pcb->parent_pid = current_pid;
     }
@@ -132,7 +134,7 @@ void initialize_new_pcb(pcb_t *pcb, int32_t pid)
 void initialize_file_object(file_object_t *file_object, dentry_t dentry)
 {
     /*initialize all parameters*/
-    if (dentry.fileType <= 3) //3 is used to check if the dentry is valid
+    if (dentry.fileType <= 4) // 3 is used to check if the dentry is valid
     {
         file_object->exist = 1;
         file_object->f_position = 0;
@@ -166,7 +168,7 @@ void initialize_stdin_stdout(pcb_t *pcb)
     assign_operation(&(pcb->file_obj_table)[1], TERMINAL);
 
     /*stdin/out are counted as two files*/
-    pcb->f_number = 2; //2 is the stdin and stdout
+    pcb->f_number = 2; // 2 is the stdin and stdout
 }
 
 /**
@@ -184,6 +186,7 @@ void assign_operation(file_object_t *file_object, int32_t file_type)
     (*file_object).f_operation.close = close_o[file_type];
     (*file_object).f_operation.read = read_o[file_type];
     (*file_object).f_operation.write = write_o[file_type];
+    (*file_object).f_operation.ioctl = ioctl_o[file_type];
 }
 
 /**
@@ -227,7 +230,7 @@ void update_current_pid()
     /*get the address of the pcb */
     asm volatile(
         "movl %%esp,%%eax\n\t"
-        "andl $0xffffe000,%%eax\n\t" //because the size of pcb+stack is 8kb, we use 0xffffe000 to get the pid
+        "andl $0xffffe000,%%eax\n\t" // because the size of pcb+stack is 8kb, we use 0xffffe000 to get the pid
         "movl %%eax,%0"
         : "=r"(temp_pid)
         :
@@ -249,4 +252,3 @@ pcb_t *get_current_pcb()
     update_current_pid();
     return pcb_array[current_pid];
 }
-

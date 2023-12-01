@@ -52,8 +52,8 @@ void init_keyboard()
 void keyboard_handler()
 {
     terminal_t *terminal = &main_terminal[current_terminal];
-    terminal_t *prev = &prev_terminal[current_terminal];
-    cli();
+    // terminal_t *prev = &prev_terminal[current_terminal];
+
     unsigned char scan_code = inb(KEYBOARD_DATA_PORT);
     char ascii;
     uint8_t user_interrupt = 0;
@@ -63,7 +63,7 @@ void keyboard_handler()
     case TAB:
         terminal->terminal_buf[terminal->count] = '\t';
         terminal->tab_pressed = 1;
-        *prev = *terminal;
+        // *prev = *terminal;
         break;
     case BACKSPACE:
         if (terminal->count > 0)
@@ -72,8 +72,8 @@ void keyboard_handler()
     case ENTER:
         terminal->terminal_buf[terminal->count++] = '\n';   // add a \n at the end
         terminal->enter_pressed = 1;                        // notify the main_terminal
-        *prev = *terminal;                                  // store the previous terminal
-        terminal->terminal_buf[terminal->count = 0] = '\0'; // restore count
+        // *prev = *terminal;                                  // store the previous terminal
+        // terminal->terminal_buf[terminal->count = 0] = '\0'; // restore count
         putc('\n');
         break;
     case CAPS_LOCK:
@@ -155,8 +155,6 @@ void keyboard_handler()
     }
 
     send_eoi(KEYBOARD_IRQ);
-
-    sti();
     if (user_interrupt)
     {
         cur_pcb = get_current_pcb();

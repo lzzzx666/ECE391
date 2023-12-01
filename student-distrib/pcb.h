@@ -5,6 +5,7 @@
 #include "terminal.h"
 #include "rtc.h"
 #include "fs.h"
+#include "modex.h"
 
 /*macros used in pcb module*/
 #define MAX_TASK 8            //I choose 8 as the max task numver
@@ -18,13 +19,16 @@
 typedef int32_t (*open_func)(const uint8_t *filename);
 typedef int32_t (*close_func)(int32_t fd);
 typedef int32_t (*read_func)(int32_t fd, ...);
-typedef int32_t (*write_func)(uint32_t inode, ...);
+typedef int32_t (*write_func)(uint32_t fd, ...);
+typedef int32_t (*ioctl_func)(uint32_t fd, ...);
+
 
 /*these are the function pointer table*/
 extern open_func open_o[];
 extern close_func close_o[];
 extern read_func read_o[];
 extern write_func write_o[];
+extern ioctl_func ioctl_o[];
 
 /**
  * file_operation_t
@@ -37,6 +41,7 @@ typedef struct file_operation
     close_func close;
     read_func read;
     write_func write;
+    ioctl_func ioctl;
 } file_operation_t;
 
 /**

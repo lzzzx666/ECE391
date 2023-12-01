@@ -69,4 +69,6 @@ extern int32_t rtc_write(int32_t fd, const void *buf, int32_t nbytes);
 
 extern int32_t rtc_read(int32_t fd, void *buf, int32_t nbytes);
 
+extern int32_t rtc_ioctl(int32_t fd, int32_t request, void *buf);
+
 #endif

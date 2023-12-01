@@ -21,13 +21,17 @@ uint32_t directoryIdx;
  */
 int32_t filesys_init(uint32_t filesys_img)
 {
+    dentry_t *modex;
     bootBlock = (bootBlock_t *)filesys_img;                       // get boot block pointer
     inodesArr = (inode_t *)(bootBlock + 1);                       // get inodes pointer
     dataBlock = (dataBlock_t *)(inodesArr + bootBlock->inodeNum); // get data block pointer
     /*get file system information*/
-    dentryNum = bootBlock->dentryNum;
+    dentryNum = ++bootBlock->dentryNum;
     inodeNum = bootBlock->inodeNum;
     dataBlockNum = bootBlock->inodeNum;
+    modex = &(bootBlock->dentries[dentryNum - 1]);
+    strcpy((int8_t *)modex->fileName, (const int8_t *)"modex");
+    modex->fileType = MODEX;
     return FS_SUCCEED;
 }
 
@@ -81,9 +85,9 @@ int32_t read_dentry_by_index(uint32_t index, dentry_t *dentry)
 {
     if (index >= (bootBlock->dentryNum)) // sanity check
     {
-    #if DEBUG
+#if DEBUG
         printf("fail to read dentry with invalid index! \n");
-    #endif
+#endif
         return FS_FAIL;
     }
     // populate dentry
@@ -258,10 +262,16 @@ int32_t file_read(int32_t fd, void *buf, uint32_t nbytes)
  */
 int32_t file_write(int32_t fd, const void *buf, int32_t nbytes)
 {
-    #if DEBUG
+#if DEBUG
     printf("This file system is read only!");
-    #endif
+#endif
     return FS_FAIL;
+}
+
+// TODO comment
+int32_t file_ioctl(int32_t fd, int32_t request, void *buf)
+{
+    return 0;
 }
 
 /**
@@ -335,10 +345,29 @@ int32_t directory_read(int32_t fd, uint8_t *buf, int32_t nbytes)
  */
 int32_t directory_write(int32_t fd, const void *buf, int32_t nbytes)
 {
-    #if DEBUG
+#if DEBUG
     printf("This file system is read only!");
-    #endif
+#endif
     return FS_FAIL;
+}
+
+// TODO comment
+int32_t directory_ioctl(int32_t fd, int32_t request, void *buf)
+{
+    return 0;
+    // pcb_t *curPcb = get_current_pcb();
+    // file_object_t curPcb->file_obj_table[fd];
+    switch (request)
+    {
+    case FILE_TYPE:
+        
+        break;
+    case FILE_SIZE:
+        break;
+    default:
+        break;
+    }
+    return 0;
 }
 
 /**
