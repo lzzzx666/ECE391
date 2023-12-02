@@ -85,7 +85,7 @@ void mouse_handler(void)
         {
             main_terminal[current_terminal].mouse_x += x / 10;
         }
-        if(main_terminal[current_terminal].mouse_y - y / 10 >= 0 && main_terminal[current_terminal].mouse_y - y/ 10 < NUM_ROWS)
+        if(main_terminal[current_terminal].mouse_y - y / 10 >= 0 && main_terminal[current_terminal].mouse_y - y / 10 < NUM_ROWS)
         {
             main_terminal[current_terminal].mouse_y -= y / 10;
         }
