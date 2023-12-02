@@ -36,9 +36,14 @@ ex_ir_linkage:
     jmp exc_ir_tear_down
 pit_h:
     cmpl $0x20,%esi
-    jne rtc
+    jne mouse_h
     call pit_handler
     jmp exc_ir_tear_down
+mouse_h:
+    cmpl $0x2C,%esi
+    jne rtc
+    call mouse_handler
+    jmp exc_ir_tear_down    
 rtc:
     cmpl $0x28,%esi
     jne exception

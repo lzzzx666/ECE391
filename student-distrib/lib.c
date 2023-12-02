@@ -633,6 +633,9 @@ int32_t putc_rep(uint8_t *string, uint32_t n)
 }
 
 
-void change_color(int32_t x, int32_t y, char color){
-    *(uint8_t *)(video_mem + ((NUM_COLS * y + x) << 1) + 1) = color;
+void change_color(int32_t x, int32_t y, char color, int32_t use_terminal)
+{
+    terminal_t *terminal = &main_terminal[use_terminal];
+    uint8_t* up_mem = (use_terminal == current_terminal) ? (uint8_t*) video_mem : terminal->video_mem_backup;
+    *(uint8_t *)(up_mem + ((NUM_COLS * y + x) << 1) + 1) = color;
 }

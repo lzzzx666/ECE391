@@ -16,6 +16,7 @@ typedef struct terminal_t
 {
     uint16_t cursor_x;
     uint16_t cursor_y;
+    int32_t mouse_x, mouse_y;
     uint8_t count;
     volatile uint8_t enter_pressed;
     volatile unsigned char terminal_buf[MAX_TERMINAL_SIZE];

@@ -3,8 +3,8 @@
 #include "systemcall.h"
 #include "page.h"
 #include "lib.h"
+#include "terminal.h"
 
-int mouse_x = 0, mouse_y = 0;
 mouse_packet_t mouse_bytes[3];
 int cycle = 0;
 
@@ -68,29 +68,31 @@ void mouse_handler(void)
     mouse_bytes[cycle].val= inb(MOUSE_PORT);
     cycle++;
     int8_t x, y;
-    if(cycle == 3)
+    if(cycle == 3) // 3 bytes all ready
     {
         cycle = 0;
         if(mouse_bytes[0].x_overflow || mouse_bytes[0].y_overflow)
         {
+            sti();
             return; //overflow
         }
         else 
         {
             x = mouse_bytes[1].val, y = mouse_bytes[2].val;
         } 
-        change_color(mouse_x, mouse_y, ATTRIB);
-        if(mouse_x + x / 10 >= 0 && mouse_x + x / 10 < NUM_COLS)
+        change_color(main_terminal[current_terminal].mouse_x, main_terminal[current_terminal].mouse_y, ATTRIB, current_terminal);
+        if(main_terminal[current_terminal].mouse_x + x / 10 >= 0 && main_terminal[current_terminal].mouse_x + x / 10 < NUM_COLS)
         {
-            mouse_x += x / 10;
+            main_terminal[current_terminal].mouse_x += x / 10;
         }
-        if(mouse_y - y / 10 >= 0 && mouse_y - y/ 10 < NUM_ROWS)
+        if(main_terminal[current_terminal].mouse_y - y / 10 >= 0 && main_terminal[current_terminal].mouse_y - y/ 10 < NUM_ROWS)
         {
-            mouse_y -= y / 10;
+            main_terminal[current_terminal].mouse_y -= y / 10;
         }
-        change_color(mouse_x, mouse_y, 0x70);
+        change_color(main_terminal[current_terminal].mouse_x, main_terminal[current_terminal].mouse_y, 0x70, current_terminal);
     }
     sti();
+    
 }
 
 int32_t mouse_write (unsigned char data)
