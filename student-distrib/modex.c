@@ -3,32 +3,32 @@
 int32_t modex_read(int32_t fd, void *buf, int32_t nbytes)
 {
 
-    printf("trying to read to modex\n");
+    // printf("trying to read to modex\n");
     return 0;
 }
 
 int32_t modex_write(int32_t fd, void *buf, int32_t nbytes)
 {
-    printf("trying to write to modex\n");
+    // printf("trying to write to modex\n");
     return 0;
 }
 
 int32_t modex_open(const uint8_t *filename)
 {
 
-    printf("trying to open modex\n");
+    // printf("trying to open modex\n");
     return 0;
 }
 
 int32_t modex_close(int32_t fd)
 {
-    printf("trying to write to modex\n");
+    // printf("trying to write to modex\n");
     return 0;
 }
 
 int32_t modex_ioctl(int32_t fd, int32_t request, void* buf)
 {
-    printf("trying to ioctl to modex\n");
+    // printf("trying to ioctl to modex\n");
     return 0;
 }
 
