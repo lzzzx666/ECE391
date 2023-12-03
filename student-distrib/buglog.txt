@@ -73,3 +73,16 @@ MP3.4
         find takes: 5min
         fix takes: 5min
         how to fix: Initialize index pointer j to 0 in execute systemcall.c
+
+MP3.5
+    BUG1
+        description: When typing, the character may be displayer on other terminal instead of current terminal
+        find takes: 5 min
+        fix takes: 30 min
+        how to fix: Add a sign to the putc function to ensure that when keyboard interrupt handler call putc function, the content will be displayed on the
+                current terminal instead of the scheduled terminal.
+    BUG2    
+        description: Multiple cursors will show on the single terminal when we switch between terminals.
+        find takes: 5 min
+        fix takes: 15 min
+        how to fix: Update the cursor only if the terminal we are trying to putc is the current terminal displayed.
