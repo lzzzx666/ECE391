@@ -185,3 +185,9 @@ int32_t rtc_read(int32_t fd, void *buf, int32_t nbytes)
         ;
     return 0;
 }
+
+//TODO comment
+int32_t rtc_ioctl(int32_t fd, int32_t request, void* buf)
+{
+    return 0;
+}

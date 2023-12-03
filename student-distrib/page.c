@@ -5,6 +5,7 @@
 #define KERNEL_START_ADDR (4 * 1024 * 1024) // 4MB = 4 * 2^10 * 2^10 = 4*1024*1024
 #define ADDR_single4MB 0x400000
 #define VID_ADDRESS (0x8000000 + 3 * ADDR_single4MB)
+
 /*page table for the video memory (first entry in page directory), 4kb size per page*/
 PT_t pageTable __attribute__((aligned(1024 * 4))); // 4KB = 4 * 2^10 = 4*1024
 PT_t video_pageTable __attribute__((aligned(1024 * 4)));
@@ -113,13 +114,16 @@ int32_t set_vidmap_paging(uint8_t **screen_start)
 void update_vidmap(int32_t tid)
 {
     if(tid<0 || tid>=TERMINAL_NUMBER) return;
+
+    /*The case that the program is running in the current terminal*/
     if (current_terminal == tid)
     {
-       set_pte(&video_pageTable,( VID_ADDRESS >> 12) &0x3ff, 0, VIDEO>>12);
+       set_pte(&video_pageTable,( VID_ADDRESS >> 12) &0x3ff, 1, VIDEO>>12);
     }
+    /*The case that the program is running in the background terminal*/
     else
     {
-        set_pte(&video_pageTable, (VID_ADDRESS >> 12)&0x3ff , 0, ((uint32_t)(main_terminal[tid].video_mem_backup))>>12);
+        set_pte(&video_pageTable, (VID_ADDRESS >> 12)&0x3ff , 1, ((uint32_t)(main_terminal[tid].video_mem_backup))>>12);
     }
     update_cr3();
 }

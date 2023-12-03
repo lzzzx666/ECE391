@@ -11,7 +11,7 @@ handlers:
    .long keyboard,real_time_clock,syscall_linkage,pit,mouse
 syscall:
     .long 0,halt,execute,read,write,open
-    .long close,getargs,vidmap,set_handler,sigreturn
+    .long close,getargs,vidmap,set_handler,sigreturn,ioctl
 #the commom assembly linkage for exception/interrupt
 ex_ir_linkage:
     
@@ -81,10 +81,9 @@ syscall_linkage:
     pushl %edx
     pushl %ecx
     pushl %ebx
-    pushfl
 
     #execute the system call
-    cmpl $10,%eax #sanity check
+    cmpl $11,%eax #sanity check
     ja non_exist
     cmpl $1,%eax
     jb non_exist
@@ -103,7 +102,6 @@ non_exist:
 tear_down:
 
     #restore all registers
-    popfl
     popl %ebx
     popl %ecx
     popl %edx
