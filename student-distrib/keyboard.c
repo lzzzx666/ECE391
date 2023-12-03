@@ -59,7 +59,7 @@ void keyboard_handler()
     unsigned char scan_code = inb(KEYBOARD_DATA_PORT);
     char ascii;
     // uint8_t user_interrupt = 0;
-    pcb_t *cur_pcb;
+    // pcb_t *cur_pcb;
     switch (scan_code)
     {
     case TAB:
@@ -172,6 +172,11 @@ void keyboard_handler()
     //     }
     // }
 }
+
+// Description: exit the program by ctrl+c
+// Parameters:None.
+// Return Value:None.
+// Side Effects: terminate the program in the current terminal
 void ctrlc_exit_program()
 {
     while (current_terminal != sche_index);

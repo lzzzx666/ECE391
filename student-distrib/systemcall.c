@@ -34,7 +34,7 @@ int32_t halt(uint8_t status)
     if (current_pid < TERMINAL_NUMBER)
     {
         delete_pcb();
-        execute((char*)"shell");
+        execute((uint8_t*)"shell");
         // printf("This terminal becomes inactive.\n"); //now the terminal don't have inactive status
         // if (active_terminal == 1)
         // {
@@ -163,7 +163,7 @@ int32_t execute(const uint8_t *command)
     // Get other arguments from the command.
 
     // Check if a new PCB can be created.
-    if(strncmp(name_buf,"shell",MAX_FILE_NAME)==0){
+    if(strncmp((int8_t*)name_buf,(int8_t*)"shell",MAX_FILE_NAME)==0){
             pcb_index = create_pcb(1); //1 indicates that it is shell
     }else{
         pcb_index = create_pcb(0); //0 indicates it is not a shell

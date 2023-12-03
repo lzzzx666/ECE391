@@ -114,10 +114,13 @@ int32_t set_vidmap_paging(uint8_t **screen_start)
 void update_vidmap(int32_t tid)
 {
     if(tid<0 || tid>=TERMINAL_NUMBER) return;
+
+    /*The case that the program is running in the current terminal*/
     if (current_terminal == tid)
     {
        set_pte(&video_pageTable,( VID_ADDRESS >> 12) &0x3ff, 1, VIDEO>>12);
     }
+    /*The case that the program is running in the background terminal*/
     else
     {
         set_pte(&video_pageTable, (VID_ADDRESS >> 12)&0x3ff , 1, ((uint32_t)(main_terminal[tid].video_mem_backup))>>12);
