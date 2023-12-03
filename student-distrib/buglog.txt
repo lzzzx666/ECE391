@@ -79,8 +79,8 @@ MP3.5
         description: When typing, the character may be displayer on other terminal instead of current terminal
         find takes: 5 min
         fix takes: 30 min
-        how to fix: Add a sign to the putc function to ensure that when keyboard interrupt handler call putc function, the content will be displayed on the
-                current terminal instead of the scheduled terminal.
+        how to fix: Add a sign to the putc function to ensure that when keyboard interrupt handler call putc function, the content will 
+                    be displayed on the current terminal instead of the scheduled terminal.
     BUG2    
         description: Multiple cursors will show on the single terminal when we switch between terminals.
         find takes: 5 min
