@@ -15,7 +15,6 @@
 #include "fs.h"
 #include "terminal.h"
 #include "pit.h"
-#include "mouse.h"
 #define RUN_TESTS 0
 
 /* Macros. */

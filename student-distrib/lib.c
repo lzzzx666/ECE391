@@ -9,6 +9,8 @@
 #define DEBUG
 #include "debug.h"
 
+// #define USE_COLOR
+
 // #define putc(...) putc(__VA_ARGS__, (0))
 // #define scroll_up(...) scroll_up(__VA_ARGS__, (0))
 
@@ -219,11 +221,14 @@ void _putc(uint8_t c, uint8_t use_current_terminal)
 {
     cli();
     static uint8_t attr = ATTRIB;
+#ifdef USE_COLOR
     static uint8_t next_is_attr_byte = 0;
+#endif
     // ASSERT(sche_index == current_terminal);
     uint32_t use_terminal = use_current_terminal ? current_terminal : sche_index;
     terminal_t *terminal = &main_terminal[use_terminal];
     uint8_t* putc_mem=(use_terminal==current_terminal)? (uint8_t*) video_mem:terminal->video_mem_backup;
+#ifdef USE_COLOR
     if(next_is_attr_byte) {
         next_is_attr_byte = 0;
         attr = c;
@@ -233,6 +238,7 @@ void _putc(uint8_t c, uint8_t use_current_terminal)
         next_is_attr_byte = 1;
         return;
     }
+#endif
     if (c == '\n' || c == '\r')
     {
         terminal->cursor_y++;
