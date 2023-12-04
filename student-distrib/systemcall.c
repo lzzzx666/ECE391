@@ -31,7 +31,7 @@ int32_t halt(uint8_t status)
     int32_t parent_ebp = cur_pcb->parent_ebp;
     int32_t parent_esp = cur_pcb->parent_esp;
     // If the current process is the initial shell (PID 0), restart the shell.
-    if (current_pid == 0)
+    if (current_pid < TERMINAL_NUMBER)
     {
         delete_pcb();                      // Clean up the current PCB.
         execute((const uint8_t *)"shell"); // Restart the shell.
@@ -220,7 +220,7 @@ void to_user_mode(int32_t eip, int32_t eflags, int32_t esp, int32_t pid)
         "pushl %2\n\t"
         "pushfl\n\t"
         "popl %%eax\n\t"
-        "orl $0x200,%%eax\n\t" 
+        "orl $0x200,%%eax\n\t"
         "pushl %%eax\n\t"
         "pushl %1\n\t"
         "pushl %0\n\t"
@@ -478,4 +478,3 @@ int32_t sigreturn(void)
     printf("sys_sigreturn!\n");
     return 0;
 }
-

@@ -118,18 +118,18 @@ void update_vidmap(int32_t tid)
         return;
     if (current_terminal == tid)
     {
-        set_pte(&video_pageTable, (VID_ADDRESS >> 12) & 0x3ff, 0, VIDEO >> 12);
+        set_pte(&video_pageTable, (VID_ADDRESS >> 12) & 0x3ff, 1, VIDEO >> 12);
     }
     else
     {
-        set_pte(&video_pageTable, (VID_ADDRESS >> 12) & 0x3ff, 0, ((uint32_t)(main_terminal[tid].video_mem_backup)) >> 12);
+        set_pte(&video_pageTable, (VID_ADDRESS >> 12) & 0x3ff, 1, ((uint32_t)(main_terminal[tid].video_mem_backup)) >> 12);
     }
     update_cr3();
 }
 
 int32_t set_mode_x_paging()
 {
-    set_pde(&pageDirectory, (MODE_X_VMEM_ADDR >> 22) & 0x3FF, 0, 0, 1, MODE_X_VMEM_ADDR >> 12);
+    set_pde(&pageDirectory, (MODE_X_VMEM_ADDR >> 22) & 0x3FF, 1, 0, 1, MODE_X_VMEM_ADDR >> 12);
     update_cr3();
     return 0;
 }
