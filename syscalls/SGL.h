@@ -6,7 +6,6 @@
 #include "ece391support.h"
 #include "ece391sysnum.h"
 
-
 typedef struct BitMapFileHeader
 {
     uint16_t bfType;

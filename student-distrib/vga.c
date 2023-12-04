@@ -5,6 +5,7 @@ uint8_t VGA_lock = VGA_UNLOCKED;
 int32_t vga_read(int32_t fd, void *buf, int32_t nbytes)
 {
     int i;
+    
     for (i = 0; i < MODE_X_VMEM_SIZE; i++)
     {
         ((uint8_t *)MODE_X_VMEM_ADDR)[i]++;

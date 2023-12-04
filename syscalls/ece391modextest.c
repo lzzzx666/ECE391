@@ -23,7 +23,7 @@ int32_t main()
         ece391_read(VGAfd, &garbage, 1);
         ece391_read(rtcfd, &garbage, 4);
     }
-    size = read_bitmap("dingzhen.bmp", &bitMap);
+    size = read_bitmap("alma.bmp", &bitMap);
     plot_bitmap(VGAfd, size, &bitMap);
     while (1)
         ;

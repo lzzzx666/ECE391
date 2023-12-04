@@ -28,7 +28,7 @@ int32_t filesys_init(uint32_t filesys_img)
     /*get file system information*/
     dentryNum = ++bootBlock->dentryNum;
     inodeNum = bootBlock->inodeNum;
-    dataBlockNum = bootBlock->inodeNum;
+    dataBlockNum = bootBlock->dataBlockNum;
     vga = &(bootBlock->dentries[dentryNum - 1]);
     strcpy((int8_t *)vga->fileName, (const int8_t *)"VGA");
     vga->fileType = VGA;
