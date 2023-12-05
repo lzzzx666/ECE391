@@ -436,18 +436,27 @@ int32_t ioctl(int32_t fd, int32_t request, void *buf)
     curPcb->file_obj_table[fd].f_operation.ioctl(fd, request, buf);
     return SYSCALL_SUCCESS;
 }
+/**
+ * malloc
+ * alloc a memory address of the size
+ * INPUT: szie: the size of the allocated memory
+ * OUTPUT: the address of the allocated memory
+ */
 void *malloc(uint32_t size)
 {
 
     void *ret_addr;
     kmem_cache *cur_cache = slab_cache.cache_head;
     int32_t exist;
+    /*sanity check*/
     if (size == 0 || size>SLAB_SIZE-sizeof(kmem_unit))
     {
         printf("Can't allocate such a size!\n");
         return NULL;
     }
     exist = 0;
+
+    /*find if there is a cache with the required size*/
     while (cur_cache && cur_cache->p)
     {
         if (size == cur_cache->size)
@@ -460,24 +469,26 @@ void *malloc(uint32_t size)
             cur_cache = cur_cache->next;
         }
     }
-    if (exist)
+    if (exist)      //when a cache satisfies the size
     {
         ret_addr = kmem_cache_alloc(cur_cache);
-        printf("s");
     }
-    else
+    else            
     {
         cur_cache = kmem_cache_create(size);
         ret_addr = kmem_cache_alloc(cur_cache);
     }
     return ret_addr;
 }
+/**
+ * free
+ * free the allocated memory
+ * INPUT: ptr: the address of the allocated memory
+ * OUTPUT: none
+ */
 void free(void *ptr)
 {
-
     kmem_cache_free(ptr);
-    /*get the corresponding unit*/
-
     return;
 }
 
