@@ -164,6 +164,7 @@ void *kmem_cache_alloc(kmem_cache *kmem_cache)
 
     /*get the usable memory address*/
     ret_add = (*cur_slab)->free_head->add_ptr;
+    (*cur_slab)->free_head->p=USED;
     (*cur_slab)->free_head = (*cur_slab)->free_head->next;
     (*cur_slab)->used_unit_number++;
 
@@ -191,13 +192,13 @@ void kmem_cache_free(void *ptr)
     if (slab_index < 0 || slab_index >= PAGE_TABLE_ENTRY_NUM)
     {
 
-        printf("Can't free an invalid pointer1!\n");
+        printf("Can't free an invalid pointer!\n");
         return;
     }
     this_slab = &(slab_array[slab_index]);
     if (this_slab->p == FREE)
     {
-        printf("Can't free an invalid pointer2!\n");
+        printf("Can't free an invalid pointer!\n");
         return;
     }
 
@@ -213,22 +214,32 @@ void kmem_cache_free(void *ptr)
     }
     if (!cache_exist)
     {
-        printf("Can't free an invalid pointer3!\n");
+        printf("Can't free an invalid pointer!\n");
         return;
     }
 
     /*get the corresponding unit*/
     unit_mem_start = sizeof(kmem_unit) * this_slab->unit_number + (int32_t)this_slab->page_ptr;
     unit_index = ((int32_t)ptr - unit_mem_start) / this_slab->size;
+    if ((((int32_t)ptr - unit_mem_start) % this_slab->size)!=0)
+    {
+        printf("Can't free an invalid pointer!\n");
+        return;
+    }
     this_unit = (kmem_unit *)((int32_t)(this_slab->page_ptr) + sizeof(kmem_unit) * unit_index);
-
+    if(!this_unit->p)
+    {
+        printf("Can't free an invalid pointer!\n");
+        return;
+    }
     /*reshape the linked-list*/
     this_slab->used_unit_number--;
-    if (this_unit->prev == NULL) //the case when the unit is in the head
+    this_unit->p=FREE;
+    if (this_unit->prev == NULL) // the case when the unit is in the head
     {
-        if (this_slab->used_unit_number == 0)   //the case when there is only 1 used_unit
+        if (this_slab->used_unit_number == 0) // the case when there is only 1 used_unit
             delete_slab(this_cache, this_slab);
-        else        
+        else
         {
             this_slab->unit_head = this_unit->next;
             this_unit->next->prev = NULL;
@@ -239,12 +250,12 @@ void kmem_cache_free(void *ptr)
             this_slab->free_head = this_unit;
         }
     }
-    else if (this_unit->next == NULL)       //the case when all units are used
+    else if (this_unit->next == NULL) // the case when all units are used
     {
         this_slab->free_head = this_unit;
     }
-    else                                    //the normal case
-    {   
+    else // the normal case
+    {
         this_unit->prev->next = this_unit->next;
         this_unit->next->prev = this_unit->prev;
         this_unit->next = this_slab->free_head;
@@ -266,9 +277,9 @@ void kmem_cache_destroy(kmem_cache *kmem_cache)
     kmem_cache->p = FREE;
 
     /*move it to free cache list*/
-    if (kmem_cache->prev == NULL)   //the case when it is in the head
+    if (kmem_cache->prev == NULL) // the case when it is in the head
     {
-        if (kmem_cache->next == slab_cache.free_cache_head) //the case these is only 1 cache used
+        if (kmem_cache->next == slab_cache.free_cache_head) // the case these is only 1 cache used
         {
             slab_cache.free_cache_head = kmem_cache;
         }
@@ -283,11 +294,11 @@ void kmem_cache_destroy(kmem_cache *kmem_cache)
             slab_cache.free_cache_head = kmem_cache;
         }
     }
-    else if (kmem_cache->next == NULL)          //the case that all caches are used
+    else if (kmem_cache->next == NULL) // the case that all caches are used
     {
         slab_cache.free_cache_head = kmem_cache;
     }
-    else                                        //the normal case
+    else // the normal case
     {
         kmem_cache->prev->next = kmem_cache->next;
         kmem_cache->next->prev = kmem_cache->prev;
@@ -330,6 +341,7 @@ void init_one_slab(kmem_cache *cache, kmem_slab *slab)
     {
 
         unit = (kmem_unit *)((uint32_t)(slab->unit_head) + i * sizeof(kmem_unit));
+        unit->p=FREE;
         unit->add_ptr = (void *)((int32_t)unit_mem_start + i * size);
         unit->next = (kmem_unit *)((int32_t)unit + sizeof(kmem_unit));
         unit->prev = (kmem_unit *)((int32_t)unit - sizeof(kmem_unit));
@@ -350,9 +362,9 @@ void delete_slab(kmem_cache *kmem_cache, kmem_slab *kmem_slab)
     kmem_slab->p = FREE;
 
     /*put it in the free slab list*/
-    if (kmem_slab->page_prev == NULL) //the case when it is in the head
+    if (kmem_slab->page_prev == NULL) // the case when it is in the head
     {
-        if (kmem_slab->page_next == slab_cache.free_slab_head)  //the case when there is only 1 slab used
+        if (kmem_slab->page_next == slab_cache.free_slab_head) // the case when there is only 1 slab used
         {
             slab_cache.free_slab_head = kmem_slab;
         }
@@ -367,11 +379,11 @@ void delete_slab(kmem_cache *kmem_cache, kmem_slab *kmem_slab)
             slab_cache.free_slab_head = kmem_slab;
         }
     }
-    else if (kmem_slab->page_next == NULL)      //the case that all slabs are used
+    else if (kmem_slab->page_next == NULL) // the case that all slabs are used
     {
         slab_cache.free_slab_head = kmem_slab;
     }
-    else                                        //the normal case
+    else // the normal case
     {
         kmem_slab->page_prev->page_next = kmem_slab->page_next;
         kmem_slab->page_next->page_prev = kmem_slab->page_prev;
@@ -413,7 +425,7 @@ void info_allocation()
         cur_slab = cur_cache->slab_array;
         printf("cahce with size %d:\n", cur_cache->size);
         index = 0;
-        
+
         /*print all slabs information*/
         while (cur_slab)
         {

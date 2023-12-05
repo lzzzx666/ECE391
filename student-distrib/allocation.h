@@ -21,6 +21,7 @@ struct kmem_unit
     void *add_ptr;
     kmem_unit *next;
     kmem_unit *prev;
+    int32_t p;
 };
 
 /*the struct of the slab*/
