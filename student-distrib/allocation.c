@@ -1,9 +1,22 @@
 #include "allocation.h"
 
+/*There is a hierarchy of three
+        ————————————
+        |   cache  | (it contains one or more slabs)
+        ————————————
+              |
+        ————————————
+        |   slab   | (one slab is 4kb)(it contains one or more units)
+        ————————————
+              |
+        ————————————
+        |   unit   | (the size depends on allocation)
+        ————————————
+*/
 PT_t slab_pageTable __attribute__((aligned(1024 * 4)));
 // PT_t slab_cache_manage_pageTable __attribute__((aligned(1024 * 4)));
-kmem_cache *cache_array = NULL;
-kmem_slab *slab_array = NULL;
+kmem_cache *cache_array = NULL; //all caches
+kmem_slab *slab_array = NULL;   //all slabs
 slab_cache_info slab_cache;
 
 /**
