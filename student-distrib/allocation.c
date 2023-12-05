@@ -468,7 +468,7 @@ void info_allocation()
     kmem_unit *cur_unit = NULL;
     int32_t index;
     int32_t i;
-    printf("\n--------------------------------------\n");
+    printf("\n-----------------------------------------\n");
     /*print all caches information*/
     while (cur_cache && cur_cache->p)
     {
@@ -493,5 +493,5 @@ void info_allocation()
         }
         cur_cache = cur_cache->next;
     }
-    printf("--------------------------------------\n");
+    printf("-----------------------------------------\n");
 }
