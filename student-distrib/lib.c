@@ -75,7 +75,7 @@ int32_t printf(int8_t *format, ...)
             {
             /* Print a literal '%' character */
             case '%':
-                putc('%');
+                _putc('%',1);
                 break;
 
             /* Use alternate formatting */
@@ -161,7 +161,7 @@ int32_t printf(int8_t *format, ...)
         break;
 
         default:
-            putc(*buf);
+            _putc(*buf,1);
             break;
         }
         buf++;
@@ -178,7 +178,7 @@ int32_t puts(int8_t *s)
     register int32_t index = 0;
     while (s[index] != '\0')
     {
-        putc(s[index]);
+        _putc(s[index],1);
         index++;
     }
     return index;

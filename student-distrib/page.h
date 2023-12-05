@@ -280,5 +280,7 @@ extern int32_t set_vidmap_paging(uint8_t **screen_start);
 extern void update_vidmap(int32_t tid);
 extern void set_cr();
 extern void get_cr();
-
+extern PD_t pageDirectory;
+extern PT_t pageTable;
+extern PT_t video_pageTable;
 #endif

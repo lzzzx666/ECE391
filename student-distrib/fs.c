@@ -28,7 +28,7 @@ int32_t filesys_init(uint32_t filesys_img)
     /*get file system information*/
     dentryNum = ++bootBlock->dentryNum;
     inodeNum = bootBlock->inodeNum;
-    dataBlockNum = bootBlock->inodeNum;
+    dataBlockNum = bootBlock->dataBlockNum;
     modex = &(bootBlock->dentries[dentryNum - 1]);
     strcpy((int8_t *)modex->fileName, (const int8_t *)"modex");
     modex->fileType = MODEX;

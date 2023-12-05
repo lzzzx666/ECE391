@@ -28,7 +28,9 @@
 #include "pcb.h"
 #include "x86_desc.h"
 #include "fs.h"
+#include "allocation.h"
 extern int32_t active_terminal;
+
 /*the return value*/
 extern int32_t retVal;
 
@@ -118,6 +120,11 @@ extern int32_t set_handler(int32_t signum, void *handler);
 /*sys_sigretur*/
 extern int32_t sigreturn(void);
 
+/*malloc*/
+extern void* malloc(uint32_t size);
+
+/*free*/
+extern void free(void* ptr);
 
 /**
  * @brief Switch the processor to user mode.
