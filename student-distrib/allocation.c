@@ -2,8 +2,8 @@
 
 PT_t slab_pageTable __attribute__((aligned(1024 * 4)));
 // PT_t slab_cache_manage_pageTable __attribute__((aligned(1024 * 4)));
-kmem_cache* cache_array=NULL;
-kmem_slab* slab_array=NULL;
+kmem_cache *cache_array = NULL;
+kmem_slab *slab_array = NULL;
 slab_cache_info slab_cache;
 
 /**
@@ -38,14 +38,12 @@ void init_memory_allocation()
 {
     int i;
 
-
     /*initialize slab page table*/
     init_allocation_paging();
 
     /*initialize the management pointer*/
-    cache_array=SLAB_CACHE_MANAGE_ADDR;
-    slab_array=SLAB_CACHE_MANAGE_ADDR+CACHE_NUMBER*sizeof(kmem_cache);
-
+    cache_array = SLAB_CACHE_MANAGE_ADDR;
+    slab_array = SLAB_CACHE_MANAGE_ADDR + CACHE_NUMBER * sizeof(kmem_cache);
 
     /*initialize caches*/
     for (i = 0; i < CACHE_NUMBER; i++)
@@ -142,7 +140,7 @@ void *kmem_cache_alloc(kmem_cache *kmem_cache)
     /*find whether there is slab can be used*/
     while (*cur_slab)
     {
-        if ((*cur_slab)->free_head)
+        if ((*cur_slab)->free_head && ((*cur_slab)->pid == sche_array[sche_index]))
         {
             slab_exist = 1;
             break;
@@ -153,7 +151,6 @@ void *kmem_cache_alloc(kmem_cache *kmem_cache)
             cur_slab = &((*cur_slab)->array_next);
         }
     }
-
     /*if no slab is usable, create one*/
     if (!slab_exist)
     {
@@ -171,8 +168,9 @@ void *kmem_cache_alloc(kmem_cache *kmem_cache)
     }
 
     /*get the usable memory address*/
+    slab_cache.free_slab_head=slab_cache.free_slab_head->page_next;
     ret_add = (*cur_slab)->free_head->add_ptr;
-    (*cur_slab)->free_head->p=USED;
+    (*cur_slab)->free_head->p = USED;
     (*cur_slab)->free_head = (*cur_slab)->free_head->next;
     (*cur_slab)->used_unit_number++;
 
@@ -209,6 +207,11 @@ void kmem_cache_free(void *ptr)
         printf("Can't free an invalid pointer!\n");
         return;
     }
+    if (this_slab->pid != sche_array[sche_index])
+    {
+        printf("Can't free an invalid pointer!\n");
+        return;
+    }
 
     /*get the corresponding cache*/
     while (this_cache && this_cache->p)
@@ -229,20 +232,20 @@ void kmem_cache_free(void *ptr)
     /*get the corresponding unit*/
     unit_mem_start = sizeof(kmem_unit) * this_slab->unit_number + (int32_t)this_slab->page_ptr;
     unit_index = ((int32_t)ptr - unit_mem_start) / this_slab->size;
-    if ((((int32_t)ptr - unit_mem_start) % this_slab->size)!=0)
+    if ((((int32_t)ptr - unit_mem_start) % this_slab->size) != 0)
     {
         printf("Can't free an invalid pointer!\n");
         return;
     }
     this_unit = (kmem_unit *)((int32_t)(this_slab->page_ptr) + sizeof(kmem_unit) * unit_index);
-    if(!this_unit->p)
+    if (!this_unit->p)
     {
         printf("Can't free an invalid pointer!\n");
         return;
     }
     /*reshape the linked-list*/
     this_slab->used_unit_number--;
-    this_unit->p=FREE;
+    this_unit->p = FREE;
     if (this_unit->prev == NULL) // the case when the unit is in the head
     {
         if (this_slab->used_unit_number == 0) // the case when there is only 1 used_unit
@@ -318,6 +321,35 @@ void kmem_cache_destroy(kmem_cache *kmem_cache)
     }
 }
 
+/**
+ * free_one_program
+ * free all allocated memory within one program
+ * INPUT: pid:process id
+ * OUTPUT: none
+ */
+void free_one_program(uint32_t pid)
+{
+    kmem_slab *cur_slab = NULL;
+    kmem_cache *cur_cache = slab_cache.cache_head;
+    kmem_cache *next_cache=NULL;
+    while (cur_cache && cur_cache->p)
+    {
+        next_cache=cur_cache->next;
+        cur_slab = cur_cache->slab_array;
+        /*free all slab of the cache belongs to the program*/
+        while (cur_slab && cur_slab->p)
+        {
+            if (cur_slab->pid == pid)
+            {
+                delete_slab(cur_cache, cur_slab);
+            }
+            cur_slab = cur_slab->array_next;
+        }
+
+        /*update the current cache*/
+        cur_cache=next_cache;
+    }
+}
 /*------------------------------helper-------------------------------------*/
 
 /**
@@ -344,18 +376,21 @@ void init_one_slab(kmem_cache *cache, kmem_slab *slab)
     slab->used_unit_number = 0;
     slab->p = USED;
 
-    /*initialize all unit of this slab*/
+    /*initialize all units of this slab*/
     for (i = 0; i < unit_number; i++)
     {
 
         unit = (kmem_unit *)((uint32_t)(slab->unit_head) + i * sizeof(kmem_unit));
-        unit->p=FREE;
+        unit->p = FREE;
         unit->add_ptr = (void *)((int32_t)unit_mem_start + i * size);
         unit->next = (kmem_unit *)((int32_t)unit + sizeof(kmem_unit));
         unit->prev = (kmem_unit *)((int32_t)unit - sizeof(kmem_unit));
     }
     ((kmem_unit *)((uint32_t)(slab->unit_head)))->prev = NULL;
     unit->next = NULL;
+
+    /*associate it with the program*/
+    slab->pid = sche_array[sche_index];
 }
 
 /**
@@ -403,13 +438,22 @@ void delete_slab(kmem_cache *kmem_cache, kmem_slab *kmem_slab)
     }
 
     /*remove it from the cache-slab_array*/
-    if (kmem_slab->array_prev == NULL)
+    if (kmem_slab->array_prev == NULL && kmem_slab->array_next == NULL)
     {
         kmem_cache_destroy(kmem_cache);
     }
+    else if (kmem_slab->array_prev == NULL)
+    {
+        kmem_cache->slab_array = kmem_slab->array_next;
+        kmem_cache->slab_array->array_prev=NULL;
+    }
+    else if (kmem_slab->array_next == NULL)
+    {
+        kmem_slab->array_prev->array_next = NULL;
+    }
     else
     {
-        kmem_slab->array_prev->next = NULL;
+        kmem_slab->array_prev->array_next = kmem_slab->array_next;
     }
 }
 
@@ -435,9 +479,9 @@ void info_allocation()
         index = 0;
 
         /*print all slabs information*/
-        while (cur_slab)
+        while (cur_slab && cur_slab->p)
         {
-            printf("    slab %d: total units: %d, used: %d. \n", index, cur_slab->unit_number, cur_slab->used_unit_number);
+            printf("    slab%d(pid=%d) : total units: %d, used: %d. \n", index, cur_slab->pid, cur_slab->unit_number, cur_slab->used_unit_number);
             printf("    memory ptrs:");
             cur_unit = cur_slab->unit_head;
             for (i = 0; i < cur_slab->used_unit_number; i++)

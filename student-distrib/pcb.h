@@ -16,6 +16,8 @@
 #define TERMINAL 3              //3 is the index of terminal functions int the function table
 #define MAX_FILE_NUM 8          //one process can open 8 files at the same time(including stdin and stdout)
 #define UNINITIALIZED -2
+#define FOUR_MB 4*1024*1024
+#define MAX_ALLOCATION_MEMORY_NUMBER 1024 //one program can have 1024 allocated memory
 
 /*define some function pointer types for open close read and wtite*/
 typedef int32_t (*open_func)(const uint8_t *filename);
@@ -78,6 +80,7 @@ typedef struct pcb
     int32_t parent_ebp;
     int8_t arguments[MAX_BUF];
 } pcb_t;
+
 
 /*it records the active process id*/
 extern int32_t current_pid;
