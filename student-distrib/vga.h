@@ -13,14 +13,20 @@
 
 #define IOCTL_TEXT_MODE 1
 #define IOCTL_MODE_X 2
+#define IOCTL_VMEM_MAP 3
+#define IOCTL_SET_PAL 4
 
 #define MODE_X_HIGHT 320
 #define MODE_X_WIDTH 200
 #define SCREEN_SIZE (MODE_X_HIGHT * MODE_X_WIDTH)
-#define PLANE_SIZE (SCREEN_SIZE/4)
+#define PLANE_SIZE (SCREEN_SIZE / 4)
 
 #define VGA_LOCKED 1
 #define VGA_UNLOCKED 0
+
+#define TEXT_MODE 0
+#define MODE_X 1
+#define FULL_PALETTE 2
 
 /*
  * macro used to target a specific video plane or planes when writing
@@ -62,5 +68,6 @@ void fill_palette_text();
 void write_font_data();
 void enable_text_mode();
 void enable_mode_x();
+void set_palette(unsigned char *palette, uint8_t mode);
 
 #endif

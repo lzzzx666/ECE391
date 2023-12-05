@@ -23,12 +23,12 @@ int32_t main()
         ece391_read(VGAfd, &garbage, 1);
         ece391_read(rtcfd, &garbage, 4);
     }
-    size = read_bitmap("alma.bmp", &bitMap);
+    size = read_bitmap("cal2.bmp", &bitMap);
     plot_bitmap(VGAfd, size, &bitMap);
-    while (1)
-        ;
+    
 
     ece391_close(VGAfd);
     ece391_close(rtcfd);
+    ece391_printf("bmp size: %x\n",bitMap.header.bfSize);
     return 0;
 }

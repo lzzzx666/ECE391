@@ -6,6 +6,8 @@
 /*VGA ioctl numbers*/
 #define IOCTL_TEXT_MODE 1
 #define IOCTL_MODE_X 2
+#define IOCTL_VMEM_MAP 3
+#define IOCTL_SET_PAL 4
 
 /*terminal ioctl number*/
 #define IOCTL_SIMKB 1

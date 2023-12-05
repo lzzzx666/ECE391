@@ -2,10 +2,11 @@
 #include "vga_data.h"
 #define DEBUG 1
 uint8_t VGA_lock = VGA_UNLOCKED;
+
 int32_t vga_read(int32_t fd, void *buf, int32_t nbytes)
 {
     int i;
-    
+
     for (i = 0; i < MODE_X_VMEM_SIZE; i++)
     {
         ((uint8_t *)MODE_X_VMEM_ADDR)[i]++;
@@ -17,18 +18,19 @@ int32_t vga_read(int32_t fd, void *buf, int32_t nbytes)
 
 int32_t vga_write(int32_t fd, void *buf, int32_t nbytes)
 {
+    uint8_t *buildBuf[PLANE_SIZE];
     if (fd > MAX_FD || buf == NULL)
         return SYSCALL_FAIL;
-    int i, planeIdx;
-    uint8_t *vmem = (uint8_t *)MODE_X_VMEM_ADDR;
-    uint8_t *addr;
-    for (i = 0; i < 320*200; i++)
+    int i, j, planeIdx;
+    uint8_t *addr = (uint8_t *)MODE_X_VMEM_ADDR;
+    for (i = 0; i < 4; i++)
     {
-        planeIdx = i % 4;
-        addr = MODE_X_VMEM_ADDR + (i >> 2) + planeIdx * PLANE_SIZE;
-        *addr = ((uint8_t *)buf)[i];
+        SET_WRITE_MASK(1 << (i + 8));
+        for (j = 0; j < PLANE_SIZE; j++)
+        {
+            addr[j] = ((uint8_t *)buf)[i + 4 * j];
+        }
     }
-    // memcpy((void *)MODE_X_VMEM_ADDR, (const void *)buf, nbytes);
     outw((MODE_X_VMEM_ADDR & 0xFF00) | 0x0C, 0x03D4);
     outw(((MODE_X_VMEM_ADDR & 0x00FF) << 8) | 0x0D, 0x03D4);
 
@@ -113,10 +115,14 @@ int32_t vga_ioctl(int32_t fd, int32_t request, void *buf)
     case IOCTL_MODE_X:
         enable_mode_x();
         break;
+    case IOCTL_VMEM_MAP:
+        break;
+    case IOCTL_SET_PAL:
+        set_palette(buf, MODE_X);
+        break;
     default:
         break;
     }
-    printf("trying to ioctl to modex\n");
     return 0;
 }
 
@@ -307,6 +313,29 @@ void save_palette(unsigned char palette_RGB[32][3])
         palette_RGB[i][1] = inb(0x03C9);
         palette_RGB[i][2] = inb(0x03C9);
     }
+}
+
+void set_palette(unsigned char *palette, uint8_t mode)
+{
+    int i = 0;
+
+    if (mode == MODE_X)
+    {
+        outb(0x00, 0x03C8);
+        rep_outsb(0x03C9, palette, 64 * 3);
+    }
+    else if (mode == TEXT_MODE)
+    {
+        outb(0x00, 0x03C8);
+        rep_outsb(0x03C9, palette, 32 * 3);
+    }
+    else if (mode == FULL_PALETTE)
+    {
+        outb(0x00, 0x03C8);
+
+        rep_outsb(0x03C9, palette, 256 * 3);
+    }
+    return;
 }
 
 void fill_palette_text()

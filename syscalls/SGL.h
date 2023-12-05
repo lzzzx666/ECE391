@@ -32,9 +32,9 @@ typedef struct BitMapInfoHeader
 
 typedef struct RGB
 {
-    uint8_t B;
-    uint8_t G;
     uint8_t R;
+    uint8_t G;
+    uint8_t B;
     uint8_t reserved;
 } RGB_t;
 
@@ -46,7 +46,7 @@ typedef struct BitMap
     uint8_t pixels[320 * 200];
 } BitMap_t;
 
-int32_t read_bitmap(const uint8_t *fname, BitMap_t *bitMap)
+int32_t read_bitmap(const uint8_t *fname, BitMap_t *bitMapPtr)
 {
     int32_t fd;
     int32_t bitMapSize;
@@ -54,7 +54,7 @@ int32_t read_bitmap(const uint8_t *fname, BitMap_t *bitMap)
         return -1;
     if (-1 == ece391_ioctl(fd, IOCTL_FILE_SIZE, (void *)&bitMapSize))
         return -1;
-    ece391_read(fd, bitMap, bitMapSize);
+    ece391_read(fd, bitMapPtr, 70*1024*1024);
     ece391_close(fd);
     return bitMapSize;
 }
@@ -62,9 +62,19 @@ int32_t read_bitmap(const uint8_t *fname, BitMap_t *bitMap)
 int32_t plot_bitmap(int32_t VGAfd, int32_t bitMapSize, BitMap_t *bitMap)
 {
     void *garbage;
+    uint8_t palette[256][3];
+    int i;
     uint8_t *pixels = bitMap->pixels;
-    ece391_ioctl(VGAfd, IOCTL_MODE_X, garbage);
-    ece391_write(VGAfd, pixels, bitMapSize);
+    RGB_t *palette_RGBA = bitMap->palette-2;
+    for (i = 0; i < 256; i++)
+    {
+        palette[i][0] = palette_RGBA[i].R;
+        palette[i][1] = palette_RGBA[i].G;
+        palette[i][2] = palette_RGBA[i].B;
+    }
+    // ece391_ioctl(VGAfd, IOCTL_MODE_X, garbage);
+    ece391_ioctl(VGAfd, IOCTL_SET_PAL, palette);
+    ece391_write(VGAfd, pixels, 320 * 200);
 }
 
 #endif
