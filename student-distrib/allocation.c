@@ -1,8 +1,9 @@
 #include "allocation.h"
 
 PT_t slab_pageTable __attribute__((aligned(1024 * 4)));
-kmem_cache cache_array[100];
-kmem_slab slab_array[PAGE_TABLE_ENTRY_NUM];
+// PT_t slab_cache_manage_pageTable __attribute__((aligned(1024 * 4)));
+kmem_cache* cache_array=NULL;
+kmem_slab* slab_array=NULL;
 slab_cache_info slab_cache;
 
 /**
@@ -16,12 +17,13 @@ void init_allocation_paging()
     int32_t i;
 
     /*the whole page table is used for memory allocation*/
-    for (i = 0; i < PAGE_TABLE_ENTRY_NUM; i++)
+    for (i = 0; i < SLAB_NUMBER; i++)
     {
         slab_pageTable[i].val = 0;
         set_pte(&slab_pageTable, (SLAB_ADDRESS + i * SLAB_SIZE) >> 12 & 0x3ff, 1, (SLAB_ADDRESS + i * SLAB_SIZE) >> 12);
     }
     set_pde(&pageDirectory, (SLAB_ADDRESS >> 22) & 0x3FF, 1, 1, 0, (((uint32_t)&slab_pageTable) >> 12));
+    set_pde(&pageDirectory, (SLAB_CACHE_MANAGE_ADDR >> 22) & 0x3FF, 0, 1, 1, (SLAB_CACHE_MANAGE_ADDR >> 22) & 0x3FF);
     update_cr3();
     return 0;
 }
@@ -36,8 +38,14 @@ void init_memory_allocation()
 {
     int i;
 
+
     /*initialize slab page table*/
     init_allocation_paging();
+
+    /*initialize the management pointer*/
+    cache_array=SLAB_CACHE_MANAGE_ADDR;
+    slab_array=SLAB_CACHE_MANAGE_ADDR+CACHE_NUMBER*sizeof(kmem_cache);
+
 
     /*initialize caches*/
     for (i = 0; i < CACHE_NUMBER; i++)

@@ -6,6 +6,7 @@
 #include "rtc.h"
 #include "fs.h"
 #include "modex.h"
+#include "allocation.h"
 
 /*macros used in pcb module*/
 #define MAX_TASK 8            //I choose 8 as the max task numver
