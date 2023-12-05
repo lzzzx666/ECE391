@@ -470,6 +470,9 @@ void info_allocation()
     int32_t i;
     printf("\n-----------------------------------------\n");
     /*print all caches information*/
+    if(!(cur_cache && cur_cache->p)){
+        printf("No memory has been allocated!\n");
+    }
     while (cur_cache && cur_cache->p)
     {
         cur_slab = cur_cache->slab_array;
