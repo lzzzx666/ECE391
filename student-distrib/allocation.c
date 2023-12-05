@@ -25,7 +25,7 @@ void init_allocation_paging()
     set_pde(&pageDirectory, (SLAB_ADDRESS >> 22) & 0x3FF, 1, 1, 0, (((uint32_t)&slab_pageTable) >> 12));
     set_pde(&pageDirectory, (SLAB_CACHE_MANAGE_ADDR >> 22) & 0x3FF, 0, 1, 1, (SLAB_CACHE_MANAGE_ADDR >> 22) & 0x3FF);
     update_cr3();
-    return 0;
+    return ;
 }
 
 /**
@@ -42,8 +42,8 @@ void init_memory_allocation()
     init_allocation_paging();
 
     /*initialize the management pointer*/
-    cache_array = SLAB_CACHE_MANAGE_ADDR;
-    slab_array = SLAB_CACHE_MANAGE_ADDR + CACHE_NUMBER * sizeof(kmem_cache);
+    cache_array = (kmem_cache*)(SLAB_CACHE_MANAGE_ADDR);
+    slab_array = (kmem_slab*)(SLAB_CACHE_MANAGE_ADDR + CACHE_NUMBER * sizeof(kmem_cache));
 
     /*initialize caches*/
     for (i = 0; i < CACHE_NUMBER; i++)
@@ -60,7 +60,7 @@ void init_memory_allocation()
     {
         slab_array[i].page_next = &slab_array[i + 1];
         slab_array[i].page_prev = &slab_array[i - 1];
-        slab_array[i].page_ptr = SLAB_ADDRESS + i * SLAB_SIZE;
+        slab_array[i].page_ptr = (void*)(SLAB_ADDRESS + i * SLAB_SIZE);
         slab_array[i].p = FREE;
     }
     slab_array[0].page_prev = NULL;
@@ -82,8 +82,7 @@ void init_memory_allocation()
 kmem_cache *kmem_cache_create(
     uint32_t size)
 {
-    uint32_t i;
-    uint32_t cache_index, slab_index;
+    uint32_t cache_index;
     kmem_cache *new_cache = NULL;
 
     /*sanity check*/
@@ -185,9 +184,8 @@ void *kmem_cache_alloc(kmem_cache *kmem_cache)
  */
 void kmem_cache_free(void *ptr)
 {
-    int32_t slab_index, unit_index, cache_index;
+    int32_t slab_index, unit_index;
     int32_t unit_mem_start;
-    int32_t size;
     int32_t cache_exist = 0;
     kmem_cache *this_cache = slab_cache.cache_head;
     kmem_slab *this_slab = NULL;

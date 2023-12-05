@@ -41,7 +41,7 @@ int main()
         }
         else if (ece391_strncmp(buf, "a", 1) == 0)
         {
-            ece391_fdputs(1, "please enter the size: ");
+            ece391_fdputs(1, "Please enter the size: ");
             ece391_read(0, buf, BUFSIZE);
             while (buf[length] != '\0')
             {
