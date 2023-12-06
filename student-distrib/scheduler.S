@@ -41,7 +41,7 @@ sche_array:     #the array of the scheduler program pids
 
 schedule:
 
-    #store the necessary stack information（ebp)
+    #store the necessary stack information (ebp)
     movl sche_index,%eax
     movl %ebp,ebp_array(,%eax,4)
 

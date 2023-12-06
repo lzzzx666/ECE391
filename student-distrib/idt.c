@@ -3,7 +3,9 @@
 #include "keyboard.h"
 #include "rtc.h"
 #include "page.h"
-// #include "pit.h"
+#include "pit.h"
+#include "mouse.h"
+
 /**
  * idt_init
  * initialize the interrupt descriptor table
