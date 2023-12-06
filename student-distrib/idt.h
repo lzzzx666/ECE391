@@ -16,6 +16,7 @@
 #define INT_KEYBOARD 0x21  // 0x21 is the vector number for the keyboard
 #define INT_RTC 0x28       // 0x28 is the vector number for the RTC
 #define INT_PIT 0x20        //the interrupt for pit
+#define INT_MOUSE 0x2c
 #define PRESENT 1          // 1 to indicate the handler is present
 // #define INT_MOUSE 0x2C
 // #define INT_GATE  0xE  //0xE is the interrupt gate

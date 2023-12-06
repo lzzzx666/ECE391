@@ -505,6 +505,7 @@ void info_allocation()
         {
             printf("    slab%d(pid=%d) : total units: %d, used: %d. \n", index, cur_slab->pid, cur_slab->unit_number, cur_slab->used_unit_number);
             printf("    memory ptrs:");
+            
             cur_unit = cur_slab->unit_head;
             for (i = 0; i < cur_slab->used_unit_number; i++)
             {

@@ -67,8 +67,8 @@ void set_idt_entry(idt_desc_t idt[], int index)
             handler_number = 0x15; // 0x15 is the corresponding index in the handler array
         else if(index==INT_PIT)
             handler_number= 0X17;// 0x17 is the corresponding index in the handler array
-        // else if(index==INT_MOUSE)
-        //     handler_number=0X18;
+        else if(index==INT_MOUSE)
+            handler_number=0X18;
     }
     else if (index == SYS_CALL_VEC) // the case when it is a system call
     {
