@@ -188,7 +188,14 @@ void _scroll_up(int32_t use_terminal)
 {
     terminal_t *terminal = &main_terminal[use_terminal];
     uint8_t* up_mem=(use_terminal==current_terminal)? (uint8_t*) video_mem:terminal->video_mem_backup;
-    int x, y;
+    int x, y;    
+    terminal_t *currenterminal = &main_terminal[current_terminal];
+    if(terminal == currenterminal)
+    {
+        y = currenterminal->mouse_y, x = currenterminal->mouse_x;
+        *(uint8_t *)(up_mem + (((y * NUM_COLS + x) << 1) + 1)) = ATTRIB;
+    }
+    
     for (y = 0; y < NUM_ROWS - 1; y++) // fill up the screen except the last row
     {
         for (x = 0; x < NUM_COLS; x++)
@@ -203,6 +210,7 @@ void _scroll_up(int32_t use_terminal)
         *(uint8_t *)(up_mem + ((NUM_COLS * (NUM_ROWS - 1) + x) << 1)) = ' ';
         *(uint8_t *)(up_mem + (((NUM_COLS * (NUM_ROWS - 1) + x) << 1) + 1)) = ATTRIB;
     }
+
 }
 /* void putc(uint8_t c);
  * Inputs: uint_8* c = character to print
