@@ -32,7 +32,7 @@ struct kmem_slab
     kmem_unit *free_head;
     kmem_slab *page_next;   //the difference between page_next and array_next is 
     kmem_slab *page_prev;   //page_next points to the next slan in the whole slab list
-    kmem_slab *array_next; //array_next points to the next slab in the cache
+    kmem_slab *array_next;  //array_next points to the next slab in the cache
     kmem_slab *array_prev;
     void *page_ptr;
     uint32_t size;
@@ -50,6 +50,7 @@ struct kmem_cache
     kmem_cache *next;
     kmem_cache *prev;
     int32_t p;
+    // int32_t extend;
 };
 
 /*it contains the information fo the cache list and slab list*/
@@ -82,7 +83,8 @@ void info_allocation();
 void delete_slab(kmem_cache* kmem_cache,kmem_slab* kmem_slab);
 /*free all allocated memory within one program */
 void free_one_program(uint32_t pid);
-
+// /*allocate large memory*/
+// void alloc_large(kmem_cache * kmem_cache);
 extern slab_cache_info slab_cache;
 extern kmem_cache *cache_array;
 extern kmem_slab *slab_array;

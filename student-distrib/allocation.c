@@ -15,8 +15,8 @@
 */
 PT_t slab_pageTable __attribute__((aligned(1024 * 4)));
 // PT_t slab_cache_manage_pageTable __attribute__((aligned(1024 * 4)));
-kmem_cache *cache_array = NULL; //all caches
-kmem_slab *slab_array = NULL;   //all slabs
+kmem_cache *cache_array = NULL; // all caches
+kmem_slab *slab_array = NULL;   // all slabs
 slab_cache_info slab_cache;
 
 /**
@@ -38,7 +38,7 @@ void init_allocation_paging()
     set_pde(&pageDirectory, (SLAB_ADDRESS >> 22) & 0x3FF, 1, 1, 0, (((uint32_t)&slab_pageTable) >> 12));
     set_pde(&pageDirectory, (SLAB_CACHE_MANAGE_ADDR >> 22) & 0x3FF, 0, 1, 1, (SLAB_CACHE_MANAGE_ADDR >> 22) & 0x3FF);
     update_cr3();
-    return ;
+    return;
 }
 
 /**
@@ -55,8 +55,8 @@ void init_memory_allocation()
     init_allocation_paging();
 
     /*initialize the management pointer*/
-    cache_array = (kmem_cache*)(SLAB_CACHE_MANAGE_ADDR);
-    slab_array = (kmem_slab*)(SLAB_CACHE_MANAGE_ADDR + CACHE_NUMBER * sizeof(kmem_cache));
+    cache_array = (kmem_cache *)(SLAB_CACHE_MANAGE_ADDR);
+    slab_array = (kmem_slab *)(SLAB_CACHE_MANAGE_ADDR + CACHE_NUMBER * sizeof(kmem_cache));
 
     /*initialize caches*/
     for (i = 0; i < CACHE_NUMBER; i++)
@@ -64,6 +64,7 @@ void init_memory_allocation()
         cache_array[i].next = &cache_array[i + 1];
         cache_array[i].prev = &cache_array[i - 1];
         cache_array[i].p = FREE;
+        // cache_array[i].extend = 0;
     }
     cache_array[0].prev = NULL;
     cache_array[CACHE_NUMBER - 1].next = NULL;
@@ -73,7 +74,7 @@ void init_memory_allocation()
     {
         slab_array[i].page_next = &slab_array[i + 1];
         slab_array[i].page_prev = &slab_array[i - 1];
-        slab_array[i].page_ptr = (void*)(SLAB_ADDRESS + i * SLAB_SIZE);
+        slab_array[i].page_ptr = (void *)(SLAB_ADDRESS + i * SLAB_SIZE);
         slab_array[i].p = FREE;
     }
     slab_array[0].page_prev = NULL;
@@ -180,7 +181,7 @@ void *kmem_cache_alloc(kmem_cache *kmem_cache)
     }
 
     /*get the usable memory address*/
-    slab_cache.free_slab_head=slab_cache.free_slab_head->page_next;
+    slab_cache.free_slab_head = slab_cache.free_slab_head->page_next;
     ret_add = (*cur_slab)->free_head->add_ptr;
     (*cur_slab)->free_head->p = USED;
     (*cur_slab)->free_head = (*cur_slab)->free_head->next;
@@ -342,10 +343,10 @@ void free_one_program(uint32_t pid)
 {
     kmem_slab *cur_slab = NULL;
     kmem_cache *cur_cache = slab_cache.cache_head;
-    kmem_cache *next_cache=NULL;
+    kmem_cache *next_cache = NULL;
     while (cur_cache && cur_cache->p)
     {
-        next_cache=cur_cache->next;
+        next_cache = cur_cache->next;
         cur_slab = cur_cache->slab_array;
         /*free all slab of the cache belongs to the program*/
         while (cur_slab && cur_slab->p)
@@ -358,9 +359,14 @@ void free_one_program(uint32_t pid)
         }
 
         /*update the current cache*/
-        cur_cache=next_cache;
+        cur_cache = next_cache;
     }
 }
+// /*allocate large memory*/
+// void alloc_large(kmem_cache *kmem_cache)
+// {
+
+// }
 /*------------------------------helper-------------------------------------*/
 
 /**
@@ -456,7 +462,7 @@ void delete_slab(kmem_cache *kmem_cache, kmem_slab *kmem_slab)
     else if (kmem_slab->array_prev == NULL)
     {
         kmem_cache->slab_array = kmem_slab->array_next;
-        kmem_cache->slab_array->array_prev=NULL;
+        kmem_cache->slab_array->array_prev = NULL;
     }
     else if (kmem_slab->array_next == NULL)
     {
@@ -483,7 +489,8 @@ void info_allocation()
     int32_t i;
     printf("\n-----------------------------------------\n");
     /*print all caches information*/
-    if(!(cur_cache && cur_cache->p)){
+    if (!(cur_cache && cur_cache->p))
+    {
         printf("No memory has been allocated!\n");
     }
     while (cur_cache && cur_cache->p)
