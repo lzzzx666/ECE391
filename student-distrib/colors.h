@@ -19,4 +19,3 @@
 #define CLR_DEFAULT_BYTE 0x07
 
 #endif  // COLORS_H
-

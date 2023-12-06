@@ -334,7 +334,7 @@ int sys_open_close_test(){
 	/*the iterator*/
 	int i;
 	/*we use this to mimic a pcb*/
-	create_pcb();
+	create_pcb(0);
 	current_pcb=get_current_pcb();
 	/*test garbag open input*/
 	printf("garbage open input test:\n");
@@ -440,7 +440,7 @@ int sys_read_test(){
 	/*define some different fds*/
 	int file,dir,rtc,stdin=0,stdout=1;
 	/*we use this to mimic a pcb*/
-	create_pcb();
+	create_pcb(0);
 	current_pcb=get_current_pcb();
 	/*first we test read*/
 	/*open necessary file*/
@@ -511,7 +511,7 @@ int sys_write_test(){
 	/*some sample frequency*/
 	int freq[2]={4,8};
 	/*we use this to mimic a pcb*/
-	create_pcb();
+	create_pcb(0);
 	current_pcb=get_current_pcb();
 	/*open necessary file*/
 	file=open((uint8_t*)"frame0.txt");
@@ -572,7 +572,7 @@ int sys_write_test(){
 int cat_testprint() {
 	int file;
 	char c;
-	create_pcb();
+	create_pcb(0);
 	(void)get_current_pcb();
 	file=open((uint8_t*)"testprint");
 

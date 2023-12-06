@@ -28,10 +28,10 @@ extern int32_t sche_array[];
  * input:none
  * @return the pid for the new pcb on success or -1 on fail
  */
-int32_t create_pcb()
+int32_t create_pcb(int32_t isshell)
 {
     /*the index for the new pcb*/
-    int32_t pcb_index = 0;
+    int32_t pcb_index = isshell? 0:TERMINAL_NUMBER;
 
     /*the pointer of the new pcb*/
     void *new_pcb = NULL;

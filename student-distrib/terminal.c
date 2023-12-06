@@ -22,6 +22,7 @@ void initialize_terminal(int32_t terminal_num)
     terminal_t *terminal = &main_terminal[terminal_num];
     terminal->count = terminal->enter_pressed = terminal->tab_pressed = 0;
     terminal->cursor_x = terminal->cursor_y = 0;
+    terminal->mouse_x = terminal->mouse_y = 0;
     memset((void *)terminal->terminal_buf, '\0', MAX_TERMINAL_SIZE);
     enable_cursor(14, 15); // set cursor shape
     update_cursor(0, 0);   // set cursor position
@@ -202,19 +203,15 @@ void terminal_clear()
 }
 
 // @@
-int32_t switch_terminal(int32_t terminal_num)
-{
-    if (terminal_num < 0 || terminal_num >= TERMINAL_NUMBER)
-        return -1; // invalid `terminal_num`
-    if (shared_user_vid_mem == NULL)
-        return -1; // vidmap error
-    if (terminal_num == current_terminal)
-        return 0; // no action needed
-
-    memcpy(main_terminal[current_terminal].video_mem_backup, shared_user_vid_mem, VIDEOMEM_SIZE);      // backup video mem of old terminal
-    memcpy(shared_user_vid_mem, main_terminal[terminal_num].video_mem_backup, VIDEOMEM_SIZE);          // restore video mem backup form new terminal
-    current_terminal = terminal_num;                                                                   // update `current_terminal`
-    update_cursor(main_terminal[current_terminal].cursor_x, main_terminal[current_terminal].cursor_y); // update curosor position in new terminal
-
+int32_t switch_terminal(int32_t terminal_num) {
+    if(terminal_num < 0 || terminal_num >= TERMINAL_NUMBER) return -1; // invalid `terminal_num`
+    if(shared_user_vid_mem == NULL) return -1;  // vidmap error
+    if(terminal_num == current_terminal) return 0;  // no action needed
+    
+    memcpy(main_terminal[current_terminal].video_mem_backup, shared_user_vid_mem, VIDEOMEM_SIZE);   // backup video mem of old terminal
+    memcpy(shared_user_vid_mem, main_terminal[terminal_num].video_mem_backup, VIDEOMEM_SIZE);   // restore video mem backup form new terminal
+    current_terminal = terminal_num;    // update `current_terminal`
+    update_cursor(main_terminal[current_terminal].cursor_x, main_terminal[current_terminal].cursor_y);  // update curosor position in new terminal
+    change_color(main_terminal[current_terminal].mouse_x, main_terminal[current_terminal].mouse_y, ATTRIB, current_terminal);
     return 1;
 }

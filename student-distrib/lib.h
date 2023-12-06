@@ -5,9 +5,14 @@
 #ifndef _LIB_H
 #define _LIB_H
 
+#define VIDEO 0xB8000
+#define NUM_COLS 80
+#define NUM_ROWS 25
+#define ATTRIB 0x7
+
 #include "types.h"
 
-#define VIDEO 0x000B8000
+#define VIDEO 0xB8000
 #define VIDEO_TERMINAL1 0xB9000
 #define VIDEO_TERMINAL2 0xBA000
 #define VIDEO_TERMINAL3 0xBB000
@@ -39,7 +44,7 @@ void *memmove(void *dest, const void *src, uint32_t n);
 int32_t strncmp(const int8_t *s1, const int8_t *s2, uint32_t n);
 int8_t *strcpy(int8_t *dest, const int8_t *src);
 int8_t *strncpy(int8_t *dest, const int8_t *src, uint32_t n);
-
+void change_color(int32_t x, int32_t y, char color, int32_t use_terminal);
 /* Userspace address-check functions */
 int32_t bad_userspace_addr(const void *addr, int32_t len);
 int32_t safe_strncpy(int8_t *dest, const int8_t *src, int32_t n);

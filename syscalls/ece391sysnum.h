@@ -13,5 +13,7 @@
 #define SYS_SIGRETURN 10
 #define SYS_IOCTL 11
 
+/*terminal ioctl number*/
+#define SIMKB 1
 
 #endif /* ECE391SYSNUM_H */

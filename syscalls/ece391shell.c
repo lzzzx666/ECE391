@@ -14,6 +14,7 @@ to-do list
 
 #include "ece391support.h"
 #include "ece391syscall.h"
+#include "ece391sysnum.h"
 
 #define BUFSIZE 1024
 #define QUEUESIZE 16

@@ -36,5 +36,5 @@
 
 void init_keyboard();
 extern void keyboard_handler();
-
+void ctrlc_exit_program();
 #endif

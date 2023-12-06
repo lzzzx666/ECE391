@@ -33,8 +33,23 @@ int32_t halt(uint8_t status)
     // If the current process is the initial shell (PID 0), restart the shell.
     if (current_pid < TERMINAL_NUMBER)
     {
-        delete_pcb();                      // Clean up the current PCB.
-        execute((const uint8_t *)"shell"); // Restart the shell.
+        delete_pcb();
+        execute((char*)"shell");
+        // printf("This terminal becomes inactive.\n"); //now the terminal don't have inactive status
+        // if (active_terminal == 1)
+        // {
+        //     active_terminal = 0;
+        //     for (i = 0; i < TERMINAL_NUMBER; i++)
+        //     {
+        //         sche_array[i] = TERMINAL_UNINIT;
+        //     }
+        // }
+        // else
+        // {
+        //     sche_array[current_terminal] = TERMINAL_CLOSE;
+        //     active_terminal--;
+        // }
+        // schedule();
     }
 
     // Close all file descriptors associated with the current process.
@@ -148,7 +163,12 @@ int32_t execute(const uint8_t *command)
     // Get other arguments from the command.
 
     // Check if a new PCB can be created.
-    pcb_index = create_pcb();
+    if(strncmp(name_buf,"shell",MAX_FILE_NAME)==0){
+            pcb_index = create_pcb(1); //1 indicates that it is shell
+    }else{
+        pcb_index = create_pcb(0); //0 indicates it is not a shell
+    }
+
     if (pcb_index == -1)
     {
         return -1; // PCB creation failed.

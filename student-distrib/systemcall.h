@@ -17,8 +17,9 @@
 #define PROGRAM_IMAGE_SIZE PROGRAM_IMAGE_END - PROGRAM_IMAGE // the maximum size of the the program image
 
 #define EXECUTABLE_MAGIC_NUMBER_SIZE 4
-
-#define SYSCALL_SUCCESS 0 // those are some macros that used for convenience
+#define TERMINAL_CLOSE -1
+#define TERMINAL_UNINIT -2
+#define SYSCALL_SUCCESS 0  //those are some macros that used for convenience
 #define SYSCALL_FAIL -1
 #define PADDING 0
 
@@ -27,6 +28,7 @@
 #include "pcb.h"
 #include "x86_desc.h"
 #include "fs.h"
+extern int32_t active_terminal;
 /*the return value*/
 extern int32_t retVal;
 

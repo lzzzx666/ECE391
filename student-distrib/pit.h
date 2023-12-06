@@ -17,7 +17,7 @@
 #define PIT_IRQ 0
 #define LOW_HIGH_BYTE 3
 #define SQUARE_WAVE_GENERATOR 3
-#define FREQ 11932 //the actual frequency will be 1193182/FREQ
+#define FREQ 11932*2 //the actual frequency will be 1193182/FREQ
 
 
 void set_mode(int32_t select_channel, int32_t access_mode, int32_t operating_mode,

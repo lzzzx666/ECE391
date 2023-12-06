@@ -3,8 +3,8 @@
 
 #include "lib.h"
 #include "terminal.h"
+
 #include "colors.h"
-// #include "colors.h"
 
 #define DEBUG
 #include "debug.h"
@@ -182,15 +182,14 @@ int32_t puts(int8_t *s)
     return index;
 }
 
-void scroll_up()
-{
+void scroll_up() {
     _scroll_up(0);
 }
 
 void _scroll_up(int32_t use_terminal)
 {
     terminal_t *terminal = &main_terminal[use_terminal];
-    uint8_t *up_mem = (use_terminal == current_terminal) ? (uint8_t *)video_mem : terminal->video_mem_backup;
+    uint8_t* up_mem=(use_terminal==current_terminal)? (uint8_t*) video_mem:terminal->video_mem_backup;
     int x, y;
     for (y = 0; y < NUM_ROWS - 1; y++) // fill up the screen except the last row
     {
@@ -212,8 +211,7 @@ void _scroll_up(int32_t use_terminal)
  * Return Value: void
  *  Function: Output a character to the console */
 
-void putc(uint8_t c)
-{
+void putc(uint8_t c) {
     _putc(c, 0);
 }
 
@@ -225,15 +223,13 @@ void _putc(uint8_t c, uint8_t use_current_terminal)
     // ASSERT(sche_index == current_terminal);
     uint32_t use_terminal = use_current_terminal ? current_terminal : sche_index;
     terminal_t *terminal = &main_terminal[use_terminal];
-    uint8_t *putc_mem = (use_terminal == current_terminal) ? (uint8_t *)video_mem : terminal->video_mem_backup;
-    if (next_is_attr_byte)
-    {
+    uint8_t* putc_mem=(use_terminal==current_terminal)? (uint8_t*) video_mem:terminal->video_mem_backup;
+    if(next_is_attr_byte) {
         next_is_attr_byte = 0;
         attr = c;
         return;
     }
-    if (c == CLR_CONTROL_BYTE)
-    { // ESC
+    if (c == CLR_CONTROL_BYTE) {        // ESC
         next_is_attr_byte = 1;
         return;
     }
@@ -259,18 +255,17 @@ void _putc(uint8_t c, uint8_t use_current_terminal)
             terminal->cursor_x = 0;
             if (terminal->cursor_y >= NUM_ROWS)
             {
-                _scroll_up(use_terminal); // now we can implement scrolling in putc
+                            _scroll_up(use_terminal);  // now we can implement scrolling in putc
             }
             // if(use_terminal == current_terminal)
             //     update_cursor(terminal->cursor_x, terminal->cursor_y);
         }
     }
-    if (use_terminal == current_terminal)
-        update_cursor(terminal->cursor_x, terminal->cursor_y);
+        if(use_terminal == current_terminal)
+            update_cursor(terminal->cursor_x, terminal->cursor_y);
 }
 
-void backspace()
-{
+void backspace() {
     _backspace(0);
 }
 
@@ -280,7 +275,7 @@ void _backspace(uint8_t use_current_terminal)
     if (main_terminal[use_terminal].count <= 0)
         return;
     terminal_t *terminal = &main_terminal[use_terminal];
-    uint8_t *bs_mem = (use_terminal == current_terminal) ? (uint8_t *)video_mem : terminal->video_mem_backup;
+    uint8_t * bs_mem=(use_terminal==current_terminal)? (uint8_t *)video_mem:terminal->video_mem_backup;
     if (terminal->cursor_x == 0) // when backspace to last line
     {
         terminal->cursor_y--;
@@ -292,7 +287,7 @@ void _backspace(uint8_t use_current_terminal)
     *(uint8_t *)(bs_mem + ((NUM_COLS * terminal->cursor_y + terminal->cursor_x) << 1) + 1) = ATTRIB;
     main_terminal[current_terminal].count--;
     main_terminal[current_terminal].terminal_buf[main_terminal[current_terminal].count] = '\0';
-    if (use_terminal == current_terminal)
+    if(use_terminal == current_terminal)
         update_cursor(terminal->cursor_x, terminal->cursor_y);
 }
 
@@ -652,4 +647,12 @@ int32_t putc_rep(uint8_t *string, uint32_t n)
         i++;
     }
     return 0;
+}
+
+
+void change_color(int32_t x, int32_t y, char color, int32_t use_terminal)
+{
+    terminal_t *terminal = &main_terminal[use_terminal];
+    uint8_t* up_mem = (use_terminal == current_terminal) ? (uint8_t*) video_mem : terminal->video_mem_backup;
+    *(uint8_t *)(up_mem + ((NUM_COLS * y + x) << 1) + 1) = color;
 }

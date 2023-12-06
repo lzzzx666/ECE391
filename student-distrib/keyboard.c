@@ -154,7 +154,7 @@ void keyboard_handler()
                 int32_t temp_sche_index=sche_index;
                 sche_index=current_terminal;
                 _putc(ascii, 1);
-                sche_index=temp_sche_index;
+                sche_index = temp_sche_index;
             }
         }
     }
@@ -170,4 +170,13 @@ void keyboard_handler()
     //         halt(1);
     //     }
     // }
+}
+void ctrlc_exit_program()
+{
+    while (current_terminal != sche_index);
+    int32_t pid = sche_array[current_terminal];
+    if (pid >= TERMINAL_NUMBER)
+    {
+        halt(1);
+    }
 }

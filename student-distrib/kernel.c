@@ -15,6 +15,7 @@
 #include "fs.h"
 #include "terminal.h"
 #include "pit.h"
+#include "mouse.h"
 #define RUN_TESTS 0
 
 /* Macros. */
@@ -169,6 +170,7 @@ void entry(unsigned long magic, unsigned long addr)
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */
     init_keyboard();
+    mouse_init();
     /* Enable interrupts */
 
     filesys_init(filesys_img_addr);
