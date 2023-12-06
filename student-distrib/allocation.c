@@ -474,6 +474,7 @@ void delete_slab(kmem_cache *kmem_cache, kmem_slab *kmem_slab)
     }
 }
 
+
 /**
  * info_allocation
  * see the allocation situation
