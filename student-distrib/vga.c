@@ -43,8 +43,6 @@ int32_t vga_write(int32_t fd, void *buf, int32_t nbytes)
 
 int32_t vga_open(const uint8_t *filename)
 {
-    if (VGA_lock == VGA_LOCKED)
-        return SYSCALL_FAIL;
     save_CRTC_registers(text_CRTC);
     save_seq_regs(text_seq, &MOR);
     save_graphics_registers(text_graphics);
@@ -114,20 +112,19 @@ int32_t vga_ioctl(int32_t fd, int32_t request, void *buf)
     switch (request)
     {
     case IOCTL_TEXT_MODE:
-        if (VGA_mode == MODE_X)
-            enable_text_mode();
+
+        enable_text_mode();
         break;
     case IOCTL_MODE_X:
-        if (VGA_mode == TEXT_MODE)
-            enable_mode_x();
+
+        enable_mode_x();
         break;
     case IOCTL_VMEM_MAP:
         break;
     case IOCTL_SET_PAL:
-        if (VGA_mode == MODE_X)
-            set_palette(buf, FULL_PALETTE);
-        else
-            fill_palette_text();
+
+        set_palette(buf, FULL_PALETTE);
+
         break;
     default:
         break;
@@ -404,6 +401,7 @@ void enable_text_mode()
     fill_palette_text();                    /* palette colors        */
     memset((void *)VIDEO, 0, 80 * 25 * 2);
     VGA_blank(0);
+
     return;
 }
 
@@ -418,9 +416,8 @@ void enable_mode_x()
     fill_palette_mode_x();                    /* palette colors        */
     clear_modex();                            /* zero video memory     */
     VGA_blank(0);
+
     outw((MODE_X_VMEM_ADDR & 0xFF00) | 0x0C, 0x03D4);
     outw(((MODE_X_VMEM_ADDR & 0x00FF) << 8) | 0x0D, 0x03D4);
     return;
 }
-
-
