@@ -1,15 +1,19 @@
 #include "vga.h"
 #include "vga_data.h"
 #define DEBUG 1
-uint8_t VGA_lock = VGA_UNLOCKED;
+uint8_t VGA_mode = TEXT_MODE;
 
 int32_t vga_read(int32_t fd, void *buf, int32_t nbytes)
 {
-    int i;
-
-    for (i = 0; i < MODE_X_VMEM_SIZE; i++)
+    int i, j;
+    uint8_t *addr = (uint8_t *)MODE_X_VMEM_ADDR;
+    for (i = 0; i < 4; i++)
     {
-        ((uint8_t *)MODE_X_VMEM_ADDR)[i]++;
+        SET_WRITE_MASK(1 << (i + 8));
+        for (j = 0; j < PLANE_SIZE; j++)
+        {
+            addr[j] = addr[j] + 1;
+        }
     }
     outw((MODE_X_VMEM_ADDR & 0xFF00) | 0x0C, 0x03D4);
     outw(((MODE_X_VMEM_ADDR & 0x00FF) << 8) | 0x0D, 0x03D4);
@@ -110,15 +114,20 @@ int32_t vga_ioctl(int32_t fd, int32_t request, void *buf)
     switch (request)
     {
     case IOCTL_TEXT_MODE:
-        enable_text_mode();
+        if (VGA_mode == MODE_X)
+            enable_text_mode();
         break;
     case IOCTL_MODE_X:
-        enable_mode_x();
+        if (VGA_mode == TEXT_MODE)
+            enable_mode_x();
         break;
     case IOCTL_VMEM_MAP:
         break;
     case IOCTL_SET_PAL:
-        set_palette(buf, MODE_X);
+        if (VGA_mode == MODE_X)
+            set_palette(buf, FULL_PALETTE);
+        else
+            fill_palette_text();
         break;
     default:
         break;
@@ -413,3 +422,5 @@ void enable_mode_x()
     outw(((MODE_X_VMEM_ADDR & 0x00FF) << 8) | 0x0D, 0x03D4);
     return;
 }
+
+

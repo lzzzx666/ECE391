@@ -70,4 +70,5 @@ void enable_text_mode();
 void enable_mode_x();
 void set_palette(unsigned char *palette, uint8_t mode);
 
+
 #endif
