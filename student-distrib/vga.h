@@ -49,12 +49,18 @@
                      : "edx", "memory");                                     \
     } while (0)
 
+#define SET_READ_MASK(plane) \
+    do                       \
+    {                        \
+        outb(0x04, 0x03CE);  \
+        outb(plane, 0x03CF);     \
+    } while (0)
+
 typedef struct cursorLoc
 {
     uint8_t x;
     uint8_t y;
-}cursorLoc_t;
-
+} cursorLoc_t;
 
 int32_t vga_read(int32_t fd, void *buf, int32_t nbytes);
 int32_t vga_write(int32_t fd, void *buf, int32_t nbytes);
@@ -79,8 +85,8 @@ void write_font_data();
 void enable_text_mode();
 void enable_mode_x();
 void set_palette(unsigned char *palette, uint8_t mode);
-void set_cursor(cursorLoc_t* loc);
+void set_cursor(cursorLoc_t *loc);
 void update_gui_cursor();
 void clear_gui_cursor();
-
+void enable_gui_cursor();
 #endif

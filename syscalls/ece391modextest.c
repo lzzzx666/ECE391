@@ -29,6 +29,6 @@ int32_t main()
 
     ece391_close(VGAfd);
     ece391_close(rtcfd);
-    ece391_printf("bmp size: %x\n",bitMap.header.bfSize);
+    // ece391_printf("bmp size: %x\n",bitMap.header.bfSize);
     return 0;
 }
