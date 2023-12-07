@@ -7,12 +7,14 @@
 
 BitMap_t bitMap;
 cursorLoc_t cursor;
-void execute(int VGAfd, char *name, int *garbage, int size)
+uint8_t * program[5]={(char*)"pingpong",(char*)"neofetch",(char*)"piano",(char*)"ls",(char*)"date"};
+uint8_t   flag[5]={1,0,1,0,0};
+void execute(int VGAfd, uint8_t index, int *garbage, int size)
 {
     uint8_t buf[10];
     ece391_ioctl(VGAfd, IOCTL_TEXT_MODE, garbage);
-    ece391_execute(name);
-    if (ece391_strcmp(name, "piano") != 0 && ece391_strcmp(name,"pingpong")!=0)
+    ece391_execute(program[index]);
+    if (!flag[index])
         ece391_read(0, buf, 1);
     ece391_ioctl(VGAfd, IOCTL_MODE_X, garbage);
     size = read_bitmap("desktop.bmp", &bitMap);
@@ -38,6 +40,7 @@ int32_t main()
     int32_t size;
     int32_t ret_val = 64;
     int garbage;
+
 
     if (-1 == (VGAfd = ece391_open((uint8_t *)"VGA")))
         return 0;
@@ -66,26 +69,7 @@ int32_t main()
         {
             if ((mouseBuf[1] & 0xff) < 40)
             {
-                switch ((mouseBuf[2] & 0xff) / 40)
-                {
-                case 0:
-                    execute(VGAfd, (char *)"pingpong", &garbage, size);
-                    break;
-                case 1:
-                    execute(VGAfd, (char *)"neofetch", &garbage, size);
-                    break;
-                case 2:
-                    execute(VGAfd, (char *)"piano", &garbage, size);
-                    break;
-                case 3:
-                    execute(VGAfd, (char *)"ls", &garbage, size);
-                    break;
-                case 4:
-                    execute(VGAfd, (char *)"date", &garbage, size);
-                    break;
-                default:
-                    break;
-                }
+                execute(VGAfd,(mouseBuf[2] & 0xff) / 40,&garbage,size);
             }
         }
         if (ece391_ioctl(rtcfd, GET_TIME_CTL, &time))
