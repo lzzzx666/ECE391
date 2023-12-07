@@ -14,4 +14,6 @@ typedef struct time_t {
 
 #define GET_TIME_CTL 1
 
+const uint8_t* day_of_week[] = {0, "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+
 #define TIMEZONE (-6)
