@@ -40,16 +40,10 @@ int32_t main()
     size = read_bitmap("alma.bmp", &bitMap);
     plot_bitmap(VGAfd, size, &bitMap);
 
-    ece391_ioctl(VGAfd, IOCTL_TEXT_MODE, &garbage);
-
-
-    ece391_ioctl(VGAfd, IOCTL_MODE_X, &garbage);
-    size = read_bitmap("alma.bmp", &bitMap);
-    plot_bitmap(VGAfd, size, &bitMap);
-
-    time_t time;
+    time_t time, prev;
     time.Timezone = TIMEZONE;
     uint8_t *time_buf = "2046/08/17 04:32:01 Sun";
+
     while (1)
     {
         ece391_read(rtcfd, &garbage, 4);
@@ -57,15 +51,17 @@ int32_t main()
         ece391_ioctl(VGAfd, IOCTL_SET_CURSOR, &(mouseBuf[1]));
         if (ece391_ioctl(rtcfd, GET_TIME_CTL, &time)) return 2;
 
-        itoa_align_copy(time.Year, 2, '0', time_buf + 2);
-        itoa_align_copy(time.Month, 2, '0', time_buf + 5);
-        itoa_align_copy(time.Day_of_Month, 2, '0', time_buf + 8);
-        itoa_align_copy(time.Hours, 2, ' ', time_buf + 11);
-        itoa_align_copy(time.Minutes, 2, '0', time_buf + 14);
-        itoa_align_copy(time.Seconds, 2, '0', time_buf + 17);
-        ece391_strcpy(time_buf + 20, day_of_week[time.Weekday]);
-        // if (ece391_ioctl(VGAfd, ))
-
+        if(time.Seconds != prev.Seconds) {
+            prev = time;
+            itoa_align_copy(time.Year, 2, '0', time_buf + 2);
+            itoa_align_copy(time.Month, 2, '0', time_buf + 5);
+            itoa_align_copy(time.Day_of_Month, 2, '0', time_buf + 8);
+            itoa_align_copy(time.Hours, 2, ' ', time_buf + 11);
+            itoa_align_copy(time.Minutes, 2, '0', time_buf + 14);
+            itoa_align_copy(time.Seconds, 2, '0', time_buf + 17);
+            ece391_strcpy(time_buf + 20, day_of_week[time.Weekday]);
+            if (ece391_ioctl(VGAfd, /*IOCTL_DISP_TIME*/ 6, time_buf)) return 3;
+        }
     }
     ece391_close(VGAfd);
     ece391_close(rtcfd);
