@@ -1,15 +1,14 @@
 #include "pcb.h"
 #include "beeper.h"
 /*those are function tables, used for initializing file operations*/
-open_func open_o[] = {rtc_open, directory_open, file_open, terminal_open, vga_open, beeper_open};
-close_func close_o[] = {rtc_close, directory_close, file_close, terminal_close, vga_close, beeper_close};
-read_func read_o[] = {(read_func)rtc_read, (read_func)directory_read,
-                       (read_func)file_read, (read_func)terminal_read, (read_func)vga_read, (read_func)beeper_read};
-write_func write_o[] = {(write_func)rtc_write, (write_func)directory_write,
-                         (write_func)file_write, (write_func)terminal_write, (write_func)vga_write, (write_func)beeper_write};
-ioctl_func ioctl_o[] = {(ioctl_func)rtc_ioctl, (ioctl_func)directory_ioctl,
-                         (ioctl_func)file_ioctl, (ioctl_func)terminal_ioctl, (ioctl_func)vga_ioctl, (ioctl_func)beeper_ioctl};
-
+open_func open_o[] = {rtc_open, directory_open, file_open, terminal_open, vga_open, beeper_open, mouse_open};
+close_func close_o[] = {rtc_close, directory_close, file_close, terminal_close, vga_close, beeper_close, mouse_close};
+read_func read_o[] = {(read_func)rtc_read, (read_func)directory_read, (read_func)file_read,
+                      (read_func)terminal_read, (read_func)vga_read, (read_func)beeper_read, (read_func)mouse_read};
+write_func write_o[] = {(write_func)rtc_write, (write_func)directory_write, (write_func)file_write, (write_func)terminal_write,
+                        (write_func)vga_write, (write_func)beeper_write, (write_func)mouse_write};
+ioctl_func ioctl_o[] = {(ioctl_func)rtc_ioctl, (ioctl_func)directory_ioctl, (ioctl_func)file_ioctl, (ioctl_func)terminal_ioctl,
+                        (ioctl_func)vga_ioctl, (ioctl_func)beeper_ioctl, (ioctl_func)mouse_ioctl};
 
 /*it stores the pcbs of all processes*/
 pcb_t *pcb_array[MAX_TASK];
@@ -33,7 +32,7 @@ extern int32_t sche_array[];
 int32_t create_pcb(int32_t isshell)
 {
     /*the index for the new pcb*/
-    int32_t pcb_index = isshell? 0:TERMINAL_NUMBER;
+    int32_t pcb_index = isshell ? 0 : TERMINAL_NUMBER;
 
     /*the pointer of the new pcb*/
     void *new_pcb = NULL;
@@ -55,7 +54,6 @@ int32_t create_pcb(int32_t isshell)
         return -1;
     }
 
-
     /*initialize the new task*/
     new_pcb = (void *)(KERNAL_BOTTOM - TASK_STACK_SIZE * (pcb_index + 1));
     initialize_new_pcb((pcb_t *)new_pcb, pcb_index);
@@ -68,10 +66,7 @@ int32_t create_pcb(int32_t isshell)
     pcb_bitmap = pcb_bitmap | (0x1 << (7 - pcb_index)); // 7-pcb_index is the corresponding bit in the bitmap
 
     /*change the pid in scheduler array*/
-    sche_array[sche_index]=pcb_index;
-
-
-    
+    sche_array[sche_index] = pcb_index;
 
     return pcb_index;
 }
@@ -135,7 +130,6 @@ void initialize_new_pcb(pcb_t *pcb, int32_t pid)
         pcb->file_obj_table[i].exist = 0;
     }
     memset(pcb, 0, MAX_BUF);
-
 }
 
 /**
@@ -149,7 +143,7 @@ void initialize_new_pcb(pcb_t *pcb, int32_t pid)
 void initialize_file_object(file_object_t *file_object, dentry_t dentry)
 {
     /*initialize all parameters*/
-    if (dentry.fileType <= 5) // 3 is used to check if the dentry is valid
+    if (dentry.fileType <= 6) // 3 is used to check if the dentry is valid
     {
         file_object->exist = 1;
         file_object->f_position = 0;

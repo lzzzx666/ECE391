@@ -406,6 +406,7 @@ void enable_text_mode()
     set_attr_registers(text_attr);          /* attribute registers   */
     set_graphics_registers(text_graphics);  /* graphics registers    */
     fill_palette_text();                    /* palette colors        */
+    write_font_data();
     memset((void *)VIDEO, 0, 80 * 25 * 2);
     VGA_blank(0);
 
@@ -449,11 +450,11 @@ void enable_gui_cursor()
     }
 }
 
-void set_cursor(cursorLoc_t *loc)
+void set_cursor(uint16_t *loc)
 {
     clear_gui_cursor();
-    curCursor.x = loc->x;
-    curCursor.y = loc->y;
+    curCursor.x = loc[0];
+    curCursor.y = loc[1];
     update_gui_cursor();
     return;
 }
@@ -461,7 +462,7 @@ void set_cursor(cursorLoc_t *loc)
 void update_gui_cursor()
 {
     uint8_t i, j;
-    uint8_t x, y;
+    uint16_t x, y;
     uint8_t planeOff;
     uint8_t *addr = (uint8_t *)MODE_X_VMEM_ADDR;
     if (guiCursorEnable == 0)
@@ -488,7 +489,7 @@ void clear_gui_cursor()
 {
     uint8_t i, j;
     uint8_t planeOff;
-    uint8_t x, y;
+    uint16_t x, y;
     uint8_t *addr = (uint8_t *)MODE_X_VMEM_ADDR;
     if (guiCursorEnable == 0)
         return;

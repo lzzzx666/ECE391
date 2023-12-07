@@ -12,6 +12,8 @@
 #define FS_FAIL -1
 
 // file types
+#define MOUSE 6
+#define BEEPER 5
 #define VGA 4
 #define TERMINAL 3
 #define REGULAR_FILE 2

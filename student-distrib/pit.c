@@ -4,7 +4,7 @@
 
 /*file variable*/
 uint8_t mode_register;
-uint32_t pit_cnt = 0; //pit counter
+uint32_t pit_cnt = 0; // pit counter
 
 volatile uint8_t user_exit[TERMINAL_NUMBER] = {0};
 // Description: initialize the pit
@@ -38,25 +38,30 @@ void set_mode(int32_t select_channel, int32_t access_mode, int32_t operating_mod
 void set_frequency(int16_t frequency)
 {
     cli();
-    outb((int8_t)frequency && 0x00ff, PIT_8254_CHANNEL_0); //low 8 bits
-    outb((int8_t)(frequency && 0xff00 >> 8), PIT_8254_CHANNEL_0); //high 8 bits
+    outb((int8_t)frequency && 0x00ff, PIT_8254_CHANNEL_0);        // low 8 bits
+    outb((int8_t)(frequency && 0xff00 >> 8), PIT_8254_CHANNEL_0); // high 8 bits
     sti();
 }
 // Description: the handler triggered by pit
 // Parameters:None.
 // Return Value:None.
 // Side Effects: call the schedule function
-void pit_handler() {
+void pit_handler()
+{
     pit_cnt++;
- 
+
     send_eoi(PIT_IRQ);
-    //observe if the program halt by ctrl+c
-    if(user_exit[sche_index]) {
+    // observe if the program halt by ctrl+c
+    if (user_exit[sche_index])
+    {
+        user_exit[sche_index] = 0;
         pcb_t *cur_pcb = get_current_pcb();
         if (cur_pcb->pid != 0 && cur_pcb->pid >= TERMINAL_NUMBER)
+        {
             halt(1);
+        }
     }
     user_exit[sche_index] = 0;
-    //call the schedule function
+    // call the schedule function
     schedule();
 }

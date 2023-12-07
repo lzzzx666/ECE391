@@ -7,6 +7,7 @@
 #include "fs.h"
 #include "vga.h"
 #include "allocation.h"
+#include "mouse.h"
 
 /*macros used in pcb module*/
 #define MAX_TASK 8            //I choose 8 as the max task numver
@@ -14,7 +15,7 @@
 #define KERNAL_BOTTOM 0x800000 // This is the bottom of the kernal stack, locate at 8MB
 #define TASK_STACK_SIZE 0x2000 // This is the 8KB task stack
 #define TERMINAL 3              //3 is the index of terminal functions int the function table
-#define MAX_FILE_NUM 8          //one process can open 8 files at the same time(including stdin and stdout)
+#define MAX_FILE_NUM 16          //one process can open 8 files at the same time(including stdin and stdout)
 #define UNINITIALIZED -2
 #define FOUR_MB 4*1024*1024
 #define MAX_ALLOCATION_MEMORY_NUMBER 1024 //one program can have 1024 allocated memory

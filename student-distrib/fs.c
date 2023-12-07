@@ -42,6 +42,14 @@ int32_t filesys_init(uint32_t filesys_img)
     strcpy((int8_t *)beeper->fileName, (const int8_t *)"beeper");
     beeper->fileType = BEEPER_FILETYPE;
 
+    dentry_t *mouse;
+    dentryNum = ++bootBlock->dentryNum;
+    inodeNum = bootBlock->inodeNum;
+    dataBlockNum = bootBlock->dataBlockNum;
+    mouse = &(bootBlock->dentries[dentryNum - 1]);
+    strcpy((int8_t *)mouse->fileName, (const int8_t *)"mouse");
+    mouse->fileType = MOUSE;
+
     return FS_SUCCEED;
 }
 

@@ -354,6 +354,9 @@ int32_t open(const uint8_t *filename)
     // Find the file in the file system.
     if (read_dentry_by_name(filename, &dentry) == FS_FAIL)
     {
+#if DEBUG
+        printf("Can't read_dentry_by_name!\n");
+#endif
         return SYSCALL_FAIL;
     }
 
@@ -381,6 +384,9 @@ int32_t open(const uint8_t *filename)
     // Check for initialization failure.
     if (current_file.exist == 0)
     {
+#if DEBUG
+        printf("current_file.exist == 0\n");
+#endif
         return SYSCALL_FAIL;
     }
 
@@ -449,7 +455,7 @@ void *malloc(uint32_t size)
     kmem_cache *cur_cache = slab_cache.cache_head;
     int32_t exist;
     /*sanity check*/
-    if (size == 0 || size>SLAB_SIZE-sizeof(kmem_unit))
+    if (size == 0 || size > SLAB_SIZE - sizeof(kmem_unit))
     {
         printf("Can't allocate such a size!\n");
         return NULL;
@@ -469,11 +475,11 @@ void *malloc(uint32_t size)
             cur_cache = cur_cache->next;
         }
     }
-    if (exist)      //when a cache satisfies the size
+    if (exist) // when a cache satisfies the size
     {
         ret_addr = kmem_cache_alloc(cur_cache);
     }
-    else            
+    else
     {
         cur_cache = kmem_cache_create(size);
         ret_addr = kmem_cache_alloc(cur_cache);

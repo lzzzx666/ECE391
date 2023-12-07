@@ -53,13 +53,13 @@
     do                       \
     {                        \
         outb(0x04, 0x03CE);  \
-        outb(plane, 0x03CF);     \
+        outb(plane, 0x03CF); \
     } while (0)
 
 typedef struct cursorLoc
 {
-    uint8_t x;
-    uint8_t y;
+    uint16_t x;
+    uint16_t y;
 } cursorLoc_t;
 
 int32_t vga_read(int32_t fd, void *buf, int32_t nbytes);
@@ -85,7 +85,7 @@ void write_font_data();
 void enable_text_mode();
 void enable_mode_x();
 void set_palette(unsigned char *palette, uint8_t mode);
-void set_cursor(cursorLoc_t *loc);
+void set_cursor(uint16_t *loc);
 void update_gui_cursor();
 void clear_gui_cursor();
 void enable_gui_cursor();
