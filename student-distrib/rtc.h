@@ -1,8 +1,7 @@
 #ifndef RTC_H
 #define RTC_H
 
-#include "keyboard.h"
-
+#include "types.h"
 /* MC146818 RTC registers */
 #define MC146818_ADDRESS_REG 0x70
 #define MC146818_DATA_REG 0x71

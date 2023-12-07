@@ -2,9 +2,9 @@
 
 #include "i8259.h"
 #include "lib.h"
-#include "types.h"
-
 #include "pcb.h"
+#include "time.h"
+#include "types.h"
 
 static uint32_t fd_freqs[MAX_TASK] = {0};
 volatile uint8_t interrtupt_occured[MAX_TASK] = {0};
@@ -27,7 +27,7 @@ void enalbe_inter() {
     prev_status_b = inb(MC146818_DATA_REG); /* get previous value of B */
     outb(MC146818_REGISTER_STATUS_B | CMOS_NMI_DISABLE,
          MC146818_ADDRESS_REG); /* select register B, disalbe NMI  */
-    outb((prev_status_b & 0x70) | 0x40,
+    outb((prev_status_b & 0x70) | 0x40 | 0x06,
          MC146818_DATA_REG); /* set PIE to enale periodic interrupt, and clear AIE, UIE */
     outb(MC146818_REGISTER_STATUS_B, MC146818_ADDRESS_REG); /* enable NMI  */
     enable_irq(RTC_IRQ);                                    /* enable IRQ8 */
@@ -77,7 +77,7 @@ void rtc_handler() {
     send_eoi(RTC_IRQ);            /* end-of-interrupt */
     int32_t fd;
     for (fd = 0; fd < MAX_FD_NUM; fd++) {
-        if(!fd_freqs[fd]) continue;
+        if (!fd_freqs[fd]) continue;
         time_tick[fd] += fd_freqs[fd];
         if (time_tick[fd] >= INTERRUPT_FREQ_HI) {
             time_tick[fd] -= INTERRUPT_FREQ_HI;
@@ -91,7 +91,9 @@ void rtc_handler() {
  * rtc_open
  * set RTC interrupt frequency
  */
-int32_t rtc_open(const uint8_t *fname) { return 0; }
+int32_t rtc_open(const uint8_t *fname) {
+    return 0;
+}
 
 /**
  * rtc_close
@@ -129,5 +131,27 @@ int32_t rtc_read(int32_t fd, void *buf, int32_t nbytes) {
     return 0;
 }
 
-// TODO comment
-int32_t rtc_ioctl(int32_t fd, int32_t request, void *buf) { return 0; }
+static uint8_t read_rtc_reg(uint8_t reg) {
+    outb(reg | CMOS_NMI_DISABLE, MC146818_ADDRESS_REG);
+    return inb(MC146818_DATA_REG);
+}
+
+int32_t rtc_ioctl(int32_t fd, int32_t request, void *buf) {
+    time_t time;
+    switch (request) {
+        case GET_TIME_CTL:
+            time.Seconds        = read_rtc_reg(RTC_SECONDS);
+            time.Minutes        = read_rtc_reg(RTC_MINUTES);
+            time.Hours          = read_rtc_reg(RTC_HOURS);
+            time.Weekday        = read_rtc_reg(RTC_WEEKDAY);
+            time.Day_of_Month   = read_rtc_reg(RTC_DAY_OF_MONTH);
+            time.Month          = read_rtc_reg(RTC_MONTH);
+            time.Year           = read_rtc_reg(RTC_YEAR);
+            time.Century        = read_rtc_reg(RTC_CENTURY);
+            *((time_t*)buf) = time;
+            break;
+        default:
+            return 1;
+    }
+    return 0;
+}
