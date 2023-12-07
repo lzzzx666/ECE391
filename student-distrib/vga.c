@@ -65,9 +65,6 @@ int32_t vga_close(int32_t fd)
     fill_palette_text();                    /* palette colors          */
     VGA_blank(0);                           /* unblank the screen      */
     memset((void *)VIDEO, 0, 80 * 25 * 2);
-    memset((void *)VIDEO_TERMINAL1, 0, 80 * 25 * 2);
-    memset((void *)VIDEO_TERMINAL2, 0, 80 * 25 * 2);
-    memset((void *)VIDEO_TERMINAL3, 0, 80 * 25 * 2);
     free_paging_directory((MODE_X_VMEM_ADDR >> 22) & 0x3FF);
 
 #if DEBUG

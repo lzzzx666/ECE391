@@ -13,9 +13,9 @@
 #include "types.h"
 
 #define VIDEO 0xB8000
-#define VIDEO_TERMINAL1 0xB9000
-#define VIDEO_TERMINAL2 0xBA000
-#define VIDEO_TERMINAL3 0xBB000
+#define VIDEO_TERMINAL1 0xCA000
+#define VIDEO_TERMINAL2 0xCB000
+#define VIDEO_TERMINAL3 0xCC000
 #define NUM_COLS 80
 #define NUM_ROWS 25
 #define ATTRIB 0x7
@@ -29,6 +29,7 @@ int8_t *itoa(uint32_t value, int8_t *buf, int32_t radix);
 int8_t *strrev(int8_t *s);
 uint32_t strlen(const int8_t *s);
 void clear(void);
+void _clear(int32_t terminal_index);
 void scroll_up(void);
 void _scroll_up(int32_t use_terminal);
 void enable_cursor(uint8_t cursor_start, uint8_t cursor_end);
