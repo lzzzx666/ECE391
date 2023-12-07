@@ -29,22 +29,19 @@ int32_t main()
     plot_bitmap(VGAfd, size, &bitMap);
 
     ece391_ioctl(VGAfd, IOCTL_TEXT_MODE, &garbage);
-    ece391_execute("pingpong");
+
 
     ece391_ioctl(VGAfd, IOCTL_MODE_X, &garbage);
     size = read_bitmap("alma.bmp", &bitMap);
     plot_bitmap(VGAfd, size, &bitMap);
+
+
     while (1)
     {
-        ;
+        ece391_read(rtcfd, &garbage, 4);
+        ece391_read(mousefd, mouseBuf, 3);
+        ece391_ioctl(VGAfd, IOCTL_SET_CURSOR, &(mouseBuf[1]));
     }
-
-    // while (1)
-    // {
-    //     ece391_read(rtcfd, &garbage, 4);
-    //     ece391_read(mousefd, mouseBuf, 3);
-    //     ece391_ioctl(VGAfd, IOCTL_SET_CURSOR, &(mouseBuf[1]));
-    // }
     ece391_close(VGAfd);
     ece391_close(rtcfd);
     ece391_close(mousefd);
