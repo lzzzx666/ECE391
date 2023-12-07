@@ -35,7 +35,7 @@ uint32_t freqs[NUM_KEYS] = {
 };
 
 int main() {
-    int32_t fd = ece391_open("beeper");
+    int32_t fd = ece391_open((uint8_t*)"beeper");
     if (fd == -1) return 1;
     if (fd == -1) {
         ece391_printf("Open beeper failed\n");

@@ -68,7 +68,7 @@ int32_t read_bitmap(const uint8_t *fname, BitMap_t *bitMapPtr)
 
 int32_t plot_bitmap(int32_t VGAfd, int32_t bitMapSize, BitMap_t *bitMap)
 {
-    void *garbage;
+    // void *garbage;
     uint8_t palette[256][3];
     int i;
     bitMap = (BitMap_t *)((int32_t)bitMap);
@@ -83,6 +83,7 @@ int32_t plot_bitmap(int32_t VGAfd, int32_t bitMapSize, BitMap_t *bitMap)
     // ece391_ioctl(VGAfd, IOCTL_MODE_X, garbage);
     ece391_ioctl(VGAfd, IOCTL_SET_PAL, palette);
     ece391_write(VGAfd, pixels, 320 * 200);
+    return 0;
 }
 
 #endif

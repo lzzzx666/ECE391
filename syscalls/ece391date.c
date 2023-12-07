@@ -5,7 +5,7 @@
 #include "time.h"
 
 int main() {
-    int32_t fd = ece391_open("rtc");
+    int32_t fd = ece391_open((uint8_t*)"rtc");
     if (fd == -1) return 1;
     time_t time;
     time.Timezone = TIMEZONE;

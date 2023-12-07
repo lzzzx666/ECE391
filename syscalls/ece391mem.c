@@ -17,11 +17,11 @@ int main()
         i = 0;
         size = 0;
         ptr=0;
-        ece391_fdputs(1, "Free or allocate? f/a: ");
+        ece391_fdputs(1, (uint8_t*)"Free or allocate? f/a: ");
         ece391_read(0, buf, BUFSIZE);
-        if (ece391_strncmp(buf, "f", 1) == 0) //the user chooses to allocate memory
+        if (ece391_strncmp(buf, (uint8_t*)"f", 1) == 0) //the user chooses to allocate memory
         {
-            ece391_fdputs(1, "Please enter the ptr: ");
+            ece391_fdputs(1, (uint8_t*)"Please enter the ptr: ");
             ece391_read(0, buf, BUFSIZE);
             while (buf[length] != '\0')
             {
@@ -40,9 +40,9 @@ int main()
             }
             ece391_free((void*)ptr);
         }
-        else if (ece391_strncmp(buf, "a", 1) == 0)  //the user chooses to free memory
+        else if (ece391_strncmp(buf, (uint8_t*)"a", 1) == 0)  //the user chooses to free memory
         {
-            ece391_fdputs(1, "Please enter the size: ");
+            ece391_fdputs(1,(uint8_t*) "Please enter the size: ");
             ece391_read(0, buf, BUFSIZE);
             while (buf[length] != '\0')
             {
@@ -59,7 +59,7 @@ int main()
                 }
                 size += digit;
             }
-            void *ptr = ece391_malloc(size);
+            ece391_malloc(size);
         }
         else                                      //meaningless input
         {

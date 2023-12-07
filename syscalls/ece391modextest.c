@@ -5,7 +5,7 @@
 BitMap_t bitMap;
 int32_t main()
 {
-    uint8_t buf[128];
+    // uint8_t buf[128];
     int32_t VGAfd, rtcfd;
     int32_t size;
     int32_t ret_val = 8;
@@ -23,7 +23,7 @@ int32_t main()
         ece391_read(VGAfd, &garbage, 1);
         ece391_read(rtcfd, &garbage, 4);
     }
-    size = read_bitmap("cal2.bmp", &bitMap);
+    size = read_bitmap((uint8_t*)"cal2.bmp", &bitMap);
     plot_bitmap(VGAfd, size, &bitMap);
     
 

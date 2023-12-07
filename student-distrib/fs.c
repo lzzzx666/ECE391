@@ -310,7 +310,7 @@ int32_t file_ioctl(int32_t fd, int32_t request, void *buf)
         return SYSCALL_SUCCESS;
     case IOCTL_FILE_PTR:
 
-        *((uint32_t *)buf) = &(dataBlock[dataBlockIdx]);
+        *((uint32_t *)buf) =(uint32_t)( &(dataBlock[dataBlockIdx]));
         return SYSCALL_SUCCESS;
     default:
         break;
