@@ -7,8 +7,8 @@
 #define USED 1  //the memory is used
 #define SLAB_SIZE 4 * 1024 //the size of each slab
 
-#define SLAB_ADDRESS 1024 * 1024 * 144 // 144mb is the beginning of the slab memory
-#define SLAB_CACHE_MANAGE_ADDR 1024*1024*140 //144mb is the beginning of the management address
+#define SLAB_ADDRESS 1024 * 1024 * 148 // 144mb is the beginning of the slab memory
+#define SLAB_CACHE_MANAGE_ADDR 1024*1024*144 //144mb is the beginning of the management address
 #define CACHE_NUMBER 100            //the maximum number of cache
 #define SLAB_NUMBER 1024            //the maximum number of slab
 
