@@ -1,6 +1,6 @@
 #include "vga.h"
 #include "vga_data.h"
-#define DEBUG 1
+#define DEBUG 0
 uint8_t VGA_mode = TEXT_MODE;
 uint8_t cursorRec[100];
 cursorLoc_t curCursor;
@@ -40,7 +40,6 @@ int32_t vga_write(int32_t fd, void *buf, int32_t nbytes)
     }
     outw((MODE_X_VMEM_ADDR & 0xFF00) | 0x0C, 0x03D4);
     outw(((MODE_X_VMEM_ADDR & 0x00FF) << 8) | 0x0D, 0x03D4);
-
     return SYSCALL_SUCCESS;
 }
 
@@ -50,6 +49,7 @@ int32_t vga_open(const uint8_t *filename)
     save_seq_regs(text_seq, &MOR);
     save_graphics_registers(text_graphics);
     save_attr_registers(text_attr);
+
     // save_palette(text_palette_RGB);
     return SYSCALL_SUCCESS;
 }
@@ -65,6 +65,9 @@ int32_t vga_close(int32_t fd)
     fill_palette_text();                    /* palette colors          */
     VGA_blank(0);                           /* unblank the screen      */
     memset((void *)VIDEO, 0, 80 * 25 * 2);
+    memset((void *)VIDEO_TERMINAL1, 0, 80 * 25 * 2);
+    memset((void *)VIDEO_TERMINAL1, 0, 80 * 25 * 2);
+    memset((void *)VIDEO_TERMINAL1, 0, 80 * 25 * 2);
     free_paging_directory((MODE_X_VMEM_ADDR >> 22) & 0x3FF);
 
 #if DEBUG
@@ -130,6 +133,9 @@ int32_t vga_ioctl(int32_t fd, int32_t request, void *buf)
             enable_gui_cursor();
         set_cursor((cursorLoc_t *)buf);
         break;
+    case IOCTL_DISP_TIME:
+        display_time(buf);
+        break;
     default:
         break;
     }
@@ -172,18 +178,6 @@ void clear_modex()
     memset((void *)MODE_X_VMEM_ADDR, 0, (uint32_t)MODE_X_VMEM_SIZE);
 }
 
-/*
- * set_seq_regs_and_reset
- *   DESCRIPTION: Set VGA sequencer registers and miscellaneous output
- *                register; array of registers should force a reset of
- *                the VGA sequencer, which is restored to normal operation
- *                after a brief delay.
- *   INPUTS: table -- table of sequencer register values to use
- *           val -- value to which miscellaneous output register should be set
- *   OUTPUTS: none
- *   RETURN VALUE: none
- *   SIDE EFFECTS: none
- */
 void set_seq_regs_and_reset(unsigned short table[NUM_SEQUENCER_REGS],
                             unsigned char val)
 {
@@ -222,16 +216,6 @@ void set_CRTC_registers(unsigned short table[NUM_CRTC_REGS])
     rep_outsw(0x03D4, table, NUM_CRTC_REGS);
 }
 
-/*
- * set_attr_registers
- *   DESCRIPTION: Set VGA attribute registers.  Attribute registers use
- *                a single port and are thus written as a sequence of bytes
- *                rather than a sequence of words.
- *   INPUTS: table -- table of attribute register values to use
- *   OUTPUTS: none
- *   RETURN VALUE: none
- *   SIDE EFFECTS: none
- */
 void set_attr_registers(unsigned char table[NUM_ATTR_REGS * 2])
 {
     /* Reset attribute register to write index next rather than data. */
@@ -421,7 +405,6 @@ void enable_mode_x()
     fill_palette_mode_x();                    /* palette colors        */
     clear_modex();                            /* zero video memory     */
     VGA_blank(0);
-
     outw((MODE_X_VMEM_ADDR & 0xFF00) | 0x0C, 0x03D4);
     outw(((MODE_X_VMEM_ADDR & 0x00FF) << 8) | 0x0D, 0x03D4);
     return;
@@ -503,4 +486,37 @@ void clear_gui_cursor()
     }
     outw((MODE_X_VMEM_ADDR & 0xFF00) | 0x0C, 0x03D4);
     outw(((MODE_X_VMEM_ADDR & 0x00FF) << 8) | 0x0D, 0x03D4);
+}
+
+void display_time(uint8_t *time)
+{
+    int32_t timeLen = strlen(time);
+    uint8_t timeFont[16];
+    uint8_t idx;
+    uint16_t x, y;
+    uint16_t m, n;
+    uint16_t x0, y0;
+    uint8_t planeOff;
+    x0 = 150;
+    y0 = 150;
+    uint8_t *addr = (uint8_t *)MODE_X_VMEM_ADDR;
+    for (idx = 0; idx < timeLen; idx++)
+    {
+        memcpy(timeFont, font_data[time[idx]], 16);
+        for (m = 0; m < 8; m++)
+        {
+            x = x0 + m;
+            planeOff = x % 4;
+            SET_WRITE_MASK(1 << (planeOff + 8));
+            for (n = 0; n < 16; n++)
+            {
+                y = y0 + n;
+                addr[(x + y * MODE_X_WIDTH) / 4] = BACKGROUND_COLOR;
+                if ((timeFont[n] & 0x80) != 0)
+                    addr[(x + y * MODE_X_WIDTH) / 4] = TIME_COLOR;
+                timeFont[n] = timeFont[n] << 1;
+            }
+        }
+        x0 += 8;
+    }
 }

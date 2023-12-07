@@ -4,8 +4,6 @@
 #include "ece391syscall.h"
 #include "time.h"
 
-const uint8_t* day_of_week[] = {0, "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
-
 int main() {
     int32_t fd = ece391_open("rtc");
     if (fd == -1) return 1;
