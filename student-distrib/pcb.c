@@ -1,13 +1,15 @@
 #include "pcb.h"
+#include "beeper.h"
 /*those are function tables, used for initializing file operations*/
-open_func open_o[5] = {rtc_open, directory_open, file_open, terminal_open, vga_open};
-close_func close_o[5] = {rtc_close, directory_close, file_close, terminal_close, vga_close};
-read_func read_o[5] = {(read_func)rtc_read, (read_func)directory_read,
-                       (read_func)file_read, (read_func)terminal_read, (read_func)vga_read};
-write_func write_o[5] = {(write_func)rtc_write, (write_func)directory_write,
-                         (write_func)file_write, (write_func)terminal_write, (write_func)vga_write};
-ioctl_func ioctl_o[5] = {(ioctl_func)rtc_ioctl, (ioctl_func)directory_ioctl,
-                         (ioctl_func)file_ioctl, (ioctl_func)terminal_ioctl, (ioctl_func)vga_ioctl};
+open_func open_o[] = {rtc_open, directory_open, file_open, terminal_open, vga_open, beeper_open};
+close_func close_o[] = {rtc_close, directory_close, file_close, terminal_close, vga_close, beeper_close};
+read_func read_o[] = {(read_func)rtc_read, (read_func)directory_read,
+                       (read_func)file_read, (read_func)terminal_read, (read_func)vga_read, (read_func)beeper_read};
+write_func write_o[] = {(write_func)rtc_write, (write_func)directory_write,
+                         (write_func)file_write, (write_func)terminal_write, (write_func)vga_write, (write_func)beeper_write};
+ioctl_func ioctl_o[] = {(ioctl_func)rtc_ioctl, (ioctl_func)directory_ioctl,
+                         (ioctl_func)file_ioctl, (ioctl_func)terminal_ioctl, (ioctl_func)vga_ioctl, (ioctl_func)beeper_ioctl};
+
 
 /*it stores the pcbs of all processes*/
 pcb_t *pcb_array[MAX_TASK];
@@ -147,7 +149,7 @@ void initialize_new_pcb(pcb_t *pcb, int32_t pid)
 void initialize_file_object(file_object_t *file_object, dentry_t dentry)
 {
     /*initialize all parameters*/
-    if (dentry.fileType <= 4) // 3 is used to check if the dentry is valid
+    if (dentry.fileType <= 5) // 3 is used to check if the dentry is valid
     {
         file_object->exist = 1;
         file_object->f_position = 0;

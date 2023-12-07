@@ -59,6 +59,7 @@ void keyboard_handler()
     unsigned char scan_code = inb(KEYBOARD_DATA_PORT);
     char ascii;
     // uint8_t user_interrupt = 0;
+    terminal->last_key = scan_code;
     switch (scan_code)
     {
     case TAB:
@@ -71,11 +72,11 @@ void keyboard_handler()
             _backspace(1); // change screen x and y
         break;
     case ENTER:
-        terminal->terminal_buf[terminal->count++] = '\n'; // add a \n at the end
-        terminal->enter_pressed = 1;                      // notify the main_terminal
+        terminal->terminal_buf[terminal->count++] = '\n';   // add a \n at the end
+        terminal->enter_pressed = 1;                            // notify the main_terminal
         // *prev = *terminal;                              // store the previous terminal
         // terminal->terminal_buf[terminal->count = 0] = '\0'; // restore count
-        _putc('\n', 1);
+        _putc('\n', 1);   
         cli();
         break;
     case CAPS_LOCK:

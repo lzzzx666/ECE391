@@ -70,7 +70,6 @@ int32_t terminal_open(const uint8_t *filename)
 // - int32_t: Total number of bytes read or -1 on error.
 int32_t terminal_read(int32_t fd, void *buf, int32_t nbytes)
 {
-
     while(current_terminal != sche_index);
     terminal_t *terminal = &main_terminal[current_terminal];
     // terminal_t *prev = &prev_terminal[current_terminal];
@@ -96,7 +95,6 @@ int32_t terminal_read(int32_t fd, void *buf, int32_t nbytes)
         strcpy(buf, "^[[B");
         return 4;
     }
-
     for (i = 0; i < nbytes && i < READ_MAX_SIZE && terminal->terminal_buf[i] != '\0'; i++)
     {
         ((char *)buf)[i] = terminal->terminal_buf[i]; // read from previous buffer to the terminal buffer
@@ -171,6 +169,7 @@ int32_t terminal_write(int32_t fd, void *buf, int32_t nbytes)
 // TODO comment & switch terminal & simulate keyboard
 int32_t terminal_ioctl(int32_t fd, int32_t request, void *buf)
 {
+    terminal_t *terminal = &main_terminal[sche_index];
     switch (request)
     {
     case SIMKB:
@@ -178,7 +177,12 @@ int32_t terminal_ioctl(int32_t fd, int32_t request, void *buf)
         int32_t len = strlen((const int8_t *)buf);
         terminal_write(fd, buf, len);
         break;
-    default:
+    case NON_BUFFER_READ:
+        terminal->last_key = 0;
+        while(!terminal->last_key);
+        *((uint8_t*)buf) = terminal->last_key;
+        break;
+    default :
         break;
     }
     return 0;

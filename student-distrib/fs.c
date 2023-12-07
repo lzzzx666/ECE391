@@ -2,6 +2,7 @@
 #include "page.h"
 #include "pcb.h"
 #include "systemcall.h"
+#include "beeper.h"
 #define DEBUG 0
 
 /*file scope variables to store the pointers to bootBlock, inodes and dataBlock*/
@@ -32,6 +33,15 @@ int32_t filesys_init(uint32_t filesys_img)
     vga = &(bootBlock->dentries[dentryNum - 1]);
     strcpy((int8_t *)vga->fileName, (const int8_t *)"VGA");
     vga->fileType = VGA;
+
+    dentry_t *beeper;
+    dentryNum = ++bootBlock->dentryNum;
+    inodeNum = bootBlock->inodeNum;
+    dataBlockNum = bootBlock->dataBlockNum;
+    beeper = &(bootBlock->dentries[dentryNum - 1]);
+    strcpy((int8_t *)beeper->fileName, (const int8_t *)"beeper");
+    beeper->fileType = BEEPER_FILETYPE;
+
     return FS_SUCCEED;
 }
 

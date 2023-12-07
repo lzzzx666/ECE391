@@ -16,6 +16,8 @@
 
 #define SIMKB 1
 
+#define NON_BUFFER_READ 2
+
 typedef struct terminal_t
 {
     uint16_t cursor_x;
@@ -29,6 +31,8 @@ typedef struct terminal_t
     volatile uint8_t down_pressed;
     volatile unsigned char terminal_buf[MAX_TERMINAL_SIZE];
     uint8_t *video_mem_backup;
+    
+    volatile uint8_t last_key;
 } terminal_t;
 
 void initialize_terminal();
