@@ -148,6 +148,16 @@ int32_t rtc_ioctl(int32_t fd, int32_t request, void *buf) {
             time.Month          = read_rtc_reg(RTC_MONTH);
             time.Year           = read_rtc_reg(RTC_YEAR);
             time.Century        = read_rtc_reg(RTC_CENTURY);
+
+            time.Timezone = ((time_t*)buf)->Timezone;
+            time.Hours += time.Timezone;
+            if (time.Hours < 0)         time.Day_of_Month--;
+            if (time.Hours >= 24)       time.Day_of_Month++;
+            if (time.Day_of_Month < 1)  time.Month--;
+            if (time.Day_of_Month > days_in_month[time.Month]) time.Month++;
+            if (time.Month < 1)         time.Year--;
+            if (time.Month > 12)        time.Year++;
+
             *((time_t*)buf) = time;
             break;
         default:

@@ -9,6 +9,7 @@ typedef struct time_t {
     uint8_t Month;          // 1–12
     uint8_t Year;           // 0–99
     uint8_t Century;        // (maybe) 19–20?
+    int8_t  Timezone;       // -6 for American/Chicago
 } time_t;
 
 #define GET_TIME_CTL 1

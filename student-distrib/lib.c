@@ -9,7 +9,7 @@
 #define DEBUG
 #include "debug.h"
 
-// #define USE_COLOR
+#define USE_COLOR
 
 // #define putc(...) putc(__VA_ARGS__, (0))
 // #define scroll_up(...) scroll_up(__VA_ARGS__, (0))

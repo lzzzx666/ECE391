@@ -9,7 +9,10 @@ typedef struct time_t {
     uint8_t Month;          // 1–12
     uint8_t Year;           // 0–99
     uint8_t Century;        // (maybe) 19–20?
+    int8_t  Timezone;       // -6 for American/Chicago
 } time_t;
+
+const uint32_t days_in_month[] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
 #define RTC_SECONDS             0x00  // Seconds register, range 0-59
 #define RTC_MINUTES             0x02  // Minutes register, range 0-59
