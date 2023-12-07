@@ -459,6 +459,8 @@ void update_gui_cursor()
             cursorRec[i + j * 10] = addr[(x + y * MODE_X_WIDTH) / 4];
             if (cursor_img[i + j * 10] == 1)
                 addr[(x + y * MODE_X_WIDTH) / 4] = CURSOR_COLOR;
+            if (cursor_img[i + j * 10] == 2)
+                addr[(x + y * MODE_X_WIDTH) / 4] = TIME_COLOR;
         }
     }
     outw((MODE_X_VMEM_ADDR & 0xFF00) | 0x0C, 0x03D4);
@@ -497,8 +499,8 @@ void display_time(uint8_t *time)
     uint16_t m, n;
     uint16_t x0, y0;
     uint8_t planeOff;
-    x0 = 150;
-    y0 = 150;
+    x0 = 120;
+    y0 = 180;
     uint8_t *addr = (uint8_t *)MODE_X_VMEM_ADDR;
     for (idx = 0; idx < timeLen; idx++)
     {

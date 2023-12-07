@@ -37,7 +37,7 @@ int32_t main()
     ret_val = ece391_write(rtcfd, &ret_val, 4);
 
     ece391_ioctl(VGAfd, IOCTL_MODE_X, &garbage);
-    size = read_bitmap("alma.bmp", &bitMap);
+    size = read_bitmap("desktop.bmp", &bitMap);
     plot_bitmap(VGAfd, size, &bitMap);
 
     time_t time, prev;

@@ -31,7 +31,7 @@
 #define FULL_PALETTE 2
 
 #define CURSOR_COLOR 10
-#define TIME_COLOR 20
+#define TIME_COLOR 221
 #define BACKGROUND_COLOR 15
 /*
  * macro used to target a specific video plane or planes when writing
