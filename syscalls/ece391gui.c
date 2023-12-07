@@ -28,14 +28,6 @@ int32_t main()
     size = read_bitmap("alma.bmp", &bitMap);
     plot_bitmap(VGAfd, size, &bitMap);
 
-    ece391_ioctl(VGAfd, IOCTL_TEXT_MODE, &garbage);
-
-
-    ece391_ioctl(VGAfd, IOCTL_MODE_X, &garbage);
-    size = read_bitmap("alma.bmp", &bitMap);
-    plot_bitmap(VGAfd, size, &bitMap);
-
-
     while (1)
     {
         ece391_read(rtcfd, &garbage, 4);
