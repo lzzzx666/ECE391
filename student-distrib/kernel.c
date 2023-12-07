@@ -29,8 +29,12 @@ void entry(unsigned long magic, unsigned long addr)
 
     multiboot_info_t *mbi;
     uint32_t filesys_img_addr;
+    int i;
     /* Clear the screen. */
-    clear();
+    for (i = 0; i < TERMINAL_NUMBER; i++)
+    {
+        _clear(i);
+    }
 
     /* Am I booted by a Multiboot-compliant boot loader? */
     if (magic != MULTIBOOT_BOOTLOADER_MAGIC)
@@ -163,9 +167,11 @@ void entry(unsigned long magic, unsigned long addr)
     rtc_init();
 
     // @@
-    int i;
-    for(i = 0; i < TERMINAL_NUMBER; i++)
+    for (i = 0; i < TERMINAL_NUMBER; i++)
+    {
         initialize_terminal(i);
+        _clear(i);
+    }
 
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */
@@ -179,7 +185,7 @@ void entry(unsigned long magic, unsigned long addr)
      * without showing you any output */
     // printf("Enabling Interrupts\n");
     init_memory_allocation();
-   // while(1); // SPIN!
+    // while(1); // SPIN!
 
     clear();
     /*run the shell*/
@@ -187,7 +193,7 @@ void entry(unsigned long magic, unsigned long addr)
     /* Run tests */
     // launch_tests();
 #if RUN_TESTS
-        /* Run tests */
+    /* Run tests */
     launch_tests();
 #else
     //     /* Execute the first program ("shell") ... */
