@@ -6,6 +6,17 @@
 
 BitMap_t bitMap;
 cursorLoc_t cursor;
+void execute(int VGAfd, char *name, int *garbage, int size)
+{
+    uint8_t buf[10];
+    ece391_ioctl(VGAfd, IOCTL_TEXT_MODE, garbage);
+    ece391_execute(name);
+    if(ece391_strcmp(name,"piano")!=0)
+    ece391_read(0,buf,1);
+    ece391_ioctl(VGAfd, IOCTL_MODE_X, garbage);
+    size = read_bitmap("desktop.bmp", &bitMap);
+    plot_bitmap(VGAfd, size, &bitMap);
+}
 int32_t main()
 {
     uint8_t buf[128];
@@ -25,22 +36,44 @@ int32_t main()
     ret_val = ece391_write(rtcfd, &ret_val, 4);
 
     ece391_ioctl(VGAfd, IOCTL_MODE_X, &garbage);
-    size = read_bitmap("alma.bmp", &bitMap);
+    size = read_bitmap("desktop.bmp", &bitMap);
     plot_bitmap(VGAfd, size, &bitMap);
-
-    ece391_ioctl(VGAfd, IOCTL_TEXT_MODE, &garbage);
-
-
-    ece391_ioctl(VGAfd, IOCTL_MODE_X, &garbage);
-    size = read_bitmap("alma.bmp", &bitMap);
-    plot_bitmap(VGAfd, size, &bitMap);
-
 
     while (1)
     {
         ece391_read(rtcfd, &garbage, 4);
         ece391_read(mousefd, mouseBuf, 3);
         ece391_ioctl(VGAfd, IOCTL_SET_CURSOR, &(mouseBuf[1]));
+        if ((mouseBuf[0]) & 1)
+        {
+            if ((mouseBuf[1] & 0xff) < 40)
+            {
+                switch ((mouseBuf[2] & 0xff) / 40)
+                {
+                case 0:
+                    execute(VGAfd, (char *)"pingpong", &garbage, size);
+                    break;
+                case 1:
+                    execute(VGAfd, (char *)"neofetch", &garbage, size);
+                    break;
+                case 2:
+                    execute(VGAfd, (char *)"piano", &garbage, size);
+                    break;
+                case 3:
+                    execute(VGAfd, (char *)"ls", &garbage, size);
+                    break;
+                case 4:
+                    execute(VGAfd, (char *)"date", &garbage, size);
+                    break;
+                default:
+                    break;
+                }
+            }
+            else
+            {
+                continue;
+            }
+        }
     }
     ece391_close(VGAfd);
     ece391_close(rtcfd);
