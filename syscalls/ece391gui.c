@@ -7,8 +7,8 @@
 
 BitMap_t bitMap;
 cursorLoc_t cursor;
-uint8_t * program[5]={(char*)"pingpong",(char*)"neofetch",(char*)"piano",(char*)"ls",(char*)"date"};
-uint8_t   flag[5]={1,0,1,0,0};
+uint8_t *program[7] = {(char *)"pingpong", (char *)"neofetch", (char *)"piano", (char *)"ls", (char *)"date",(char*)"mem",(char*)"fish"};
+uint8_t flag[7] = {1, 0, 1, 0, 0,1,1};
 void execute(int VGAfd, uint8_t index, int *garbage, int size)
 {
     uint8_t buf[10];
@@ -41,7 +41,6 @@ int32_t main()
     int32_t ret_val = 64;
     int garbage;
 
-
     if (-1 == (VGAfd = ece391_open((uint8_t *)"VGA")))
         return 0;
     if (-1 == (rtcfd = ece391_open((uint8_t *)"rtc")))
@@ -67,9 +66,13 @@ int32_t main()
 
         if ((mouseBuf[0]) & 1)
         {
-            if ((mouseBuf[1] & 0xff) < 40)
+            if ((mouseBuf[1] & 0xff) < 45)
             {
-                execute(VGAfd,(mouseBuf[2] & 0xff) / 40,&garbage,size);
+                execute(VGAfd, (mouseBuf[2] & 0xff) / 40, &garbage, size);
+            }
+            else if ((mouseBuf[1] & 0xff) < 90 && (mouseBuf[2] & 0xff) < 80)
+            {
+                execute(VGAfd, (mouseBuf[2] & 0xff) / 40 +5, &garbage, size);
             }
         }
         if (ece391_ioctl(rtcfd, GET_TIME_CTL, &time))
