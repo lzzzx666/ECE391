@@ -1,6 +1,6 @@
 #include "vga.h"
 #include "vga_data.h"
-#define DEBUG 1
+#define DEBUG 0
 uint8_t VGA_mode = TEXT_MODE;
 uint8_t cursorRec[100];
 cursorLoc_t curCursor;
