@@ -16,6 +16,7 @@
 #define IOCTL_VMEM_MAP 3
 #define IOCTL_SET_PAL 4
 #define IOCTL_SET_CURSOR 5
+#define IOCTL_DISP_TIME 6
 
 #define MODE_X_HIGHT 200
 #define MODE_X_WIDTH 320
@@ -30,7 +31,8 @@
 #define FULL_PALETTE 2
 
 #define CURSOR_COLOR 10
-
+#define TIME_COLOR 20
+#define BACKGROUND_COLOR 15
 /*
  * macro used to target a specific video plane or planes when writing
  * to video memory in mode X; bits 8-11 in the mask_hi_bits enable writes
@@ -89,4 +91,5 @@ void set_cursor(uint16_t *loc);
 void update_gui_cursor();
 void clear_gui_cursor();
 void enable_gui_cursor();
+void display_time(uint8_t *time);
 #endif
