@@ -11,7 +11,7 @@ handlers:
    .long keyboard,real_time_clock,syscall_linkage,pit,mouse
 syscall:
     .long 0,halt,execute,read,write,open
-    .long close,getargs,vidmap,set_handler,sigreturn,ioctl
+    .long close,getargs,vidmap,set_handler,sigreturn,ioctl,malloc,free
 #the commom assembly linkage for exception/interrupt
 ex_ir_linkage:
     
@@ -89,7 +89,7 @@ syscall_linkage:
     pushfl
 
     #execute the system call
-    cmpl $11,%eax #sanity check
+    cmpl $13,%eax #sanity check
     ja non_exist
     cmpl $1,%eax
     jb non_exist
@@ -194,7 +194,5 @@ pit:
     pushl $0x20     #0x20 is the vector number for RTC interrupt
     jmp ex_ir_linkage
 mouse:
-    pushl $0x2C #mouse
+    pushl $0x2c
     jmp ex_ir_linkage
-
-

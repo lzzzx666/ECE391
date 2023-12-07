@@ -34,7 +34,7 @@ int32_t halt(uint8_t status)
     if (current_pid < TERMINAL_NUMBER)
     {
         delete_pcb();
-        execute((char*)"shell");
+        execute((uint8_t *)"shell");
         // printf("This terminal becomes inactive.\n"); //now the terminal don't have inactive status
         // if (active_terminal == 1)
         // {
@@ -163,10 +163,13 @@ int32_t execute(const uint8_t *command)
     // Get other arguments from the command.
 
     // Check if a new PCB can be created.
-    if(strncmp(name_buf,"shell",MAX_FILE_NAME)==0){
-            pcb_index = create_pcb(1); //1 indicates that it is shell
-    }else{
-        pcb_index = create_pcb(0); //0 indicates it is not a shell
+    if (strncmp((int8_t *)name_buf, (int8_t *)"shell", MAX_FILE_NAME) == 0)
+    {
+        pcb_index = create_pcb(1); // 1 indicates that it is shell
+    }
+    else
+    {
+        pcb_index = create_pcb(0); // 0 indicates it is not a shell
     }
 
     if (pcb_index == -1)
@@ -432,6 +435,61 @@ int32_t ioctl(int32_t fd, int32_t request, void *buf)
         return SYSCALL_FAIL;
     curPcb->file_obj_table[fd].f_operation.ioctl(fd, request, buf);
     return SYSCALL_SUCCESS;
+}
+/**
+ * malloc
+ * alloc a memory address of the size
+ * INPUT: szie: the size of the allocated memory
+ * OUTPUT: the address of the allocated memory
+ */
+void *malloc(uint32_t size)
+{
+
+    void *ret_addr;
+    kmem_cache *cur_cache = slab_cache.cache_head;
+    int32_t exist;
+    /*sanity check*/
+    if (size == 0 || size>SLAB_SIZE-sizeof(kmem_unit))
+    {
+        printf("Can't allocate such a size!\n");
+        return NULL;
+    }
+    exist = 0;
+
+    /*find if there is a cache with the required size*/
+    while (cur_cache && cur_cache->p)
+    {
+        if (size == cur_cache->size)
+        {
+            exist = 1;
+            break;
+        }
+        else
+        {
+            cur_cache = cur_cache->next;
+        }
+    }
+    if (exist)      //when a cache satisfies the size
+    {
+        ret_addr = kmem_cache_alloc(cur_cache);
+    }
+    else            
+    {
+        cur_cache = kmem_cache_create(size);
+        ret_addr = kmem_cache_alloc(cur_cache);
+    }
+    return ret_addr;
+}
+/**
+ * free
+ * free the allocated memory
+ * INPUT: ptr: the address of the allocated memory
+ * OUTPUT: none
+ */
+void free(void *ptr)
+{
+    kmem_cache_free(ptr);
+    return;
 }
 
 /*-----------these functions are not used now, please ignore them------------------------------*/

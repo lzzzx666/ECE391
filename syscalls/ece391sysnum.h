@@ -12,6 +12,8 @@
 #define SYS_SET_HANDLER 9
 #define SYS_SIGRETURN 10
 #define SYS_IOCTL 11
+#define SYS_MALLOC 12
+#define SYS_FREE 13
 
 /*terminal ioctl number*/
 #define SIMKB 1

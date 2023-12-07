@@ -36,6 +36,8 @@ extern int32_t ece391_vidmap(uint8_t **screen_start);
 extern int32_t ece391_set_handler(int32_t signum, void *handler);
 extern int32_t ece391_sigreturn(void);
 extern int32_t ece391_ioctl(int32_t fd, int32_t request, void *buf);
+extern void* ece391_malloc(uint32_t size);
+extern void ece391_free(void* ptr);
 enum signums
 {
 	DIV_ZERO = 0,

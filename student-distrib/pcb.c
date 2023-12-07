@@ -67,6 +67,8 @@ int32_t create_pcb(int32_t isshell)
 
     /*change the pid in scheduler array*/
     sche_array[sche_index]=pcb_index;
+
+
     
 
     return pcb_index;
@@ -87,6 +89,8 @@ int32_t delete_pcb()
     /*clear the pcb array and the bitmap*/
     pcb_array[current_pid] = NULL;
     pcb_bitmap = pcb_bitmap & ~(0x1 << (7 - current_pid)); // 7-current_pid is the corresponding bit in the bitmap
+    /*free all memory*/
+    free_one_program(current_pid);
     return 0;
 }
 
@@ -129,6 +133,7 @@ void initialize_new_pcb(pcb_t *pcb, int32_t pid)
         pcb->file_obj_table[i].exist = 0;
     }
     memset(pcb, 0, MAX_BUF);
+
 }
 
 /**

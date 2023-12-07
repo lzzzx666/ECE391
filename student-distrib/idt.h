@@ -16,8 +16,9 @@
 #define INT_KEYBOARD 0x21  // 0x21 is the vector number for the keyboard
 #define INT_RTC 0x28       // 0x28 is the vector number for the RTC
 #define INT_PIT 0x20        //the interrupt for pit
+#define INT_MOUSE 0x2c
 #define PRESENT 1          // 1 to indicate the handler is present
-#define INT_MOUSE 0x2C
+// #define INT_MOUSE 0x2C
 // #define INT_GATE  0xE  //0xE is the interrupt gate
 // #define TRAP_GATE  0xF  //0xE is the interrupt gate
 
@@ -52,7 +53,7 @@ enum idt_type
     SIMD_FLOATING_POINT_EXCEPTION,
     KEYBOARD = 0x21,        // 0x21 is the vector number of keyboard
     PIT = 0x20,             // 0x20 is the vector number for pit handler
-    MOUSE = 0x2C,
+    // MOUSE = 0x2C,
     REAL_TIME_CLOCK = 0x28, // 0x28 is the vector number of RTC
     SYSTEM_CALL = 0x80      // 0x80 is the system call entry
 

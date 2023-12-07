@@ -9,6 +9,8 @@
 #define DEBUG
 #include "debug.h"
 
+// #define USE_COLOR
+
 // #define putc(...) putc(__VA_ARGS__, (0))
 // #define scroll_up(...) scroll_up(__VA_ARGS__, (0))
 
@@ -73,7 +75,7 @@ int32_t printf(int8_t *format, ...)
             {
             /* Print a literal '%' character */
             case '%':
-                putc('%');
+                _putc('%',1);
                 break;
 
             /* Use alternate formatting */
@@ -159,7 +161,7 @@ int32_t printf(int8_t *format, ...)
         break;
 
         default:
-            putc(*buf);
+            _putc(*buf,1);
             break;
         }
         buf++;
@@ -176,7 +178,7 @@ int32_t puts(int8_t *s)
     register int32_t index = 0;
     while (s[index] != '\0')
     {
-        putc(s[index]);
+        _putc(s[index],1);
         index++;
     }
     return index;
@@ -190,7 +192,14 @@ void _scroll_up(int32_t use_terminal)
 {
     terminal_t *terminal = &main_terminal[use_terminal];
     uint8_t* up_mem=(use_terminal==current_terminal)? (uint8_t*) video_mem:terminal->video_mem_backup;
-    int x, y;
+    int x, y;    
+    terminal_t *currenterminal = &main_terminal[current_terminal];
+    if(terminal == currenterminal)
+    {
+        y = currenterminal->mouse_y, x = currenterminal->mouse_x;
+        *(uint8_t *)(up_mem + (((y * NUM_COLS + x) << 1) + 1)) = ATTRIB;
+    }
+    
     for (y = 0; y < NUM_ROWS - 1; y++) // fill up the screen except the last row
     {
         for (x = 0; x < NUM_COLS; x++)
@@ -205,6 +214,7 @@ void _scroll_up(int32_t use_terminal)
         *(uint8_t *)(up_mem + ((NUM_COLS * (NUM_ROWS - 1) + x) << 1)) = ' ';
         *(uint8_t *)(up_mem + (((NUM_COLS * (NUM_ROWS - 1) + x) << 1) + 1)) = ATTRIB;
     }
+
 }
 /* void putc(uint8_t c);
  * Inputs: uint_8* c = character to print
@@ -219,11 +229,14 @@ void _putc(uint8_t c, uint8_t use_current_terminal)
 {
     cli();
     static uint8_t attr = ATTRIB;
+#ifdef USE_COLOR
     static uint8_t next_is_attr_byte = 0;
+#endif
     // ASSERT(sche_index == current_terminal);
     uint32_t use_terminal = use_current_terminal ? current_terminal : sche_index;
     terminal_t *terminal = &main_terminal[use_terminal];
     uint8_t* putc_mem=(use_terminal==current_terminal)? (uint8_t*) video_mem:terminal->video_mem_backup;
+#ifdef USE_COLOR
     if(next_is_attr_byte) {
         next_is_attr_byte = 0;
         attr = c;
@@ -233,6 +246,7 @@ void _putc(uint8_t c, uint8_t use_current_terminal)
         next_is_attr_byte = 1;
         return;
     }
+#endif
     if (c == '\n' || c == '\r')
     {
         terminal->cursor_y++;

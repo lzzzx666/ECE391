@@ -15,7 +15,7 @@
 #include "fs.h"
 #include "terminal.h"
 #include "pit.h"
-#include "mouse.h"
+#include "allocation.h"
 #define RUN_TESTS 0
 
 /* Macros. */
@@ -178,7 +178,7 @@ void entry(unsigned long magic, unsigned long addr)
      * IDT correctly otherwise QEMU will triple fault and simple close
      * without showing you any output */
     // printf("Enabling Interrupts\n");
-    
+    init_memory_allocation();
    // while(1); // SPIN!
 
     clear();

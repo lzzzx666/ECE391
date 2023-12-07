@@ -268,7 +268,20 @@ extern int32_t set_vidmap_paging(uint8_t **screen_start);
 extern int32_t set_mode_x_paging();
 
 extern int32_t free_paging_directory(int32_t idx);
+// extern int32_t free_paging_directory(int32_t idx);
+/**
+ * @brief update vidmap for a program based on whether it is running in the current terminal
+ *
+ * This function changes paging to allow access to a program in memory.
+ *
+ * @param tid The target terminal id that a program is running
+ *
+ * @return none
+ */
+extern void update_vidmap(int32_t tid);
 extern void set_cr();
 extern void get_cr();
-
+extern PD_t pageDirectory;
+extern PT_t pageTable;
+extern PT_t video_pageTable;
 #endif

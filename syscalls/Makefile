@@ -3,6 +3,7 @@ LDFLAGS += -g -nostdlib -ffreestanding
 CC = gcc
 
 ALL: cat grep hello ls pingpong counter shell sigtest testprint syserr feh neofetch gui
+ALL: cat grep hello ls pingpong counter shell sigtest testprint syserr modextest neofetch mem
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
