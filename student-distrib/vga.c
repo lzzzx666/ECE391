@@ -56,6 +56,7 @@ int32_t vga_open(const uint8_t *filename)
 
 int32_t vga_close(int32_t fd)
 {
+    int i;
     VGA_blank(1);
     write_font_data();                      /* copy fonts to video mem */
     set_seq_regs_and_reset(text_seq, 0x67); /* sequencer registers     */
@@ -65,10 +66,9 @@ int32_t vga_close(int32_t fd)
     fill_palette_text();                    /* palette colors          */
     VGA_blank(0);                           /* unblank the screen      */
     memset((void *)VIDEO, 0, 80 * 25 * 2);
-    memset((void *)VIDEO_TERMINAL1, 0, 80 * 25 * 2);
-    memset((void *)VIDEO_TERMINAL1, 0, 80 * 25 * 2);
-    memset((void *)VIDEO_TERMINAL1, 0, 80 * 25 * 2);
+    clear();
     free_paging_directory((MODE_X_VMEM_ADDR >> 22) & 0x3FF);
+
 
 #if DEBUG
     int i;
@@ -381,15 +381,17 @@ void write_font_data()
 
 void enable_text_mode()
 {
+
     VGA_blank(1);
     fill_palette_mode_x(); /* palette colors        */ /* blank the screen      */
     set_seq_regs_and_reset(text_seq, 0x63);            /* sequencer registers   */
     set_CRTC_registers(text_CRTC);                     /* CRT control registers */
     set_attr_registers(text_attr);                     /* attribute registers   */
     set_graphics_registers(text_graphics);             /* graphics registers    */
-
     write_font_data();
     memset((void *)VIDEO, 0, 80 * 25 * 2);
+    clear();
+
     VGA_blank(0);
 
     return;
