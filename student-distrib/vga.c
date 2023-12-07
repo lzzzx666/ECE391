@@ -381,12 +381,13 @@ void write_font_data()
 
 void enable_text_mode()
 {
-    VGA_blank(1);                           /* blank the screen      */
-    set_seq_regs_and_reset(text_seq, 0x63); /* sequencer registers   */
-    set_CRTC_registers(text_CRTC);          /* CRT control registers */
-    set_attr_registers(text_attr);          /* attribute registers   */
-    set_graphics_registers(text_graphics);  /* graphics registers    */
-    fill_palette_text();                    /* palette colors        */
+    VGA_blank(1);
+    fill_palette_mode_x(); /* palette colors        */ /* blank the screen      */
+    set_seq_regs_and_reset(text_seq, 0x63);            /* sequencer registers   */
+    set_CRTC_registers(text_CRTC);                     /* CRT control registers */
+    set_attr_registers(text_attr);                     /* attribute registers   */
+    set_graphics_registers(text_graphics);             /* graphics registers    */
+
     write_font_data();
     memset((void *)VIDEO, 0, 80 * 25 * 2);
     VGA_blank(0);
