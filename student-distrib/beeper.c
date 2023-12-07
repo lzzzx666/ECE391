@@ -2,15 +2,16 @@
 
 #include "lib.h"
 
-int32_t beeper_open(const uint8_t *fname) {
-    return 0;
-}
-
-int32_t beeper_close(int32_t fd) { return 0; }
+int32_t beeper_open(const uint8_t *fname) { return 0; }
 
 static void no_sound() {
     uint8_t tmp = inb(0x61) & 0xFC;
     outb(tmp, 0x61);
+}
+
+int32_t beeper_close(int32_t fd) {
+    no_sound();
+    return 0;
 }
 
 static void play_sound(uint32_t nFrequence) {

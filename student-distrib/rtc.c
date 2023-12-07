@@ -6,12 +6,10 @@
 #include "time.h"
 #include "types.h"
 
-static uint32_t fd_freqs[MAX_TASK] = {0};
+static float fd_freqs[MAX_TASK] = {0};
 volatile uint8_t interrtupt_occured[MAX_TASK] = {0};
-uint32_t time_tick[MAX_TASK] = {
+float time_tick[MAX_TASK] = {
     0}; /* every 1 tick : 1sec / (INTERRUPT_FREQ_HI * current_freq) */
-
-uint32_t current_freq = 2;
 
 /**
  * enalbe_inter
@@ -91,9 +89,7 @@ void rtc_handler() {
  * rtc_open
  * set RTC interrupt frequency
  */
-int32_t rtc_open(const uint8_t *fname) {
-    return 0;
-}
+int32_t rtc_open(const uint8_t *fname) { return 0; }
 
 /**
  * rtc_close
@@ -111,9 +107,15 @@ int32_t rtc_close(int32_t fd) {
  */
 int32_t rtc_write(int32_t fd, const void *buf, int32_t nbytes) {
     fd = get_current_pcb()->pid;
-    if (nbytes != sizeof(uint32_t)) return -1;
-    uint32_t freq = *((uint32_t *)buf);
-    if (freq > INTERRUPT_FREQ_HI) return 1;
+    float freq;
+    if (nbytes == sizeof(uint32_t))
+        freq = *((uint32_t *)buf);
+    else if (nbytes == sizeof(uint16_t))
+        freq = 1000. / (float)(*((uint16_t *)buf));
+    else
+        return 1;
+
+    if (freq > INTERRUPT_FREQ_HI) return 2;
     fd_freqs[fd] = freq;
     time_tick[fd] = 0;
     return 0;
@@ -140,25 +142,25 @@ int32_t rtc_ioctl(int32_t fd, int32_t request, void *buf) {
     time_t time;
     switch (request) {
         case GET_TIME_CTL:
-            time.Seconds        = read_rtc_reg(RTC_SECONDS);
-            time.Minutes        = read_rtc_reg(RTC_MINUTES);
-            time.Hours          = read_rtc_reg(RTC_HOURS);
-            time.Weekday        = read_rtc_reg(RTC_WEEKDAY);
-            time.Day_of_Month   = read_rtc_reg(RTC_DAY_OF_MONTH);
-            time.Month          = read_rtc_reg(RTC_MONTH);
-            time.Year           = read_rtc_reg(RTC_YEAR);
-            time.Century        = read_rtc_reg(RTC_CENTURY);
+            time.Seconds = read_rtc_reg(RTC_SECONDS);
+            time.Minutes = read_rtc_reg(RTC_MINUTES);
+            time.Hours = read_rtc_reg(RTC_HOURS);
+            time.Weekday = read_rtc_reg(RTC_WEEKDAY);
+            time.Day_of_Month = read_rtc_reg(RTC_DAY_OF_MONTH);
+            time.Month = read_rtc_reg(RTC_MONTH);
+            time.Year = read_rtc_reg(RTC_YEAR);
+            time.Century = read_rtc_reg(RTC_CENTURY);
 
-            time.Timezone = ((time_t*)buf)->Timezone;
+            time.Timezone = ((time_t *)buf)->Timezone;
             time.Hours += time.Timezone;
-            if (time.Hours < 0)         time.Day_of_Month--;
-            if (time.Hours >= 24)       time.Day_of_Month++;
-            if (time.Day_of_Month < 1)  time.Month--;
+            if (time.Hours < 0) time.Day_of_Month--;
+            if (time.Hours >= 24) time.Day_of_Month++;
+            if (time.Day_of_Month < 1) time.Month--;
             if (time.Day_of_Month > days_in_month[time.Month]) time.Month++;
-            if (time.Month < 1)         time.Year--;
-            if (time.Month > 12)        time.Year++;
+            if (time.Month < 1) time.Year--;
+            if (time.Month > 12) time.Year++;
 
-            *((time_t*)buf) = time;
+            *((time_t *)buf) = time;
             break;
         default:
             return 1;
