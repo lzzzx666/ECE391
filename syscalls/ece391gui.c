@@ -7,17 +7,29 @@
 
 BitMap_t bitMap;
 cursorLoc_t cursor;
+void execute(int VGAfd, char *name, int *garbage, int size)
+{
+    uint8_t buf[10];
+    ece391_ioctl(VGAfd, IOCTL_TEXT_MODE, garbage);
+    ece391_execute(name);
+    if (ece391_strcmp(name, "piano") != 0 && ece391_strcmp(name,"pingpong")!=0)
+        ece391_read(0, buf, 1);
+    ece391_ioctl(VGAfd, IOCTL_MODE_X, garbage);
+    size = read_bitmap("desktop.bmp", &bitMap);
+    plot_bitmap(VGAfd, size, &bitMap);
+}
 
-void itoa_align_copy(uint8_t val, int width, uint8_t fill, uint8_t *pos) {
+void itoa_align_copy(uint8_t val, int width, uint8_t fill, uint8_t *pos)
+{
     static uint8_t buf[20];
     ece391_itoa(val, buf, 10);
     int len = ece391_strlen(buf), i;
-    for(i = 0; i < width; i++) {
-        int idx = i + len -  width;
+    for (i = 0; i < width; i++)
+    {
+        int idx = i + len - width;
         pos[i] = idx < 0 ? fill : buf[idx];
     }
 }
-
 int32_t main()
 {
     uint8_t buf[128];
@@ -49,9 +61,38 @@ int32_t main()
         ece391_read(rtcfd, &garbage, 4);
         ece391_read(mousefd, mouseBuf, 3);
         ece391_ioctl(VGAfd, IOCTL_SET_CURSOR, &(mouseBuf[1]));
-        if (ece391_ioctl(rtcfd, GET_TIME_CTL, &time)) return 2;
 
-        if(time.Seconds != prev.Seconds) {
+        if ((mouseBuf[0]) & 1)
+        {
+            if ((mouseBuf[1] & 0xff) < 40)
+            {
+                switch ((mouseBuf[2] & 0xff) / 40)
+                {
+                case 0:
+                    execute(VGAfd, (char *)"pingpong", &garbage, size);
+                    break;
+                case 1:
+                    execute(VGAfd, (char *)"neofetch", &garbage, size);
+                    break;
+                case 2:
+                    execute(VGAfd, (char *)"piano", &garbage, size);
+                    break;
+                case 3:
+                    execute(VGAfd, (char *)"ls", &garbage, size);
+                    break;
+                case 4:
+                    execute(VGAfd, (char *)"date", &garbage, size);
+                    break;
+                default:
+                    break;
+                }
+            }
+        }
+        if (ece391_ioctl(rtcfd, GET_TIME_CTL, &time))
+            return 2;
+
+        if (time.Seconds != prev.Seconds)
+        {
             prev = time;
             itoa_align_copy(time.Year, 2, '0', time_buf + 2);
             itoa_align_copy(time.Month, 2, '0', time_buf + 5);
@@ -60,7 +101,8 @@ int32_t main()
             itoa_align_copy(time.Minutes, 2, '0', time_buf + 14);
             itoa_align_copy(time.Seconds, 2, '0', time_buf + 17);
             ece391_strcpy(time_buf + 20, day_of_week[time.Weekday]);
-            if (ece391_ioctl(VGAfd, /*IOCTL_DISP_TIME*/ 6, time_buf)) return 3;
+            if (ece391_ioctl(VGAfd, /*IOCTL_DISP_TIME*/ 6, time_buf))
+                return 3;
         }
     }
     ece391_close(VGAfd);
