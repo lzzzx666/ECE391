@@ -6,6 +6,12 @@
 #include "ece391support.h"
 #include "ece391sysnum.h"
 
+typedef struct cursorLoc
+{
+    uint8_t x;
+    uint8_t y;
+}cursorLoc_t;
+
 typedef struct BitMapFileHeader
 {
     uint16_t bfType;
@@ -64,7 +70,7 @@ int32_t plot_bitmap(int32_t VGAfd, int32_t bitMapSize, BitMap_t *bitMap)
     void *garbage;
     uint8_t palette[256][3];
     int i;
-    bitMap = (BitMap_t *)((int32_t)bitMap - 2);
+    bitMap = (BitMap_t *)((int32_t)bitMap-2);
     uint8_t *pixels = bitMap->pixels;
     RGB_t *palette_RGBA = bitMap->palette;
     for (i = 0; i < 256; i++)

@@ -11,11 +11,11 @@ int cycle = 0;
 void mouse_wait(uint8_t type)
 {
     uint32_t timeout = 100000;
-    if(!type)
+    if (!type)
     {
-        while(--timeout)
+        while (--timeout)
         {
-            if((inb(STATUS_PORT) & 1) == MOUSE_BBIT)
+            if ((inb(STATUS_PORT) & 1) == MOUSE_BBIT)
             {
                 return;
             }
@@ -24,9 +24,9 @@ void mouse_wait(uint8_t type)
     }
     else
     {
-        while(--timeout)
+        while (--timeout)
         {
-            if(!((inb(STATUS_PORT) & MOUSE_ABIT)))
+            if (!((inb(STATUS_PORT) & MOUSE_ABIT)))
             {
                 return;
             }
@@ -35,9 +35,9 @@ void mouse_wait(uint8_t type)
     }
 }
 
+void mouse_init(void)
+{
 
-void mouse_init(void){
-    
     mouse_wait(1);
     outb(0xA8, STATUS_PORT);
     mouse_wait(1);
@@ -61,41 +61,40 @@ void mouse_handler(void)
 {
     cli();
     send_eoi(MOUSE_IRQ);
-    if((mouse_bytes[0].x_overflow == 0 && mouse_bytes[0].y_overflow == 0) && mouse_bytes[0].always1 == 0)
+    if ((mouse_bytes[0].x_overflow == 0 && mouse_bytes[0].y_overflow == 0) && mouse_bytes[0].always1 == 0)
     {
         cycle = 0;
     }
-    mouse_bytes[cycle].val= inb(MOUSE_PORT);
+    mouse_bytes[cycle].val = inb(MOUSE_PORT);
     cycle++;
     int8_t x, y;
-    if(cycle == 3) // 3 bytes all ready
+    if (cycle == 3) // 3 bytes all ready
     {
         cycle = 0;
-        if(mouse_bytes[0].x_overflow || mouse_bytes[0].y_overflow)
+        if (mouse_bytes[0].x_overflow || mouse_bytes[0].y_overflow)
         {
             sti();
-            return; //overflow
+            return; // overflow
         }
-        else 
+        else
         {
             x = mouse_bytes[1].val, y = mouse_bytes[2].val;
-        } 
+        }
         change_color(main_terminal[current_terminal].mouse_x, main_terminal[current_terminal].mouse_y, ATTRIB, current_terminal);
-        if(main_terminal[current_terminal].mouse_x + x / 10 >= 0 && main_terminal[current_terminal].mouse_x + x / 10 < NUM_COLS)
+        if (main_terminal[current_terminal].mouse_x + x / 10 >= 0 && main_terminal[current_terminal].mouse_x + x / 10 < NUM_COLS)
         {
             main_terminal[current_terminal].mouse_x += x / 10;
         }
-        if(main_terminal[current_terminal].mouse_y - y / 10 >= 0 && main_terminal[current_terminal].mouse_y - y / 10 < NUM_ROWS)
+        if (main_terminal[current_terminal].mouse_y - y / 10 >= 0 && main_terminal[current_terminal].mouse_y - y / 10 < NUM_ROWS)
         {
             main_terminal[current_terminal].mouse_y -= y / 10;
         }
         change_color(main_terminal[current_terminal].mouse_x, main_terminal[current_terminal].mouse_y, 0x70, current_terminal);
     }
     sti();
-    
 }
 
-int32_t mouse_write (unsigned char data)
+int32_t mouse_write(unsigned char data)
 {
     mouse_wait(1);
     outb(MOUSE_WRITE, STATUS_PORT);
@@ -104,19 +103,18 @@ int32_t mouse_write (unsigned char data)
     return 0;
 }
 
-
-int32_t mouse_read (void)
+int32_t mouse_read(void)
 {
     mouse_wait(0);
     return inb(MOUSE_PORT);
 }
 
-int32_t mouse_open ()
+int32_t mouse_open()
 {
     return 0;
 }
 
-int32_t mouse_close ()
+int32_t mouse_close()
 {
     return 0;
 }

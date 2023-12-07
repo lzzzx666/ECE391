@@ -15,9 +15,10 @@
 #define IOCTL_MODE_X 2
 #define IOCTL_VMEM_MAP 3
 #define IOCTL_SET_PAL 4
+#define IOCTL_SET_CURSOR 5
 
-#define MODE_X_HIGHT 320
-#define MODE_X_WIDTH 200
+#define MODE_X_HIGHT 200
+#define MODE_X_WIDTH 320
 #define SCREEN_SIZE (MODE_X_HIGHT * MODE_X_WIDTH)
 #define PLANE_SIZE (SCREEN_SIZE / 4)
 
@@ -27,6 +28,8 @@
 #define TEXT_MODE 0
 #define MODE_X 1
 #define FULL_PALETTE 2
+
+#define CURSOR_COLOR 10
 
 /*
  * macro used to target a specific video plane or planes when writing
@@ -45,6 +48,13 @@
                      : "a"((mask_hi_bits))                                   \
                      : "edx", "memory");                                     \
     } while (0)
+
+typedef struct cursorLoc
+{
+    uint8_t x;
+    uint8_t y;
+}cursorLoc_t;
+
 
 int32_t vga_read(int32_t fd, void *buf, int32_t nbytes);
 int32_t vga_write(int32_t fd, void *buf, int32_t nbytes);
@@ -69,6 +79,8 @@ void write_font_data();
 void enable_text_mode();
 void enable_mode_x();
 void set_palette(unsigned char *palette, uint8_t mode);
-
+void set_cursor(cursorLoc_t* loc);
+void update_gui_cursor();
+void clear_gui_cursor();
 
 #endif

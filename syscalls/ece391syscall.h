@@ -8,6 +8,7 @@
 #define IOCTL_MODE_X 2
 #define IOCTL_VMEM_MAP 3
 #define IOCTL_SET_PAL 4
+#define IOCTL_SET_CURSOR 5
 
 /*terminal ioctl number*/
 #define IOCTL_SIMKB 1

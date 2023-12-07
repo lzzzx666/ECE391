@@ -2,6 +2,9 @@
 #include "vga_data.h"
 #define DEBUG 1
 uint8_t VGA_mode = TEXT_MODE;
+uint8_t cursorRec[100];
+
+cursorLoc_t curCursor;
 
 int32_t vga_read(int32_t fd, void *buf, int32_t nbytes)
 {
@@ -62,6 +65,9 @@ int32_t vga_close(int32_t fd)
     fill_palette_text();                    /* palette colors          */
     VGA_blank(0);                           /* unblank the screen      */
     memset((void *)VIDEO, 0, 80 * 25 * 2);
+    memset((void *)VIDEO_TERMINAL1, 0, 80 * 25 * 2);
+    memset((void *)VIDEO_TERMINAL2, 0, 80 * 25 * 2);
+    memset((void *)VIDEO_TERMINAL3, 0, 80 * 25 * 2);
     free_paging_directory((MODE_X_VMEM_ADDR >> 22) & 0x3FF);
 
 #if DEBUG
@@ -112,19 +118,18 @@ int32_t vga_ioctl(int32_t fd, int32_t request, void *buf)
     switch (request)
     {
     case IOCTL_TEXT_MODE:
-
         enable_text_mode();
         break;
     case IOCTL_MODE_X:
-
         enable_mode_x();
         break;
     case IOCTL_VMEM_MAP:
         break;
     case IOCTL_SET_PAL:
-
         set_palette(buf, FULL_PALETTE);
-
+        break;
+    case IOCTL_SET_CURSOR:
+        set_cursor((cursorLoc_t *)buf);
         break;
     default:
         break;
@@ -420,4 +425,48 @@ void enable_mode_x()
     outw((MODE_X_VMEM_ADDR & 0xFF00) | 0x0C, 0x03D4);
     outw(((MODE_X_VMEM_ADDR & 0x00FF) << 8) | 0x0D, 0x03D4);
     return;
+}
+void set_cursor(cursorLoc_t *loc)
+{
+    clear_gui_cursor();
+    curCursor.x = loc->x;
+    curCursor.y = loc->y;
+    update_gui_cursor();
+    return;
+}
+
+void update_gui_cursor()
+{
+    uint8_t i, j;
+    uint8_t planeOff;
+    uint8_t *addr = (uint8_t *)MODE_X_VMEM_ADDR;
+    for (i = 0; i < 10; i++)
+    {
+        planeOff = i % 4;
+        SET_WRITE_MASK(1 << (planeOff + 8));
+        for (j = 0; j < 10; j++)
+        {
+            cursorRec[i + j * 10] = addr[((i + curCursor.x) + (j + curCursor.y) * MODE_X_WIDTH) / 4];
+            if (cursor_img[i + j * 10] == 1)
+                addr[(i + j * MODE_X_WIDTH) / 4] = CURSOR_COLOR;
+        }
+    }
+    outw((MODE_X_VMEM_ADDR & 0xFF00) | 0x0C, 0x03D4);
+    outw(((MODE_X_VMEM_ADDR & 0x00FF) << 8) | 0x0D, 0x03D4);
+}
+
+void clear_gui_cursor()
+{
+    uint8_t i, j;
+    uint8_t planeOff;
+    uint8_t *addr = (uint8_t *)MODE_X_VMEM_ADDR;
+    for (i = 0; i < 10; i++)
+    {
+        planeOff = (i + curCursor.x) % 4;
+        SET_WRITE_MASK(1 << (planeOff + 8));
+        for (j = 0; j < 10; j++)
+        {
+            addr[((i + curCursor.x) + (j + curCursor.y) * MODE_X_WIDTH) / 4] = cursorRec[i + j * 10];
+        }
+    }
 }
