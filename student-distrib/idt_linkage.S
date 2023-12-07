@@ -196,3 +196,4 @@ pit:
 mouse:
     pushl $0x2c
     jmp ex_ir_linkage
+

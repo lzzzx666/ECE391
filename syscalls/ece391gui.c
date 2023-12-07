@@ -7,7 +7,7 @@
 
 BitMap_t bitMap;
 cursorLoc_t cursor;
-uint8_t *program[7] = {(char *)"pingpong", (char *)"neofetch", (char *)"piano", (char *)"ls", (char *)"date",(char*)"mem",(char*)"fish"};
+uint8_t *program[7] = {(uint8_t *)"pingpong", (uint8_t *)"neofetch", (uint8_t *)"piano", (uint8_t *)"ls", (uint8_t *)"date",(uint8_t *)"mem",(uint8_t *)"fish"};
 uint8_t flag[7] = {1, 0, 1, 0, 0,1,1};
 void execute(int VGAfd, uint8_t index, int *garbage, int size)
 {
@@ -17,7 +17,7 @@ void execute(int VGAfd, uint8_t index, int *garbage, int size)
     if (!flag[index])
         ece391_read(0, buf, 1);
     ece391_ioctl(VGAfd, IOCTL_MODE_X, garbage);
-    size = read_bitmap("desktop.bmp", &bitMap);
+    size = read_bitmap((uint8_t *)"desktop.bmp", &bitMap);
     plot_bitmap(VGAfd, size, &bitMap);
 }
 
@@ -34,7 +34,7 @@ void itoa_align_copy(uint8_t val, int width, uint8_t fill, uint8_t *pos)
 }
 int32_t main()
 {
-    uint8_t buf[128];
+    // uint8_t buf[128];
     uint16_t mouseBuf[3];
     int32_t VGAfd, rtcfd, mousefd;
     int32_t size;
@@ -51,12 +51,12 @@ int32_t main()
     ret_val = ece391_write(rtcfd, &ret_val, 4);
 
     ece391_ioctl(VGAfd, IOCTL_MODE_X, &garbage);
-    size = read_bitmap("desktop.bmp", &bitMap);
+    size = read_bitmap((uint8_t *)"desktop.bmp", &bitMap);
     plot_bitmap(VGAfd, size, &bitMap);
 
     time_t time, prev;
     time.Timezone = TIMEZONE;
-    uint8_t *time_buf = "2046/08/17 04:32:01 Sun";
+    uint8_t *time_buf = (uint8_t *)"2046/08/17 04:32:01 Sun";
 
     while (1)
     {

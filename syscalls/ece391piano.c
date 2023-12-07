@@ -35,14 +35,14 @@ uint32_t freqs[NUM_KEYS] = {
 };
 
 int main() {
-    int32_t fd = ece391_open("beeper");
+    int32_t fd = ece391_open((uint8_t*)"beeper");
     if (fd == -1) return 1;
     // if (ece391_ioctl(1, 2, (void*)0)) return 2;
 
     uint8_t key;
     int32_t current, i;
     uint32_t freq;
-    uint8_t buf[100];
+    // uint8_t buf[100];
     while (1) {
         if (ece391_ioctl(1, 2, &key)) return 2;
         // ece391_itoa(key, buf, 10);
@@ -57,7 +57,7 @@ int main() {
                 freq = 0;
                 if (ece391_write(fd, &freq, sizeof(freq))) return 2;
             } else if (key == SCANCODE_ESC) {
-                ece391_fdputs(1, "\nquit\n");
+                ece391_fdputs(1, (uint8_t *)"\nquit\n");
                 ece391_close(fd);
                 return 0;
             }

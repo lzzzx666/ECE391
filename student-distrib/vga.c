@@ -25,10 +25,10 @@ int32_t vga_read(int32_t fd, void *buf, int32_t nbytes)
 
 int32_t vga_write(int32_t fd, void *buf, int32_t nbytes)
 {
-    uint8_t *buildBuf[PLANE_SIZE];
+    // uint8_t *buildBuf[PLANE_SIZE];
     if (fd > MAX_FD || buf == NULL)
         return SYSCALL_FAIL;
-    int i, j, planeIdx;
+    int i, j;
     uint8_t *addr = (uint8_t *)MODE_X_VMEM_ADDR;
     for (i = 0; i < 4; i++)
     {
@@ -56,7 +56,7 @@ int32_t vga_open(const uint8_t *filename)
 
 int32_t vga_close(int32_t fd)
 {
-    int i;
+    // int i;
     VGA_blank(1);
     write_font_data();                      /* copy fonts to video mem */
     set_seq_regs_and_reset(text_seq, 0x67); /* sequencer registers     */
@@ -131,7 +131,7 @@ int32_t vga_ioctl(int32_t fd, int32_t request, void *buf)
     case IOCTL_SET_CURSOR:
         if (guiCursorEnable == 0)
             enable_gui_cursor();
-        set_cursor((cursorLoc_t *)buf);
+        set_cursor((uint16_t *)buf);
         break;
     case IOCTL_DISP_TIME:
         display_time(buf);
@@ -311,7 +311,7 @@ void save_palette(unsigned char palette_RGB[32][3])
 
 void set_palette(unsigned char *palette, uint8_t mode)
 {
-    int i = 0;
+    // int i = 0;
 
     if (mode == MODE_X)
     {
@@ -495,7 +495,7 @@ void clear_gui_cursor()
 
 void display_time(uint8_t *time)
 {
-    int32_t timeLen = strlen(time);
+    int32_t timeLen = strlen((int8_t*)time);
     uint8_t timeFont[16];
     uint8_t idx;
     uint16_t x, y;

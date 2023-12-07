@@ -151,7 +151,7 @@ int32_t rtc_ioctl(int32_t fd, int32_t request, void *buf) {
 
             time.Timezone = ((time_t*)buf)->Timezone;
             time.Hours += time.Timezone;
-            if (time.Hours < 0)         time.Day_of_Month--;
+            // if (time.Hours < 0)         time.Day_of_Month--;
             if (time.Hours >= 24)       time.Day_of_Month++;
             if (time.Day_of_Month < 1)  time.Month--;
             if (time.Day_of_Month > days_in_month[time.Month]) time.Month++;
