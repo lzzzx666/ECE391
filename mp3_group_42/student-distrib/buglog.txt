@@ -1,0 +1,88 @@
+MP3.1
+    BUG1
+        description: when typing, there is no reaction on the screen 
+        find takes: 20 min 
+        fix takes: 15 min
+        how to fix: we examine the value of master_mask, found that the value of master_mask and inb(data_port of master)
+            are not the same, eventually we fixed it at the init_pic() that outb(master_mask) before enable_irq(2);
+
+    BUG2
+        description: RTC interrupt only be invoked one time.
+        find takes: 20 min
+        fix takes: 10 min
+        how to fix: Referring to datasheet of RTC chip, IRQ pin of RTC should be cleared by reading register C when a RTC
+                    interrupt is handled so that the next interrupt can be invoked.
+
+    BUG3
+        description: paging can be enabled but the page directory is not correct.
+        find takes: 2 hrs
+        fix takes: 20 min
+        how to fix: align the page table and page directory to 4*1024 to make the first 
+                    entries in them are aligned.
+                    
+    BUG4
+	    description:multiple definition of xxxxxx function
+	    find takes:30min
+	    how to fix:I have two files named idt.c and idt.S, they will both generate the idt.o file, so 
+		            confliction happans. I rename idt.S to idt_linkage.S
+
+
+MP3.2
+    BUG1
+        description: read_data function could not get the correct size of the file. End position is 
+                     always wrong with non-zero offset
+        find takes: 10 min 
+        fix takes: 5 min
+        how to fix: offset/4096 and offset>>12 are not equivalent without casting 4096 to uint32_t. 
+                    Using 4096u solves the problem.
+    
+    BUG2
+        description: always get a page fault when read_data function tries to access the second data 
+                     block of an inode
+        find takes: 10 min 
+        fix takes: 5 min
+        how to fix: the data blocks of a file is not consecutive, I have to get every data block's  
+                    index when I finishes reading one data block
+
+MP3.3
+    BUG1 
+        description: When I go to user mode, the iret does not work properly, and it generates page fault.
+        find takes: 5min
+        fix takes: 20min
+        how to fix: I want to push the parameters used by iret using a c funtion, however, I ignore that
+                    the c funtion will also push other things like return address. So I push these parameters
+                    inside the C function.
+
+    BUG2
+        description: when enter user program, like hello, the screen freeze and it dose not work as expected.
+        find takes: 10 min
+        fix takes: 30 min
+        how to fix: I misregard system call number starts at 0. Actually, it starts at 1, so I add a 0
+                    at the beginning of the handler jump table.
+    
+
+MP3.4
+    BUG1
+        description: Genereate a Page Fault when running fish
+        find takes: 30min
+        fix takes: 20min
+        how to fix: Set PTE after setting PDE in set_vidmap_paging.
+
+    BUG2
+        description: User programs did not recieve parameters
+        find takes: 5min
+        fix takes: 5min
+        how to fix: Initialize index pointer j to 0 in execute systemcall.c
+
+MP3.5
+    BUG1
+        description: When typing, the character may be displayer on other terminal instead of current terminal
+        find takes: 5 min
+        fix takes: 30 min
+        how to fix: Add a sign to the putc function to ensure that when keyboard interrupt handler call putc function, the content will 
+                    be displayed on the current terminal instead of the scheduled terminal.
+    BUG2    
+        description: Multiple cursors will show on the single terminal when we switch between terminals.
+        find takes: 5 min
+        fix takes: 15 min
+        how to fix: Update the cursor only if the terminal we are trying to putc is the current terminal displayed.
