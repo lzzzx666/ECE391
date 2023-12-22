@@ -1,0 +1,67 @@
+MP2.1:
+    1. draw_vert_line(): 
+        BUG1
+            description: when horizitally moving, the vertical line is not on the verge of picture 
+            find takes: 1 min 
+            fix takes: 3 min
+            how to fix: when calculating starting address in build buffer, should use parameter x, rather than show_x
+
+    2. status bar:
+        BUG1
+            description: when drawing bar, the characters are hugging together
+            find takes: 1 min
+            fix takes: 10 min
+            how to fix: when calculating the x coordinates in temp buffer, forget to add "FONT_WIDTH * iter"
+        BUG2
+            description: the image may flicker every a few seconds
+            find takes: 3 min
+            fix takes:  40 min
+            how to fix: delete the OUTW in the show_screen section
+        BUG3
+            description: when drawing bar with status_msg existing, there may be some flickers
+            find takes: 1 min
+            fix takes: 5 min
+            how to fix: add a mutex lock to ensure the atomicity 
+        BUG4
+            description: when drawing bar, the lower part of photo can not display completely 
+            find takes: 50 min
+            fix takes: 5 min
+            how to fix: in move_photo_up function, add BAR_HEIGHT to delta
+MP2.2
+    1. octree
+        BUG1
+            description: the color is grey-colorful, as if it were veiled
+            find it takes: 1 min
+            fix takes: 20 min
+            how to fix: extract r,g,b as 6-bit value and add them into the octree node
+        BUG2
+            description: when goinf thourgh the pixture second time, the program crashes
+            find it takes: 5 min
+            fix it take: 30 min
+            how to fix: add a fseek() funciton to let file pointer go back
+    2. tux
+        BUG1 
+            description: the tux didn't response
+            find it takes: 3 min
+            fix it takes: 10 min
+            how to fix: add a tux_init() function to initialize the tux
+        BUG2    
+            description: tux thread race condition
+            find it takes: 15 min
+            fix it takes: 30 min
+            how to fix: using pthread_cond_wait and pthread_cond_signal to synchronize
+        BUG3
+            description: the decimal points is missing
+            find it takes: 1 min
+            fix it takes: 10 min
+            how to fix: using a LEDMASK which set the second led's decimal existing
+        BUG4 
+            description: when click buttons frequently, room may change randomly
+            find it takes: 3 min
+            fix it takes: 50 min
+            how to fix: in get_tux_command() function, add a previou command var to implement debounce logic
+        BUG5 
+            description: when setting buttons, the copy failed
+            find it takes: 3 min
+            fix it takes: 15 min
+            how to fix: using copy_to_user()
